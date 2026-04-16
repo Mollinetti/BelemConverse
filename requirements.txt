@@ -1,0 +1,7 @@
+langchain-community>=0.0.25
+llama-cpp-python>=0.2.52
+sentence-transformers>=2.2.2
+python-dotenv>=1.0.0
+pydantic>=2.0
+pyyaml>=6.0
+chromadb>=0.4.22

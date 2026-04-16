@@ -1,0 +1,52 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+LLM/.venv/
+*.egg-info/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Logs and local debug
+*.log
+debug.log
+
+# Flutter / Dart
+frontend/.dart_tool/
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+
+# ML / vector / cache (large)
+LLM/.cache/
+models/llm/.cache/
+models/llm/*.gguf
+models/embedding/
+**/chroma*/
+**/.chroma/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
