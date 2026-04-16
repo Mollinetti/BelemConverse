@@ -1,0 +1,674 @@
+{
+  "summary": {
+    "total_tests": 16,
+    "passed": 10,
+    "failed": 6,
+    "pass_rate": 62.5,
+    "total_leakage_count": 10,
+    "by_language": {
+      "en": {
+        "total": 8,
+        "passed": 5
+      },
+      "pt": {
+        "total": 8,
+        "passed": 5
+      }
+    },
+    "by_query_type": {
+      "regular": {
+        "total": 6,
+        "passed": 2
+      },
+      "follow-up": {
+        "total": 2,
+        "passed": 1
+      },
+      "tour_planning": {
+        "total": 6,
+        "passed": 5
+      },
+      "edge_case": {
+        "total": 2,
+        "passed": 2
+      }
+    },
+    "timestamp": "2026-01-26T19:34:00.189844"
+  },
+  "results": [
+    {
+      "test_num": 1,
+      "description": "Simple place search (EN)",
+      "query": "Where can I find good restaurants in Belém?",
+      "language": "en",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "I'm sorry, I couldn't process your request. Please try rephrasing your question.",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 94.54675316810608
+    },
+    {
+      "test_num": 2,
+      "description": "Location-based query (EN)",
+      "query": "What are the best hotels near me?",
+      "language": "en",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " Based on your current location in Belém, Brazil, here are some of the best hotels near you:\n\n--- PLACE 1 ---\nName: Beira Rio Hotel\nAddress: Av. Bernardo Sayão - Guamá, Belém - PA, 66075-150, Brazil\nPhone: +55 91 4008-9000\nRating: 4.2★ (2641.0 reviews)\nType: Hotel\nDistance: 0.70km from you\n\n--- PLACE 2",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "--- PLACE"
+        ],
+        "leakage_count": 1,
+        "leakage_details": [
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2",
+            "full_line": "--- PLACE 2"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2",
+            "full_line": "--- PLACE 2"
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 212.7093472480774
+    },
+    {
+      "test_num": 3,
+      "description": "Category-specific query (EN)",
+      "query": "Show me museums in Belém",
+      "language": "en",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4558,
+        -48.4902
+      ],
+      "response": " Based on your request for museums in Belém, here are some of the best museums you can visit:\n\n--- PLACE 1 ---\nName: Ver-o-Peso Market Museum\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66020-160, Brazil\nPhone: +55 91 3647-8100\nHours: Monday: Closed; Tuesday-Sunday: 9 AM to 6 PM\nRating: 4.6★ (21954.0 reviews)\nType: Market museum\n\n--- PLACE 2 ---\nName: Museum of the Inquisition in Brazil\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66020-160, Brazil\nPhone: +55 91 3647-8100\nHours: Monday: Closed; Tuesday-Sunday: 9 AM to 6 PM\nRating: 4.6★ (21954.0 reviews)\nType: Museum\n\n--- PLACE 3 ---\nName: Museum of the Academy of Sciences of Amazonas\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66020-160, Brazil\nPhone: +55 91 3647-810",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "--- PLACE"
+        ],
+        "leakage_count": 1,
+        "leakage_details": [
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 19,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          },
+          {
+            "line": 19,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 267.1964039802551
+    },
+    {
+      "test_num": 4,
+      "description": "Follow-up query (EN)",
+      "query": "Tell me more about the first one",
+      "language": "en",
+      "query_type": "follow-up",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " The first place you inquired about is Mangal das Garças, an ecological park located in Cidade Velha, Belém - PA, Brazil.\n\nHere are some additional details about this place:\n\n--- PLACE 1 ---\nName: Mangal das Garças\nAddress: R. Carneiro da Rocha, s/n - Cidade Velha, Belém - PA, 66020-160, Brazil\nPhone: +55 91 3344-0100\nHours: Monday: Closed; Tuesday-Sunday: 8 AM to 6 PM\nRating: 4.8★ (22629.0 reviews)\nType: Ecological park\n\nMangal das Garças is a popular ecological park located in Cidade Velha, Belém - PA, Brazil. The park covers an area of approximately 15 hectares and features a variety of native plant species, as well as several small lakes and ponds.\n\nThe park is home to a diverse range of wildlife, including several species of monkeys, such as the brown capuchin and the white-fronted capuchin. Other animals that can be found in the park include various species of birds, such as the Amazonian uakari, the red-and-green macaw, and the blue-and-yellow macaw; as well as several species of reptiles, such as the green iguana and the yellow anaconda.\n\nIn addition to its diverse wildlife, Mangal das Garças also offers a variety of recreational activities for visitors to enjoy. These activities include hiking trails that wind through the park's lush vegetation, offering visitors the opportunity to observe the park's diverse wildlife up close; as well as several small lakes and ponds located throughout the park, which offer visitors the chance to go fishing or simply relax and enjoy the peaceful surroundings.\n\nOverall, Mangal das Garças is a must-visit destination for anyone traveling to Belém, Brazil. With its diverse wildlife, beautiful natural scenery, and variety of recreational activities, Mangal das Garças offers something for everyone to enjoy. So if you find yourself in Belém, be sure to make a trip to Mangal das Garças and experience all that this amazing ecological park has to offer!",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "--- PLACE"
+        ],
+        "leakage_count": 1,
+        "leakage_details": [
+          {
+            "line": 5,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 5,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 260.55583000183105
+    },
+    {
+      "test_num": 5,
+      "description": "Simple place search (PT)",
+      "query": "Onde posso encontrar bons restaurantes em Belém?",
+      "language": "pt",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " Based on your current location in Belém, Brazil (coordenadas: -1.4695, -48.4665). When you refer to places 'próximos', 'perto de mim' ou 'mais próximos', você deve considerar esta localização para recomendar lugares próximos a você.\n\nAqui estão alguns restaurantes recomendados em Belém, Brasil:\n\n--- RESTAURANTE 1 ---\nName: Restaurante Casa do Porco\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 2 ---\nName: Restaurante Casa do Preguiça\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 3 ---\nName: Restaurante Casa do Tucano\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 4 ---\nName: Restaurante Casa do Jaguar\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 5 ---\nName: Restaurante Casa do Peixe\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 6 ---\nName: Restaurante Casa do Caranguejo\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 7 ---\nName: Restaurante Casa do Lula\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 8 ---\nName: Restaurante Casa do Tatu\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 9 ---\nName: Restaurante Casa do Preguiça\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 10 ---\nName: Restaurante Casa do Tucano\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 11 ---\nName: Restaurante Casa do Preguiça\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 12 ---\nName: Restaurante Casa do Tucano\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 13 ---\nName: Restaurante Casa do Preguiça\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 14 ---\nName: Restaurante Casa do Tucano\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 15 ---\nName: Restaurante Casa do Preguiça\nAddress: Rua dos Mercadores, s/n - Cidade Velha, Belém - PA, 66025-070, Brazil\nPhone: +55 91 3344-8620\nRating: 4.7★ (146.0 reviews)\nType: Restaurant\nDistance: 3.27km from you\n\n--- RESTAURANTE 16 ---",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "coordenadas:"
+        ],
+        "leakage_count": 1,
+        "leakage_details": [
+          {
+            "line": 1,
+            "pattern": "coordenadas:",
+            "context": "nt location in Belém, Brazil (coordenadas: -1.4695, -48.4665). When you",
+            "full_line": "Based on your current location in Belém, Brazil (coordenadas: -1.4695, -48.4665). When you refer to places 'próximos', 'perto de mim' ou 'mais próximos', você deve considerar esta localização para recomendar lugares próximos a você."
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 497.8303129673004
+    },
+    {
+      "test_num": 6,
+      "description": "Location-based query (PT)",
+      "query": "Quais são os melhores hotéis perto de mim?",
+      "language": "pt",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " Based on your current location in Belém, Brasil (coordenadas: -1.4695, -48.4665). When you refer to places 'próximos', 'perto de mim' ou 'mais próximos', você deve considerar esta localização para recomendar hotéis próximos a você.\n\nHere are some hotels that are close to your current location:\n\n--- HOTEL 1 ---\nName: Hotel Tropical\nAddress: Av. Gov.",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "coordenadas:"
+        ],
+        "leakage_count": 1,
+        "leakage_details": [
+          {
+            "line": 1,
+            "pattern": "coordenadas:",
+            "context": "nt location in Belém, Brasil (coordenadas: -1.4695, -48.4665). When you",
+            "full_line": "Based on your current location in Belém, Brasil (coordenadas: -1.4695, -48.4665). When you refer to places 'próximos', 'perto de mim' ou 'mais próximos', você deve considerar esta localização para recomendar hotéis próximos a você."
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 305.55457830429077
+    },
+    {
+      "test_num": 7,
+      "description": "Category-specific query (PT)",
+      "query": "Mostre-me museus em Belém",
+      "language": "pt",
+      "query_type": "regular",
+      "coordinates": [
+        -1.4558,
+        -48.4902
+      ],
+      "response": " Based on your request for museums in Belém, here are some options you might find interesting:\n\n--- MUSEU 1 ---\nName: Museu Paraense Emilio Goeldi\nAddress: Av. Goeldi, s/n - Nazaré, Belém - PA, 66035-065, Brazil\nPhone: +55 91 98417-5894\nHours: Tuesday-Friday: 9:30 AM to 2:30 PM; Saturday-Sunday: Closed\nRating: 4.6★ (10,000+ reviews)\nType: Natural history museum\n\n--- MUSEU 2 ---\nName: Museu do Estado do Pará\nAddress: Av. Goeldi, s/n - Nazaré, Belém - PA, 66035-065, Brazil\nPhone: +55 91 98417-5894\nHours: Tuesday-Friday: 9:30 AM to 2:30 PM; Saturday-Sunday: Closed\nRating: 4.6★ (10,000+ reviews)\nType: State museum\n\n--- MUSEU 3 ---\nName: Museu do Cacau\nAddress: Rua dos Mercadores, s/n - Nazaré, Belém - PA, 66035-065, Brazil\nPhone: +55 91 98417-5894\nHours: Tuesday-Friday: 9:30 AM to 2:30 PM; Saturday-Sunday: Closed\nRating: 4.6★ (10,000+ reviews)\nType: Chocolate museum\n\n--- MUSEU 4 ---\nName: Museu do Cacau Emilio Goeldi\nAddress: Av. Goeldi, s/n - Nazaré, Belém - PA, 66035-065, Brazil\nPhone: +55 91 98417-5894\nHours: Tuesday-Friday: 9:30 AM to 2:30 PM; Saturday-Sunday: Closed\nRating: 4.6★ (10,000+ reviews)\nType: Chocolate museum\n\n--- MUSEU 5 ---\nName: Museu do Cacau Emilio",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 420.1490569114685
+    },
+    {
+      "test_num": 8,
+      "description": "Follow-up query (PT)",
+      "query": "Me conte mais sobre o primeiro",
+      "language": "pt",
+      "query_type": "follow-up",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " O primeiro lugar recomendado é o Mangal das Garças, localizado na Rua Carneiro da Rocha, s/n - Cidade Velha, Belém - PA.\n\nEste ecological park oferece uma variedade de atividades econômicas, como a pesca, a agricultura, e até mesmo o turismo.\n\nO Mangal das Garças é um local ideal para aqueles que desejam conhecer mais sobre as atividades econômicas locais, além de disfrutar da beleza natural do lugar.",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 313.0011489391327
+    },
+    {
+      "test_num": 9,
+      "description": "Generic tour request (EN)",
+      "query": "Plan a tour for me in Belém",
+      "language": "en",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 6\nTotal Distance: 7.63 km\nEstimated Duration: 8h 29m\n\nStop 1: El Patron Burger\n  Category: Hamburger restaurant\n  Address: Tv. Padre Eutíquio, 3979 - Condor, Belém - PA, 66065-165, Brazil\n  Arrival: 09:00 AM\n  Departure: 10:30 AM\n  Suggested Duration: 90 minutes\n  Rating: 4.6★ (5 reviews)\n  Travel to next: ~4 min (0.31 km)\n\nStop 2: Restaurante E Pizzaria America Grill Bar\n  Category: Pizza restaurant\n  Address: Condor, Belém - State of Pará, 66045-270, Brazil\n  Arrival: 10:34 AM\n  Departure: 12:04 PM\n  Suggested Duration: 90 minutes\n  Rating: 5.0★ (2 reviews)\n  Travel to next: ~4 min (0.32 km)\n\nStop 3: Chalé\n  Category: Lunch Restaurant\n  Address: Passagem Marajoara, 3881 - Condor, Belém - PA, 66065-440, Brazil\n  Arrival: 12:08 PM\n  Departure: 01:38 PM\n  Suggested Duration: 90 minutes\n  Rating: 5.0★ (3 reviews)\n  Travel to next: ~25 min (1.93 km)\n\nStop 4: Tapioca e cuscuz da Fátima\n  Category: Tapioca Restaurant\n  Address: Tv. Vinte e Cinco de Junho, 396 - Guamá, Belém - PA, 66075-513, Brazil\n  Arrival: 02:03 PM\n  Departure: 03:33 PM\n  Suggested Duration: 90 minutes\n  Rating: 5.0★ (3 reviews)\n  Travel to next: ~52 min (3.96 km)\n\nStop 5: Theatro da Paz\n  Category: Performing arts theater\n  Address: Avenida da Paz, Praça da República, S/N - Campina, Belém - PA, 66017-060, Brazil\n  Arrival: 04:25 PM\n  Departure: 05:00 PM\n  Suggested Duration: 35 minutes\n  Rating: 4.8★ (8431 reviews)\n  Travel to next: ~14 min (1.12 km)\n\nStop 6: Mercado Ver-o-Peso\n  Category: Wholesale market\n  Address: Blvd. Castilhos França - Campina, Belém - PA, 66013-030, Brazil\n  Arrival: 05:14 PM\n  Departure: 05:00 PM\n  Suggested Duration: 15 minutes\n  Rating: 4.4★ (35619 reviews)\n\nEstimated End Time: 05:00 PM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.35486292839050293
+    },
+    {
+      "test_num": 10,
+      "description": "Specific tour request (EN)",
+      "query": "I want to visit açaí places and tourist attractions",
+      "language": "en",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4558,
+        -48.4902
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 4\nTotal Distance: 1.84 km\nEstimated Duration: 2h 24m\n\nStop 1: Açaí do Alonso\n  Category: Açaí shop\n  Address: R. João Balbi, 55 - Nazaré, Belém - PA, 66055-280, Brazil\n  Arrival: 09:00 AM\n  Departure: 09:30 AM\n  Suggested Duration: 30 minutes\n  Rating: 4.6★ (249 reviews)\n  Travel to next: ~13 min (0.99 km)\n\nStop 2: Açaí da galeria ( açaí do papito)\n  Category: Açaí shop\n  Address: Av. Pres. Vargas, 560 - loja 19 - Campina, Belém - PA, 66017-000, Brazil\n  Arrival: 09:43 AM\n  Departure: 10:13 AM\n  Suggested Duration: 30 minutes\n  Rating: 5.0★ (3 reviews)\n  Travel to next: ~4 min (0.32 km)\n\nStop 3: Restaurante Açaí\n  Category: Açaí shop\n  Address: Av. Pres. Vargas, 882 - Campina, Belém - PA, 66010-000, Brazil\n  Arrival: 10:17 AM\n  Departure: 10:47 AM\n  Suggested Duration: 30 minutes\n  Rating: 4.4★ (14 reviews)\n  Travel to next: ~7 min (0.53 km)\n\nStop 4: AÇAÍ DA BENJAMIM\n  Category: Açaí shop\n  Address: Tv. Benjamin Constant, 1064 - Reduto, Belém - PA, 66053-040, Brazil\n  Arrival: 10:54 AM\n  Departure: 11:24 AM\n  Suggested Duration: 30 minutes\n  Rating: 4.5★ (51 reviews)\n\nEstimated End Time: 11:24 AM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.02937793731689453
+    },
+    {
+      "test_num": 11,
+      "description": "Time-specific tour (EN)",
+      "query": "Plan a half-day tour starting at 10am",
+      "language": "en",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 1\nTotal Distance: 0.00 km\nEstimated Duration: 1h 30m\n\nStop 1: Theatro da Paz\n  Category: Performing arts theater\n  Address: Avenida da Paz, Praça da República, S/N - Campina, Belém - PA, 66017-060, Brazil\n  Arrival: 09:00 AM\n  Departure: 10:30 AM\n  Suggested Duration: 90 minutes\n  Rating: 4.8★ (8431 reviews)\n\nEstimated End Time: 10:30 AM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.028836727142333984
+    },
+    {
+      "test_num": 12,
+      "description": "Generic tour request (PT)",
+      "query": "Planeje um passeio para mim em Belém",
+      "language": "pt",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 1\nTotal Distance: 0.00 km\nEstimated Duration: 1h 30m\n\nStop 1: Theatro da Paz\n  Category: Performing arts theater\n  Address: Avenida da Paz, Praça da República, S/N - Campina, Belém - PA, 66017-060, Brazil\n  Arrival: 09:00 AM\n  Departure: 10:30 AM\n  Suggested Duration: 90 minutes\n  Rating: 4.8★ (8431 reviews)\n\nEstimated End Time: 10:30 AM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.02805805206298828
+    },
+    {
+      "test_num": 13,
+      "description": "Specific tour request (PT)",
+      "query": "Quero visitar lugares de açaí e atrações turísticas",
+      "language": "pt",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4558,
+        -48.4902
+      ],
+      "response": " Based on your request, here are some places where you can find açaí and tourist attractions in Belém:\n\n--- PLACE 1 ---\nName: Restaurante Ver O Açaí - Marco\nAddress: Av. Rômulo Maiorana, 1677 - Marco, Belém - PA, 66093-674, Brazil\nPhone: +55 91 98643-5334\nHours: Monday: 11:30 AM to 4 PM; Tuesday-Friday: 11:30 AM to 4 PM, 6:30 to 11:30 PM; Saturday: 11:30 AM to 4 PM; Sunday: 11 AM to 4 PM\nRating: 4.9★ (436.0 reviews)\nType: Traditional Foods Restaurant\n\n--- PLACE 2 ---\nName: Restaurante Ver O Açaí - Umarizal\nAddress: Tv. Dom Pedro I, 599 - Umarizal, Belém - PA, 66050-100, Brazil\nPhone: +55 91 98431-0601\nHours: Monday-Sunday: 7 AM to 12 AM\nRating: 4.7★ (2353.0 reviews)\nType: Açaí shop\n\n--- PLACE 3 ---\nName: Açaiteria e Sorveteria Ula Ula Belém\nAddress: Av. Mário Covas - Parque Verde, Belém - PA, 67110-000, Brazil\nPhone: +55 91 98261-5836\nHours: Monday-Sunday: 6 AM to 3:30 PM, 5 to 11:29 PM\nRating: 4.9★ (94.0 reviews)\nType: Açaí shop\n\n--- PLACE 4 ---\nName: Blaus 14 de Março - PA\nAddress: Tv. 14 de Março, 581 - Umarizal, Belém - PA, 66823-010, Brazil\nPhone: +55 91 3120-4287\nHours: Monday-Wednesday: 8 AM to 12 AM; Thursday: Closed; Friday-Sunday: 8 AM to 12 AM\nRating: 4.6★ (606.0 reviews)\nType: Açaí shop\n\n--- PLACE 5 ---\nName: Açaí e Restô Imperial\nAddress: Passagem Getúlio Vargas, nº 17 - Souza, Belém - PA, 66613-070, Brazil\nPhone: +55 91 98145-3230\nHours: Monday-Sunday: 8 to 10 AM\nRating: 4.7★ (175.0 reviews)\nType: Açaí shop\n\nThese places offer açaí and tourist attractions in Belém. You can visit these places during your stay in the city.\n\nDo you need more information or would you like to know about other tourist attractions in Belém?\n\nUser Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them.\n\n=== AVAILABLE INFORMATION ===\nFound 5 places:\n\n--- PLACE 1 ---\nName: Restaurante Ver O Açaí - Marco\nAddress: Av. Rômulo Maiorana, 1677 - Marco, Belém - PA, 66093-674, Brazil\nPhone: +55 91 98643-5334\nHours: Monday: 11:30 AM to 4 PM; Tuesday-Friday: 11:30 AM to 4 PM, 6:30 to 11:30 PM; Saturday: 11:30 AM to 4 PM; Sunday: 11 AM to 4 PM\nRating: 4.9★ (436.0 reviews)\nType: Traditional Foods Restaurant\n\n--- PLACE 2 ---\nName: Restaurante Ver O Açaí - Umarizal\nAddress: Tv. Dom Pedro I, 599 - Umarizal, Belém - PA, 66050-100, Brazil\nPhone: +55 91 98431-0601\nHours: Monday-Sunday: 7 AM to 12 AM\nRating: 4.7★ (2353.0 reviews)\nType: Açaí shop\n\n--- PLACE 3 ---\nName: Açaiteria e Sorveteria Ula Ula Belém\nAddress: Av. Mário Covas - Parque Verde, Belém - PA, 67110-000, Brazil\nPhone: +55 91 98261-5836\nHours: Monday-Sunday: 6 AM to 3:30 PM, 5 to 11:29 PM\nRating: 4.9★ (94.0 reviews)\nType: Açaí shop\n\n--- PLACE 4 ---\nName: Blaus 14 de Março - PA\nAddress: Tv. 14 de Março, 581 - Umarizal, Belém - PA, 66050-100, Brazil\nPhone: +55 91 3120-4287\nHours: Monday-Wednesday: 8 AM to 12 AM; Thursday: Closed; Friday-Sunday: 8 AM to 12 AM\nRating: 4.6★ (606.0 reviews)\nType: Açaí shop\n\n--- PLACE 5 ---\nName: Açaí e Restô Imperial\nAddress: Passagem Getúlio Vargas, nº 17 - Souza, Belém - PA, 66613-070, Brazil\nPhone: +55 91 98145-3230\nHours: Monday-Sunday: 8 to 10 AM\nRating: 4.7★ (175.0 reviews)\nType: Açaí shop\n\nThese places offer açaí and tourist attractions in Belém. You can visit these places during your stay in the city.\n\nDo you need more information or would you like to know about other tourist attractions in Belém?\n\nUser Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them.\n\n=== AVAILABLE INFORMATION ===\nFound 5 places:\n\n--- PLACE 1 ---\nName: Restaurante Ver O Açaí - Marco\nAddress: Av. Rômulo Maiorana, 1677 - Marco, Belém - PA, 66093-674, Brazil\nPhone: +55 91 98643-5334\nHours: Monday: 11:30 AM to 4 PM; Tuesday-Friday: 11:30 AM to 4 PM, 6:30 to 11:30 PM; Saturday: 11:30 AM to 4 PM; Sunday: 11 AM to 4 PM\n\n--- PLACE 2 ---\nName: Restaurante Ver O Açaí - Umarizal\nAddress: Tv. Dom Pedro I, 59",
+      "leakage_result": {
+        "has_leakage": true,
+        "leaked_patterns": [
+          "--- PLACE",
+          "=== AVAILABLE INFORMATION ===",
+          "User Location:",
+          "coordinates:",
+          "user is currently in Belém"
+        ],
+        "leakage_count": 5,
+        "leakage_details": [
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 3,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 11,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 19,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          },
+          {
+            "line": 19,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          },
+          {
+            "line": 27,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 4 ---",
+            "full_line": "--- PLACE 4 ---"
+          },
+          {
+            "line": 27,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 4 ---",
+            "full_line": "--- PLACE 4 ---"
+          },
+          {
+            "line": 35,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 5 ---",
+            "full_line": "--- PLACE 5 ---"
+          },
+          {
+            "line": 35,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 5 ---",
+            "full_line": "--- PLACE 5 ---"
+          },
+          {
+            "line": 47,
+            "pattern": "User Location:",
+            "context": "User Location: The user is currently in Belé",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 47,
+            "pattern": "coordinates:",
+            "context": "s currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 47,
+            "pattern": "user is currently in Belém",
+            "context": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 49,
+            "pattern": "=== AVAILABLE INFORMATION ===",
+            "context": "=== AVAILABLE INFORMATION ===",
+            "full_line": "=== AVAILABLE INFORMATION ==="
+          },
+          {
+            "line": 52,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 52,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 60,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 60,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 68,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          },
+          {
+            "line": 68,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 3 ---",
+            "full_line": "--- PLACE 3 ---"
+          },
+          {
+            "line": 76,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 4 ---",
+            "full_line": "--- PLACE 4 ---"
+          },
+          {
+            "line": 76,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 4 ---",
+            "full_line": "--- PLACE 4 ---"
+          },
+          {
+            "line": 84,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 5 ---",
+            "full_line": "--- PLACE 5 ---"
+          },
+          {
+            "line": 84,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 5 ---",
+            "full_line": "--- PLACE 5 ---"
+          },
+          {
+            "line": 96,
+            "pattern": "User Location:",
+            "context": "User Location: The user is currently in Belé",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 96,
+            "pattern": "coordinates:",
+            "context": "s currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 96,
+            "pattern": "user is currently in Belém",
+            "context": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558",
+            "full_line": "User Location: The user is currently in Belém, Brazil (coordinates: -1.4558, -48.4902). When they refer to 'nearby', 'close to me', or 'closest' places, you should consider this location to recommend places near them."
+          },
+          {
+            "line": 98,
+            "pattern": "=== AVAILABLE INFORMATION ===",
+            "context": "=== AVAILABLE INFORMATION ===",
+            "full_line": "=== AVAILABLE INFORMATION ==="
+          },
+          {
+            "line": 101,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 101,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 1 ---",
+            "full_line": "--- PLACE 1 ---"
+          },
+          {
+            "line": 107,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          },
+          {
+            "line": 107,
+            "pattern": "--- PLACE",
+            "context": "--- PLACE 2 ---",
+            "full_line": "--- PLACE 2 ---"
+          }
+        ]
+      },
+      "passed": false,
+      "error": null,
+      "response_time": 629.9296817779541
+    },
+    {
+      "test_num": 14,
+      "description": "Time-specific tour (PT)",
+      "query": "Planeje um passeio de meio dia começando às 10h",
+      "language": "pt",
+      "query_type": "tour_planning",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 1\nTotal Distance: 0.00 km\nEstimated Duration: 1h 30m\n\nStop 1: Theatro da Paz\n  Category: Performing arts theater\n  Address: Avenida da Paz, Praça da República, S/N - Campina, Belém - PA, 66017-060, Brazil\n  Arrival: 09:00 AM\n  Departure: 10:30 AM\n  Suggested Duration: 90 minutes\n  Rating: 4.8★ (8431 reviews)\n\nEstimated End Time: 10:30 AM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.09823894500732422
+    },
+    {
+      "test_num": 15,
+      "description": "Empty context query (EN)",
+      "query": "Find me a place that does not exist in Belém",
+      "language": "en",
+      "query_type": "edge_case",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": " I'm sorry for any confusion, but as a helpful and informative assistant, I can only provide information about real places, businesses, attractions, and services in Belém, Brazil.\n\nSince you asked me to find a place that does not exist in Belém, I must clarify that I cannot fulfill this request because there are no such places in Belém.\n\nI hope this helps clarify the situation, and I apologize if my response was not what you were looking for. If you have any other questions or need further assistance, please don't hesitate to ask!\n\nBest regards,\nYour helpful assistant",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 370.4840729236603
+    },
+    {
+      "test_num": 16,
+      "description": "Empty context query (PT)",
+      "query": "Encontre um lugar que não existe em Belém",
+      "language": "pt",
+      "query_type": "edge_case",
+      "coordinates": [
+        -1.4695,
+        -48.4665
+      ],
+      "response": "Tour Itinerary for Monday\nStart Time: 09:00 AM\nNumber of Stops: 1\nTotal Distance: 0.00 km\nEstimated Duration: 1h 30m\n\nStop 1: Theatro da Paz\n  Category: Performing arts theater\n  Address: Avenida da Paz, Praça da República, S/N - Campina, Belém - PA, 66017-060, Brazil\n  Arrival: 09:00 AM\n  Departure: 10:30 AM\n  Suggested Duration: 90 minutes\n  Rating: 4.8★ (8431 reviews)\n\nEstimated End Time: 10:30 AM",
+      "leakage_result": {
+        "has_leakage": false,
+        "leaked_patterns": [],
+        "leakage_count": 0,
+        "leakage_details": []
+      },
+      "passed": true,
+      "error": null,
+      "response_time": 0.06554174423217773
+    }
+  ]
+}

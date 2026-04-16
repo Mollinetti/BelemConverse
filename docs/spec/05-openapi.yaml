@@ -1,0 +1,203 @@
+openapi: 3.0.3
+info:
+  title: Places PoC API
+  version: "0.1.0"
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+
+  /ingest/csv:
+    post:
+      summary: Ingest Places from CSV and build index
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Ingestion complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ingestedCount:
+                    type: integer
+                  skippedCount:
+                    type: integer
+                  outputFiles:
+                    type: array
+                    items:
+                      type: string
+
+  /places/{placeId}:
+    get:
+      summary: Get place by placeId
+      parameters:
+        - in: path
+          name: placeId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Place
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+        "404":
+          description: Not found
+
+  /chat:
+    post:
+      summary: Chat query -> plan -> retrieve -> LLM summarize
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                language:
+                  type: string
+                  enum: [en, pt-BR]
+                  nullable: true
+                userLocation:
+                  $ref: "#/components/schemas/LatLng"
+                nowIso:
+                  type: string
+                  description: Client current time in ISO-8601 (optional but recommended for openNow)
+                  nullable: true
+                filters:
+                  type: object
+                  nullable: true
+                  properties:
+                    placeType:
+                      type: array
+                      items:
+                        type: string
+                    city:
+                      type: string
+                      nullable: true
+                    neighborhood:
+                      type: string
+                      nullable: true
+                    openNow:
+                      type: boolean
+                      nullable: true
+                    priceMax:
+                      type: number
+                      nullable: true
+                    minRating:
+                      type: number
+                      nullable: true
+                    minReviews:
+                      type: number
+                      nullable: true
+      responses:
+        "200":
+          description: Chat response (text + 5 structured results)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  language:
+                    type: string
+                    enum: [en, pt-BR]
+                  answer:
+                    type: string
+                  results:
+                    type: array
+                    maxItems: 5
+                    items:
+                      $ref: "#/components/schemas/PlaceResult"
+                  debug:
+                    type: object
+                    nullable: true
+        "400":
+          description: Bad request
+
+components:
+  schemas:
+    LatLng:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+      required: [lat, lng]
+
+    Place:
+      type: object
+      properties:
+        placeId: { type: string }
+        title: { type: string, nullable: true }
+        titleFormatted: { type: string, nullable: true }
+        subTitle: { type: string, nullable: true }
+        categoryName: { type: string, nullable: true }
+        categories:
+          type: array
+          items: { type: string }
+        address: { type: string, nullable: true }
+        addressFormatted: { type: string, nullable: true }
+        street: { type: string, nullable: true }
+        streetFormatted: { type: string, nullable: true }
+        neighborhood: { type: string, nullable: true }
+        locatedIn: { type: string, nullable: true }
+        city: { type: string, nullable: true }
+        state: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        countryCode: { type: string, nullable: true }
+        location:
+          $ref: "#/components/schemas/LatLng"
+        phone: { type: string, nullable: true }
+        phoneUnformatted: { type: string, nullable: true }
+        url: { type: string, nullable: true }
+        website: { type: string, nullable: true }
+        googleFoodUrl: { type: string, nullable: true }
+        menu: { type: string, nullable: true }
+        reserveTableUrl: { type: string, nullable: true }
+        price: { type: number, nullable: true }
+        rank: { type: number, nullable: true }
+        totalScore: { type: number, nullable: true }
+        reviewsCount: { type: integer, nullable: true }
+        reviewsDistribution:
+          type: object
+          properties:
+            oneStar: { type: integer }
+            twoStar: { type: integer }
+            threeStar: { type: integer }
+            fourStar: { type: integer }
+            fiveStar: { type: integer }
+        isSponsored: { type: boolean }
+        businessTime: { type: string, nullable: true }
+        place_type:
+          type: string
+          enum: [restaurant, bar, park, other]
+
+    PlaceResult:
+      allOf:
+        - $ref: "#/components/schemas/Place"
+        - type: object
+          properties:
+            distanceKm: { type: number, nullable: true }
+            openNowStatus:
+              type: string
+              enum: [open, closed, unknown]
+              nullable: true
