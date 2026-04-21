@@ -50,3 +50,6 @@ models/embedding/
 
 # OS
 Thumbs.db
+
+# Local tooling output
+graphify-out/
