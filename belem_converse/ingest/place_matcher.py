@@ -375,22 +375,4 @@ class PlaceMatcher:
         }
 
 
-if __name__ == "__main__":
-    # Quick test
-    logging.basicConfig(level=logging.INFO)
-    
-    # Test Haversine distance
-    dist = PlaceMatcher.haversine_distance(
-        -1.4558, -48.4902,  # Ver-o-Peso
-        -1.4520, -48.5000   # Nearby point
-    )
-    print(f"Test distance: {dist:.1f}m")
-    
-    # Test name similarity
-    matcher = PlaceMatcher()
-    sim = matcher.calculate_name_similarity(
-        "Restaurante Açaí do Pará",
-        "Açaí do Para Restaurante"
-    )
-    print(f"Test similarity: {sim:.2f}")
 
