@@ -1,0 +1,34 @@
+.git
+.github
+.venv
+.vscode
+.cursor
+.cursorrules
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+.DS_Store
+
+# Heavy assets - mount at runtime instead.
+models/llm/*.gguf
+models/embedding/
+data/chroma_db/
+
+# Frontend (separate Dockerfile / build step).
+frontend/build/
+frontend/.dart_tool/
+
+# Repo-only artifacts.
+graphify-out/
+.kiro/
+.rebuild_imports.py
+.strip_syspath.py
+docs/
+tests/

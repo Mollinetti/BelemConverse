@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "belem-converse"
+version = "1.0.0"
+description = "Deterministic chat-based place discovery for Belem do Para (FastAPI + GGUF LLM summarizer)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "BelemConverse contributors" }]
+keywords = ["rag", "chatbot", "tourism", "belem", "fastapi", "llama"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Framework :: FastAPI",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Runtime dependencies actually exercised by the package + API.
+dependencies = [
+    # API
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.9",
+    "python-dotenv>=1.0.0",
+
+    # Data + retrieval
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.3",
+    "rapidfuzz>=3.0",
+    "h3>=3.7",
+    "requests>=2.31",
+    "tqdm>=4.66",
+
+    # LLM stack (GGUF summarizer + embeddings + vector store)
+    "llama-cpp-python>=0.2.52",
+    "sentence-transformers>=2.2.2",
+    "chromadb>=0.4.22",
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.0",
+    "langchain-community>=0.0.25",
+    "langchain-huggingface>=0.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",   # FastAPI TestClient
+    "ruff>=0.4",
+    "black>=24.0",
+    "mypy>=1.8",
+]
+gpu = [
+    "torch>=2.2",   # only needed if you want auto MPS/CUDA detection in EMBEDDING_CONFIG
+]
+
+[project.urls]
+Repository = "https://github.com/your-org/BelemConverse"
+Documentation = "https://github.com/your-org/BelemConverse/tree/main/docs"
+
+[tool.setuptools.packages.find]
+include = ["belem_converse*", "api*"]
+exclude = ["tests*", "data*", "models*", "frontend*", "docker*", "graphify-out*"]
+
+[tool.setuptools.package-data]
+"belem_converse.classifiers" = ["models/*.pkl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra -q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["graphify-out", "data", "models", "frontend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
