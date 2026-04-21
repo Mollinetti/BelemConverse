@@ -1,7 +1,19 @@
-# Environment and secrets
+# --- Secrets and env files (never commit real values) ---
+# specs/ is intentionally NOT listed here — markdown under specs/ belongs in git.
 .env
 .env.*
 !.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+secrets/
+
+# Docker local overrides (machine-specific env / paths)
+docker-compose.override.yml
+
+# Runtime datasets and generated artefacts (keep only on disk locally)
+/data/
 
 # Python
 __pycache__/
@@ -30,6 +42,11 @@ htmlcov/
 *.log
 debug.log
 
+# Test result artefacts auto-created at pytest import time
+tests/*_test_results.txt
+tests/*_test_results.json
+tests/diagnostics/reports/
+
 # Flutter / Dart
 frontend/.dart_tool/
 frontend/build/
@@ -37,13 +54,13 @@ frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
 frontend/.packages
 
-# ML / vector / cache (large)
-LLM/.cache/
-models/llm/.cache/
-models/llm/*.gguf
-models/embedding/
+# ML / vector / cache (large): repo-root weights only — does not match frontend/lib/models/
+/models/
+
+# Chroma / embedding stores (regenerated locally)
 **/chroma*/
 **/.chroma/
+LLM/.cache/
 
 # Jupyter
 .ipynb_checkpoints/
