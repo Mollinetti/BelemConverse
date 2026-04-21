@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""
-Data Refresh CLI Tool
+"""Data Refresh CLI Tool.
 
-Command-line interface for refreshing the places database using OpenStreetMap data.
+Command-line interface for refreshing the places database using OpenStreetMap.
 
 Usage:
-    python -m tools.refresh_data --dry-run    # Preview changes without saving
-    python -m tools.refresh_data --execute    # Apply changes and rebuild vector store
-    python -m tools.refresh_data --report     # Generate comparison report only
-    
+    python -m belem_converse.tools.refresh_data --dry-run   # preview only
+    python -m belem_converse.tools.refresh_data --execute   # apply + rebuild
+    python -m belem_converse.tools.refresh_data --report    # comparison only
+
 Options:
-    --categories    Comma-separated list of categories to fetch (default: all)
+    --categories    Comma-separated category list (default: all)
     --no-backup     Skip creating a backup before merge
     --update-coords Update coordinates from OSM for matched places
     --verbose       Enable verbose logging
@@ -21,11 +20,6 @@ import logging
 import sys
 from pathlib import Path
 from typing import Optional, List
-
-# Add src to path for imports
-src_path = Path(__file__).parent.parent
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
 
 from belem_converse.ingest.osm_fetcher import OSMFetcher, get_all_categories
 from belem_converse.ingest.place_matcher import PlaceMatcher

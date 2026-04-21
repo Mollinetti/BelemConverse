@@ -409,12 +409,4 @@ def get_all_categories() -> List[str]:
     return list(set(OSMFetcher.CATEGORY_MAPPINGS.values()))
 
 
-if __name__ == "__main__":
-    # Quick test
-    logging.basicConfig(level=logging.INFO)
-    fetcher = OSMFetcher()
-    places = fetcher.fetch(categories=['restaurant', 'cafe'])
-    print(f"Found {len(places)} places")
-    for place in places[:5]:
-        print(f"  - {place.name} ({place.category}) at {place.latitude}, {place.longitude}")
 
