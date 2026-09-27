@@ -380,3 +380,18 @@ footer.site nav { display: flex; flex-wrap: wrap; gap: .4rem 1.35rem; }
 @media (max-width: 58rem) {
   .person { grid-template-columns: 1fr; gap: 1rem; }
 }
+
+/* ---------- author portraits ---------- */
+
+.portrait {
+  display: block;
+  width: 100%;
+  max-width: 13rem;
+  height: auto;   /* beats the height attribute's presentational hint */
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--edge);
+  margin-bottom: 1.1rem;
+  background: var(--raise);
+}
