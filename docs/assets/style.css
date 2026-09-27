@@ -394,4 +394,5 @@ footer.site nav { display: flex; flex-wrap: wrap; gap: .4rem 1.35rem; }
   border: 1px solid var(--edge);
   margin-bottom: 1.1rem;
   background: var(--raise);
+  filter: grayscale(1);
 }
