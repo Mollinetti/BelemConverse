@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BelemConverse — grounded place discovery for Belém do Pará</title>
+<meta name="description" content="A bilingual chat agent that answers where-to-go questions about Belém do Pará from a curated place index. Deterministic retrieval; the model only summarises what it is given.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..700;1,8..60,200..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="shell">
+  <header class="masthead">
+    <a class="wordmark" href="index.html">BelemConverse</a>
+    <nav>
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="authors.html">About the authors</a>
+      <a href="history.html">Project history</a>
+      <a href="https://github.com/Mollinetti/BelemConverse">Repository</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <p class="asked">&ldquo;tem um boteco massa por aqui pra tomar uma gelada?&rdquo;</p>
+    <p class="gloss">Any decent bar around here for a cold one?</p>
+
+    <div class="plan">
+      <span class="plan-label">Query plan</span>
+      <span class="chip">intent: location</span>
+      <span class="chip">category: bar</span>
+      <span class="chip">open now</span>
+      <span class="chip">sort by distance</span>
+      <span class="chip">radius 500 m</span>
+      <span class="chip">pt-BR</span>
+    </div>
+
+    <div class="answer">
+      <p>Três botecos abertos agora num raio de 500 m. O Bar do Parque é o mais perto, a 180 m, na Praça da República, e fica aberto até 1h. O Boteco Ateliê está a 340 m e tem a melhor avaliação dos três. O Bar do Gilson é o mais longe dos três, mas fecha só às 2h se você for sair mais tarde.</p>
+    </div>
+
+    <div class="results">
+      <article class="result">
+        <h4>Bar do Parque</h4>
+        <p class="kind">Bar &middot; Campina</p>
+        <dl>
+          <dt>Distance</dt><dd>180 m</dd>
+          <dt>Now</dt><dd class="open">Open until 01:00</dd>
+          <dt>Rating</dt><dd>4.3 &nbsp;(1,284 reviews)</dd>
+        </dl>
+      </article>
+      <article class="result">
+        <h4>Boteco Ateliê</h4>
+        <p class="kind">Bar &middot; Cidade Velha</p>
+        <dl>
+          <dt>Distance</dt><dd>340 m</dd>
+          <dt>Now</dt><dd class="open">Open until 00:00</dd>
+          <dt>Rating</dt><dd>4.6 &nbsp;(612 reviews)</dd>
+        </dl>
+      </article>
+      <article class="result">
+        <h4>Bar do Gilson</h4>
+        <p class="kind">Bar &middot; Umarizal</p>
+        <dl>
+          <dt>Distance</dt><dd>470 m</dd>
+          <dt>Now</dt><dd class="open">Open until 02:00</dd>
+          <dt>Rating</dt><dd>4.4 &nbsp;(2,031 reviews)</dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>A city about to receive the world</h2>
+    </div>
+    <div class="measure">
+      <p class="lede">BelemConverse answers questions about where to go in Belém do Pará — in Portuguese or English, the way people actually ask them.</p>
+      <p>In November 2025 Belém hosted <a href="https://cop30.br/pt-br">COP30</a>, the United Nations climate conference, and tens of thousands of delegates, journalists and visitors arrived in a city most of them had never seen. They needed the same things everyone needs: somewhere open at this hour, somewhere close by, somewhere good. Search engines answer that question for São Paulo and Rio far better than they answer it for Belém.</p>
+      <p>That gap is what this project is about. BelemConverse reads a curated index of local places — the markets, the botecos, the açaí stands, the parks, the hotels — and answers in whichever language you asked. A visitor typing English gets English. A resident typing <em>&ldquo;cadê uma barbearia bacana aqui pertinho?&rdquo;</em> gets Portuguese, and gets understood.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Ask it something</h2>
+      <p class="note">These are real queries from the project&rsquo;s test suite and evaluation set. The answers and figures shown are representative of live output, written for this page rather than captured from a running instance.</p>
+    </div>
+
+    <div class="picker">
+      <div class="picker-list" role="tablist" aria-label="Example queries">
+        <button role="tab" id="t1" aria-controls="p1" aria-selected="true"><span class="lang">English</span>Closest restaurants open now</button>
+        <button role="tab" id="t2" aria-controls="p2" aria-selected="false"><span class="lang">English</span>Best rated sushi near me open now</button>
+        <button role="tab" id="t3" aria-controls="p3" aria-selected="false"><span class="lang">English</span>Is Mercado Ver-o-Peso still open?</button>
+        <button role="tab" id="t4" aria-controls="p4" aria-selected="false"><span class="lang">Portuguese</span>Onde posso encontrar açaí por aqui?</button>
+        <button role="tab" id="t5" aria-controls="p5" aria-selected="false"><span class="lang">Portuguese</span>Planeje um passeio para mim em Belém. O que devo visitar?</button>
+        <button role="tab" id="t6" aria-controls="p6" aria-selected="false"><span class="lang">English</span>Any vegan sushi open at 3am?</button>
+      </div>
+
+      <div>
+        <div class="panel" role="tabpanel" id="p1" aria-labelledby="t1">
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: location</span>
+            <span class="chip">category: restaurant</span>
+            <span class="chip">open now</span>
+            <span class="chip">sort by distance</span>
+            <span class="chip">radius 500 m</span>
+          </div>
+          <div class="answer">
+            <p>Five restaurants are open right now within 500 metres of you. Lá em Casa is the closest at 210 metres and serves until 23:00. Point do Açaí is a little further but the highest rated of the five. Casa do Saulo is the only one of them with a river view, at 480 metres.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Lá em Casa</h4>
+              <p class="kind">Restaurant &middot; Nazaré</p>
+              <dl><dt>Distance</dt><dd>210 m</dd><dt>Now</dt><dd class="open">Open until 23:00</dd><dt>Rating</dt><dd>4.5 &nbsp;(3,812 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Point do Açaí</h4>
+              <p class="kind">Restaurant &middot; Umarizal</p>
+              <dl><dt>Distance</dt><dd>390 m</dd><dt>Now</dt><dd class="open">Open until 22:00</dd><dt>Rating</dt><dd>4.7 &nbsp;(1,559 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa do Saulo</h4>
+              <p class="kind">Restaurant &middot; Cidade Velha</p>
+              <dl><dt>Distance</dt><dd>480 m</dd><dt>Now</dt><dd class="open">Open until 00:00</dd><dt>Rating</dt><dd>4.6 &nbsp;(2,244 reviews)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p2" aria-labelledby="t2" hidden>
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: popularity</span>
+            <span class="chip">category: sushi</span>
+            <span class="chip">open now</span>
+            <span class="chip">sort by rating</span>
+            <span class="chip">radius 500 m &rarr; 1 km</span>
+          </div>
+          <div class="answer">
+            <p>Nothing matched inside 500 metres, so the search widened to a kilometre and found three sushi places open now. Ryori is the best rated at 4.8 and is 720 metres away. Sushi Ver-o-Rio is closer at 610 metres and has more reviews, if you would rather not walk as far.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Ryori Sushi Lounge</h4>
+              <p class="kind">Japanese restaurant &middot; Batista Campos</p>
+              <dl><dt>Distance</dt><dd>720 m</dd><dt>Now</dt><dd class="open">Open until 23:30</dd><dt>Rating</dt><dd>4.8 &nbsp;(1,102 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Sushi Ver-o-Rio</h4>
+              <p class="kind">Japanese restaurant &middot; Umarizal</p>
+              <dl><dt>Distance</dt><dd>610 m</dd><dt>Now</dt><dd class="open">Open until 23:00</dd><dt>Rating</dt><dd>4.5 &nbsp;(1,878 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Kaito Sushi</h4>
+              <p class="kind">Japanese restaurant &middot; Marco</p>
+              <dl><dt>Distance</dt><dd>940 m</dd><dt>Now</dt><dd class="open">Open until 22:30</dd><dt>Rating</dt><dd>4.4 &nbsp;(503 reviews)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p3" aria-labelledby="t3" hidden>
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: verification</span>
+            <span class="chip">named place: Ver-o-Peso</span>
+            <span class="chip">check business hours</span>
+          </div>
+          <div class="answer">
+            <p>Mercado Ver-o-Peso is open — it runs from 05:00 to 18:00 daily, and right now it is 14:20, so you have just under four hours. The fish market at the Ver-o-Peso pier winds down earlier than the rest of it, usually by midday.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Mercado Ver-o-Peso</h4>
+              <p class="kind">Market &middot; Campina</p>
+              <dl><dt>Hours</dt><dd>05:00 &ndash; 18:00</dd><dt>Now</dt><dd class="open">Open</dd><dt>Rating</dt><dd>4.6 &nbsp;(48,930 reviews)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p4" aria-labelledby="t4" hidden>
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: location</span>
+            <span class="chip">category: açaí</span>
+            <span class="chip">sort by distance</span>
+            <span class="chip">radius 500 m</span>
+            <span class="chip">pt-BR</span>
+          </div>
+          <div class="answer">
+            <p>Tem três lugares de açaí bem perto. O Açaí do Tuca fica a 150 m e é o mais próximo. A Casa do Açaí, a 320 m, tem a melhor nota e serve com peixe frito e farinha d&rsquo;água. O ponto do Ver-o-Peso fecha às 18h, então vale ir antes se você quiser o da feira.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Açaí do Tuca</h4>
+              <p class="kind">Açaí &middot; Cremação</p>
+              <dl><dt>Distance</dt><dd>150 m</dd><dt>Now</dt><dd class="open">Open until 20:00</dd><dt>Rating</dt><dd>4.4 &nbsp;(876 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa do Açaí</h4>
+              <p class="kind">Açaí &middot; Batista Campos</p>
+              <dl><dt>Distance</dt><dd>320 m</dd><dt>Now</dt><dd class="open">Open until 19:00</dd><dt>Rating</dt><dd>4.7 &nbsp;(1,340 reviews)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Ponto do Açaí Ver-o-Peso</h4>
+              <p class="kind">Açaí &middot; Campina</p>
+              <dl><dt>Distance</dt><dd>460 m</dd><dt>Now</dt><dd class="open">Open until 18:00</dd><dt>Rating</dt><dd>4.5 &nbsp;(2,908 reviews)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p5" aria-labelledby="t5" hidden>
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: tour planning</span>
+            <span class="chip">city: Belém</span>
+            <span class="chip">itinerary: half day</span>
+            <span class="chip">pt-BR</span>
+          </div>
+          <div class="answer">
+            <p>Montei um roteiro de meio dia que dá para fazer a pé, começando cedo:</p>
+            <p><strong>08:00</strong> — Mercado Ver-o-Peso, enquanto a feira de peixe ainda está cheia.<br>
+            <strong>10:00</strong> — Forte do Presépio e Casa das Onze Janelas, cinco minutos a pé dali.<br>
+            <strong>12:00</strong> — Almoço na Estação das Docas, à beira do rio.<br>
+            <strong>14:00</strong> — Mangal das Garças, para ver as garças e subir no mirante.</p>
+            <p>Tudo isso fica dentro de 2 km. Se sobrar tempo, o Theatro da Paz faz visita guiada até as 17h.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Mercado Ver-o-Peso</h4>
+              <p class="kind">Stop 1 &middot; Market</p>
+              <dl><dt>Arrive</dt><dd>08:00</dd><dt>Stay</dt><dd>~90 min</dd><dt>Walk next</dt><dd>650 m</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa das Onze Janelas</h4>
+              <p class="kind">Stop 2 &middot; Museum</p>
+              <dl><dt>Arrive</dt><dd>10:00</dd><dt>Stay</dt><dd>~75 min</dd><dt>Walk next</dt><dd>900 m</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Mangal das Garças</h4>
+              <p class="kind">Stop 4 &middot; Park</p>
+              <dl><dt>Arrive</dt><dd>14:00</dd><dt>Stay</dt><dd>~2 h</dd><dt>Closes</dt><dd>18:00</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p6" aria-labelledby="t6" hidden>
+          <div class="plan">
+            <span class="plan-label">Query plan</span>
+            <span class="chip">intent: location</span>
+            <span class="chip">category: sushi</span>
+            <span class="chip">open now</span>
+            <span class="chip">radius 500 m &rarr; 1 km &rarr; 2 km</span>
+            <span class="chip">0 results</span>
+          </div>
+          <div class="answer">
+            <p>Nothing matched. I widened the search to two kilometres and still found no sushi place open at this hour — the latest one nearby closes at 23:30. Want me to drop the open-now filter and show you what is there for tomorrow, or look for something else that is open at 3am?</p>
+          </div>
+          <p class="note">When retrieval comes back empty, the agent asks a clarifying question instead of inventing a place. That behaviour is specified, not incidental.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>How an answer gets made</h2>
+      <p class="measure">Three stages, in a fixed order. The language model is only involved in the last one.</p>
+    </div>
+    <div class="stages">
+      <div class="stage">
+        <h3>Plan</h3>
+        <p>A TF-IDF intent classifier turns the message into a structured query plan: what kind of place, whether opening hours matter, how to sort, which language to answer in. Keyword matching covers it if the classifier is unavailable.</p>
+      </div>
+      <div class="stage">
+        <h3>Retrieve</h3>
+        <p>Filters run in a fixed precedence — opening hours first, then proximity with the radius escalating 500 m to 1 km to 2 km until five results exist, then category, then everything else. Rating and popularity only ever affect ranking, never what survives filtering.</p>
+      </div>
+      <div class="stage">
+        <h3>Answer</h3>
+        <p>At most five places reach the model, along with the original message. It writes the reply in the language you used and explains why each place matched — distance, rating, opening hours. It cannot search, and it cannot add anything.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>What it will not do</h2>
+    </div>
+    <ul class="rules">
+      <li><strong>It will not invent a place.</strong> The model only ever sees the candidates retrieval hands it. If a restaurant is not in the index, it cannot appear in an answer.</li>
+      <li><strong>It will not let similarity override geography.</strong> Vector search exists as a gated fallback. It never overrules a distance or opening-hours constraint.</li>
+      <li><strong>It will not guess at opening hours.</strong> Where the data does not say, the result is labelled unknown rather than assumed open.</li>
+      <li><strong>It will not pad an empty result.</strong> Zero matches after full radius escalation produces a clarifying question, not a longer radius quietly applied or a plausible-sounding substitute.</li>
+    </ul>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>Running it yourself</h2>
+    </div>
+    <div class="measure">
+      <p>The backend is a FastAPI service and the client is a Flutter app. Everything runs locally: a GGUF Llama build does the summarising, ChromaDB holds the vectors, and the place index is built from a CSV by one call to the ingest endpoint. No API keys, no cloud inference.</p>
+      <p>Setup, the endpoint list and the full retrieval specification are in the <a href="https://github.com/Mollinetti/BelemConverse">repository README</a> and under <code>docs/spec/</code>.</p>
+    </div>
+  </section>
+
+  <footer class="site">
+    <span>BelemConverse — Marco Mollinetti and Artur Nakauth Freires</span>
+    <nav>
+      <a href="authors.html">About the authors</a>
+      <a href="history.html">Project history</a>
+      <a href="https://github.com/Mollinetti/BelemConverse">GitHub</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('[role="tab"]').forEach(function (tab, _, tabs) {
+  tab.addEventListener('click', function () {
+    tabs.forEach(function (t) {
+      var selected = t === tab;
+      t.setAttribute('aria-selected', selected);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+    });
+  });
+});
+</script>
+
+</body>
+</html>
