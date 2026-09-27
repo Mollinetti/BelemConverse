@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- After the flag of Pará: white field, red bend from lower hoist to upper fly,
+       white star in the upper hoist. Recoloured to the site palette. -->
+  <rect width="32" height="32" rx="6" fill="#0D1E1B"/>
+  <path d="M-2 34 L34 -2" stroke="#F2A03D" stroke-width="7.5"/>
+  <path d="M8.50,2.30L9.97,6.48L14.40,6.58L10.88,9.27L12.14,13.52L8.50,11.00L4.86,13.52L6.12,9.27L2.60,6.58L7.03,6.48Z" fill="#EAF2EC"/>
+</svg>
