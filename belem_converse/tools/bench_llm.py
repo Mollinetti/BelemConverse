@@ -19,7 +19,6 @@ import os
 import statistics
 import time
 from pathlib import Path
-from typing import List, Optional
 
 import httpx
 
@@ -37,7 +36,7 @@ from belem_converse.utils.config import DATA_DIR
 MAX_RESULTS = 5
 
 
-def _questions() -> List[tuple]:
+def _questions() -> list[tuple]:
     from tests.test_golden_queries import GOLDEN_QUERIES_EN, GOLDEN_QUERIES_PT
 
     return [(q["query"], "pt-BR", q.get("location")) for q in GOLDEN_QUERIES_PT] + [
@@ -45,7 +44,7 @@ def _questions() -> List[tuple]:
     ]
 
 
-def _retrieve_all(catalog: Path, questions: List[tuple]) -> tuple[List[tuple], List[str]]:
+def _retrieve_all(catalog: Path, questions: list[tuple]) -> tuple[list[tuple], list[str]]:
     """(question, language, top places) for each question, plus all catalog titles."""
     places = load_places(catalog)
     classifier = SimpleTFIDFIntentClassifier()
@@ -73,11 +72,11 @@ def _retrieve_all(catalog: Path, questions: List[tuple]) -> tuple[List[tuple], L
 
 
 def run(
-    models: List[str],
-    queries: Optional[int] = None,
-    catalog: Optional[Path] = None,
-    transport: Optional[httpx.AsyncBaseTransport] = None,
-) -> List[dict]:
+    models: list[str],
+    queries: int | None = None,
+    catalog: Path | None = None,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> list[dict]:
     """One row per model: model, n, grounded_pct, p50_ms, answers."""
     catalog = catalog or DATA_DIR / get_city_config().catalog_path
     questions = _questions()[:queries] if queries else _questions()
@@ -115,7 +114,7 @@ def run(
     return rows
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("models", nargs="+", help="model names to benchmark on the configured provider")
     parser.add_argument("--queries", type=int, default=None, help="only the first N golden questions")

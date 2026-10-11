@@ -22,8 +22,8 @@ import os
 import re
 import time
 import unicodedata
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
 
 import httpx
 from rapidfuzz import fuzz
@@ -67,7 +67,7 @@ class _Provider:
     api_key: str
 
 
-def _providers() -> List[_Provider]:
+def _providers() -> list[_Provider]:
     """Configured providers in order, read from the environment on every call."""
     providers = []
     primary_model = os.getenv("LLM_MODEL", "")
@@ -103,7 +103,7 @@ def _place_line(index: int, place: dict, labels: dict) -> str:
     return f"{index}. " + " — ".join(parts)
 
 
-def _user_message(question: str, places: List[dict], language: str) -> str:
+def _user_message(question: str, places: list[dict], language: str) -> str:
     labels = _LABELS["pt-BR" if language == "pt-BR" else "en"]
     lines = "\n".join(_place_line(i, p, labels) for i, p in enumerate(places, 1))
     return f"{labels['question']}: {question}\n\n<places>\n{lines}\n</places>"
@@ -125,11 +125,11 @@ async def _complete(client: httpx.AsyncClient, provider: _Provider, messages: li
 
 async def summarize(
     question: str,
-    places: List[dict],
+    places: list[dict],
     language: str,
     *,
-    transport: Optional[httpx.AsyncBaseTransport] = None,
-) -> Optional[str]:
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> str | None:
     """The model's answer about ``places``, or None if no provider answered in time."""
     providers = _providers()
     if not providers:
@@ -166,7 +166,7 @@ def strip_markers(answer: str) -> str:
     return answer.replace("**", "")
 
 
-def is_grounded(answer: str, places: List[dict], catalog_titles: Iterable[str]) -> bool:
+def is_grounded(answer: str, places: list[dict], catalog_titles: Iterable[str]) -> bool:
     """True when the answer names only places among ``places``.
 
     Every **bold** name must fuzzy-match a result title, and no other catalog

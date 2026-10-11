@@ -49,11 +49,11 @@ class PlaceTypeInference:
         return text.lower().strip()
     
     @classmethod
-    def _tokens(cls, text: str) -> List[str]:
+    def _tokens(cls, text: str) -> list[str]:
         return re.findall(r"[a-z0-9]+", cls.normalize_text(text))
 
     @classmethod
-    def _match(cls, candidate: str) -> Optional[str]:
+    def _match(cls, candidate: str) -> str | None:
         """Place type of the longest keyword phrase found as whole words.
 
         Longest wins so that "snack bar" (restaurant) beats "bar"; ties go to

@@ -16,7 +16,6 @@ import json
 import logging
 import sqlite3
 from pathlib import Path
-from typing import List, Optional
 
 from belem_converse.cities import CityConfig, get_city_config
 from belem_converse.ingest.place_matcher import MatchStatus, PlaceMatcher
@@ -96,7 +95,7 @@ def validate(catalog_path: Path | str, fetcher=None) -> dict:
     return report
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--catalog", type=Path, default=None,
