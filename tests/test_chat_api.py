@@ -5,8 +5,11 @@ is replaced by an AsyncMock except where the real, unconfigured client is the
 point of the test.
 """
 
+import asyncio
+import time
 from unittest.mock import AsyncMock
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -15,6 +18,7 @@ import api.routes as routes
 from api.main import app
 from belem_converse import llm
 from belem_converse.catalog import load_places
+from belem_converse.core.unified_retriever import UnifiedRetriever
 
 LLM_VARS = [
     "LLM_BASE_URL", "LLM_MODEL", "LLM_API_KEY",
@@ -155,6 +159,52 @@ def test_distances_do_not_leak_between_visitors(client, monkeypatch):
 
     assert all(r["distanceKm"] is None for r in body["results"])
     assert "km away" not in body["answer"]
+
+
+def test_model_deadline_counts_from_request_start(client, monkeypatch):
+    model = fake_model(monkeypatch, return_value=None)
+    before = time.monotonic()
+
+    ask(client, "lugares bem avaliados")
+
+    started_at = model.await_args.kwargs["started_at"]
+    assert before <= started_at <= time.monotonic()
+
+
+def test_slow_retrieval_does_not_block_other_requests(built_catalog, monkeypatch):
+    monkeypatch.setattr(deps, "_catalog", load_places(built_catalog))
+    for attr in ("_place_cache", "_category_matcher", "_ranking_engine", "_retriever"):
+        monkeypatch.setattr(routes, attr, None)
+    fake_model(monkeypatch, return_value=None)
+    original = UnifiedRetriever.retrieve
+    entered = {}
+
+    def slow_retrieve(self, plan):
+        entered["at"] = time.perf_counter()
+        time.sleep(1.0)
+        return original(self, plan)
+
+    monkeypatch.setattr(UnifiedRetriever, "retrieve", slow_retrieve)
+
+    async def scenario():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
+            chat = asyncio.create_task(
+                http.post("/api/chat", json={"message": "lugares bem avaliados", "language": "pt-BR"})
+            )
+            while "at" not in entered:  # wait until the chat request is inside retrieval
+                await asyncio.sleep(0.01)
+            health = await http.get("/api/health")
+            # Measured from when retrieval began: a blocked event loop cannot even
+            # resume this coroutine until the 1 s of retrieval is over.
+            waited_s = time.perf_counter() - entered["at"]
+            chat_response = await chat
+            return health.status_code, waited_s, chat_response.status_code
+
+    health_status, waited_s, chat_status = asyncio.run(scenario())
+
+    assert (health_status, chat_status) == (200, 200)
+    assert waited_s < 0.5
 
 
 def test_model_crash_returns_template(client, monkeypatch):
