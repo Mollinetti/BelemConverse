@@ -5,10 +5,9 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
-from typing import List
 
 
-def load_places(path: Path | str) -> List[dict]:
+def load_places(path: Path | str) -> list[dict]:
     """All places in the catalog, as the dicts the retriever and ranker read."""
     path = Path(path)
     if not path.exists():
