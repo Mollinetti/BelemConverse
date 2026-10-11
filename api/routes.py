@@ -4,8 +4,6 @@ Pipeline per `docs/archive/spec/`:
     Chat request -> Query Plan (TF-IDF intent + slots)
                  -> Deterministic retrieval (open-hours -> proximity -> category -> rank)
                  -> LLM summarization of <=5 results.
-
-Tour-planning intents are routed to ``EnhancedRAGAgent._handle_tour_planning``.
 """
 
 from __future__ import annotations
@@ -198,7 +196,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
     filters_dict = request.filters.dict(exclude_none=True) if request.filters else None
 
-    intent_classifier = _get_intent_classifier()
     query_planner = _get_query_planner()
 
     query_plan = query_planner.create_query_plan(
@@ -208,34 +205,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
         filters=filters_dict,
     )
     logger.info("Query Plan: %s", json.dumps(query_planner.plan_to_dict(query_plan), indent=2))
-
-    agent = get_rag_agent()
-    intent_result = intent_classifier.predict(request.message)
-
-    # ----- Tour planning branch --------------------------------------------
-    if _is_tour_planning_query(intent_result, request.message):
-        logger.info("Detected tour planning intent, routing to tour planner")
-        user_coordinates = (
-            (user_location["lat"], user_location["lng"]) if user_location else None
-        )
-        try:
-            answer = agent._handle_tour_planning(
-                question=request.message,
-                intent_result=intent_result,
-                user_coordinates=user_coordinates,
-            )
-            elapsed_ms = (time.time() - start) * 1000
-            logger.info("Tour response generated in %.0fms", elapsed_ms)
-            return ChatResponse(
-                language=query_plan.language,
-                answer=answer,
-                results=[],
-                debug=query_plan.debug,
-                response=answer,
-                processing_time_ms=round(elapsed_ms, 1),
-            )
-        except Exception:
-            logger.exception("Tour planning failed; falling back to regular query flow")
 
     # ----- Regular query flow ----------------------------------------------
     try:
@@ -294,24 +263,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
         response=answer,
         processing_time_ms=round(elapsed_ms, 1),
     )
-
-
-def _is_tour_planning_query(intent_result: dict, question: str) -> bool:
-    """Mirror of EnhancedRAGAgent's tour detection (see core/tour_planner.py)."""
-    if (
-        intent_result.get("primary_intent") == "tour_planning"
-        and intent_result.get("primary_intent_confidence", 0.0) >= 0.3
-    ):
-        return True
-
-    keywords = (
-        "tour", "itinerary", "day trip", "plan my day", "what to do in a day",
-        "roteiro", "passeio pelo", "o que fazer em um dia", "dia em belém",
-        "planejar meu dia", "one day itinerary", "walking tour", "food tour",
-        "create an itinerary", "plan a trip",
-    )
-    q = question.lower()
-    return any(k in q for k in keywords)
 
 
 def _generate_answer(places: List[dict], language: str) -> str:

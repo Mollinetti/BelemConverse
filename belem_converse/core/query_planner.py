@@ -35,7 +35,7 @@ _IMPLICIT_LEXICON_PATH = (
 class QueryPlan:
     """Query Plan structure per spec"""
     language: str  # "en" | "pt-BR"
-    intent: str  # "find_places" | "place_details" | "compare_places" | "smalltalk" | "help" | "tour_planning"
+    intent: str  # "find_places" | "place_details" | "compare_places" | "smalltalk" | "help"
     slots: Dict[str, Any]
     retrieval_strategy: str  # "structured_only" | "structured_then_lexical" | "structured_then_vector_fallback"
     debug: Dict[str, Any]
@@ -249,27 +249,9 @@ class QueryPlanner:
         intents (location, popularity, price, etc.), use Intent_Classifier directly.
         
         Returns:
-            "find_places" | "place_details" | "compare_places" | "smalltalk" | "help" | "tour_planning"
+            "find_places" | "place_details" | "compare_places" | "smalltalk" | "help"
         """
         message_lower = self.normalize_text(message)
-        
-        # Check for tour planning intent using Intent_Classifier
-        if self.intent_classifier:
-            try:
-                intent_result = self.intent_classifier.predict_intent(message)
-                if intent_result.get('primary_intent') == 'tour_planning' and intent_result.get('primary_intent_confidence', 0) >= 0.3:
-                    return 'tour_planning'
-            except Exception as e:
-                logger.warning(f"Intent_Classifier failed for tour_planning detection: {e}")
-                # Fall through to keyword-based fallback below
-        
-        # Fallback: Check for tour planning keywords if classifier unavailable
-        tour_keywords_en = ['plan', 'itinerary', 'tour', 'day trip', 'trip plan', 'schedule', 'route']
-        tour_keywords_pt = ['roteiro', 'passeio', 'planejar', 'itinerario', 'viagem', 'programar', 'programacao', 'rota']
-        
-        if any(word in message_lower for word in tour_keywords_en + tour_keywords_pt):
-            logger.info("Tour planning detected via fallback keywords")
-            return 'tour_planning'
         
         # Check for other application-level intents (not handled by Intent_Classifier)
         if any(word in message_lower for word in ['compare', 'comparar', 'diferença', 'difference']):
