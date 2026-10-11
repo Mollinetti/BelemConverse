@@ -99,7 +99,7 @@ Run the memory procedure above and record the number.
 |---|---|
 | Baseline pytest (T00) | 194 collected at `642c707`: 187 passed · 1 failed · 2 errors · 4 skipped. **Failed:** `test_e2e_integration.py::TestCompleteUserJourneys::test_journey_best_restaurants_open_now` (expects sort `popularity`, gets `best_match`; pre-existing). **Errors:** `test_llama31_model.py::test_portuguese_response`, `::test_instruction_following` (fixture `llm` not found; file deleted in T04). **Skipped:** 4 in `test_e2e_integration.py` (lines 334, 589, 611, 630: "Category matching issue … normalize() argument 2 must be str, not list"). |
 | Diagnostic before (T00) | intent 83.2% · category 85.8% · proximity 93.8% · open-now 99.1% (n=113, v2.9 classifier; re-run at `642c707` matches) |
-| Diagnostic after (T24) | _tbd_ |
+| Diagnostic after (T24) | intent 82.3% · category 85.8% · proximity 91.2% · open-now 99.1% (n=113, v3.0 classifier, no tour intent). Intent ≥ 80% ✓. The 3 former tour items were relabelled to the v3.0 routing (T02), so they score correct by construction; excluding them, intent is 90/110 = 81.8%. Proximity −2.6 pts vs baseline. |
 | Catalog rows in → kept / merged / dropped | _tbd_ |
 | Rows with parsed hours / needs_review | _tbd_ |
 | OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
