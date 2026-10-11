@@ -141,6 +141,22 @@ def test_health_ready(client):
     assert response.json()["status"] == "healthy"
 
 
+def test_distances_do_not_leak_between_visitors(client, monkeypatch):
+    fake_model(monkeypatch, return_value=None)
+    located = client.post(
+        "/api/chat",
+        json={"message": "lugares bem avaliados perto de mim", "language": "pt-BR",
+              "userLocation": {"lat": -1.4527, "lng": -48.4914}},
+    ).json()
+    assert any(r["distanceKm"] is not None for r in located["results"])
+
+    # A second visitor who shares no location must not see the first one's distances.
+    body = ask(client, "lugares bem avaliados perto de mim")
+
+    assert all(r["distanceKm"] is None for r in body["results"])
+    assert "km away" not in body["answer"]
+
+
 def test_model_crash_returns_template(client, monkeypatch):
     fake_model(monkeypatch, side_effect=RuntimeError("provider client blew up"))
 
