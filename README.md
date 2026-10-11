@@ -8,7 +8,7 @@
 Ask where to go in Portuguese or English — get answers built only from places that actually exist.
 
 <!-- Project -->
-[![Status: proof of concept](https://img.shields.io/badge/status-proof%20of%20concept-F2A03D?style=flat-square)](docs/spec/00-poc-charter.md)
+[![Status: proof of concept](https://img.shields.io/badge/status-proof%20of%20concept-F2A03D?style=flat-square)](docs/archive/spec/00-poc-charter.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4FBFA3?style=flat-square)](LICENSE)
 [![Python 3.10–3.13](https://img.shields.io/badge/python-3.10%20%E2%80%93%203.13-3776AB?style=flat-square&logo=python&logoColor=white)](pyproject.toml)
 [![Project site](https://img.shields.io/badge/site-mollinetti.github.io-0D1E1B?style=flat-square&logo=githubpages&logoColor=white)](https://mollinetti.github.io/BelemConverse/)
@@ -32,8 +32,8 @@ Ask where to go in Portuguese or English — get answers built only from places 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=flat-square)](https://github.com/astral-sh/ruff)
 
 [**Project site**](https://mollinetti.github.io/BelemConverse/) ·
-[**Specs**](docs/spec/) ·
-[**API contract**](docs/spec/05-openapi.yaml) ·
+[**Specs**](docs/archive/spec/) ·
+[**API contract**](docs/archive/spec/05-openapi.yaml) ·
 [**Authors**](https://mollinetti.github.io/BelemConverse/authors.html)
 
 <br>
@@ -116,9 +116,9 @@ flowchart LR
 | **Answer** | `EnhancedRAGAgent` | Summarises the retrieved places in EN or pt-BR, explaining why each matched. Labels unknown opening hours as unknown. |
 
 The full retrieval and ranking rules live in
-[`docs/spec/03-query-planner.md`](docs/spec/03-query-planner.md) and
-[`docs/spec/04-ranking-spec.md`](docs/spec/04-ranking-spec.md); the model's
-constraints in [`docs/spec/06-llm-contract.md`](docs/spec/06-llm-contract.md).
+[`docs/archive/spec/03-query-planner.md`](docs/archive/spec/03-query-planner.md) and
+[`docs/archive/spec/04-ranking-spec.md`](docs/archive/spec/04-ranking-spec.md); the model's
+constraints in [`docs/archive/spec/06-llm-contract.md`](docs/archive/spec/06-llm-contract.md).
 
 ## Example queries
 
@@ -133,7 +133,7 @@ constraints in [`docs/spec/06-llm-contract.md`](docs/spec/06-llm-contract.md).
 
 Worked examples with full answers are on the
 [project site](https://mollinetti.github.io/BelemConverse/);
-the evaluation set is [`docs/spec/09-eval-golden-queries.md`](docs/spec/09-eval-golden-queries.md).
+the evaluation set is [`docs/archive/spec/09-eval-golden-queries.md`](docs/archive/spec/09-eval-golden-queries.md).
 
 ## Getting started
 
@@ -142,7 +142,7 @@ the evaluation set is [`docs/spec/09-eval-golden-queries.md`](docs/spec/09-eval-
 - Python **3.10+**
 - ~6 GB free for the GGUF model
 - [Flutter](https://docs.flutter.dev/get-started/install) with Dart SDK **^3.10**, only if you want the client
-- A places CSV — expected columns are documented in [`docs/spec/02-csv-mapping.md`](docs/spec/02-csv-mapping.md)
+- A places CSV — expected columns are documented in [`docs/archive/spec/02-csv-mapping.md`](docs/archive/spec/02-csv-mapping.md)
 
 ### 1. Install the backend
 
@@ -244,7 +244,7 @@ Defaults live in [`belem_converse/utils/config.py`](belem_converse/utils/config.
 ## API
 
 All routes are mounted under `/api`. The contract is frozen in
-[`docs/spec/05-openapi.yaml`](docs/spec/05-openapi.yaml) and mirrored by
+[`docs/archive/spec/05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) and mirrored by
 [`api/schemas.py`](api/schemas.py).
 
 | Method | Path | Purpose |
@@ -293,27 +293,29 @@ the suite runs even before `pip install -e .`.
 
 ## Specifications
 
-Behaviour is specified before it is built. Everything under
-[`docs/spec/`](docs/spec/) is authoritative:
+Behaviour is specified before it is built. The current spec is the two-phase
+free-tier MVP in [`specs/mvp/`](specs/mvp/spec.md). The proof-of-concept specs
+below are archived under [`docs/archive/spec/`](docs/archive/spec/) and kept for
+reference; where they disagree with `specs/mvp/`, the MVP spec wins.
 
 | Spec | Covers |
 | --- | --- |
-| [`00-poc-charter`](docs/spec/00-poc-charter.md) | Scope, success criteria, non-goals |
-| [`01-domain-model`](docs/spec/01-domain-model.md) · [`02-csv-mapping`](docs/spec/02-csv-mapping.md) | The canonical `Place` entity and how CSVs map onto it |
-| [`03-query-planner`](docs/spec/03-query-planner.md) · [`04-ranking-spec`](docs/spec/04-ranking-spec.md) | Retrieval precedence and ranking rules |
-| [`05-openapi.yaml`](docs/spec/05-openapi.yaml) | Frozen API contract consumed by the client |
-| [`06-llm-contract`](docs/spec/06-llm-contract.md) | Summarise-only, no-hallucination rules for the model |
-| [`07-ux-flutter`](docs/spec/07-ux-flutter.md) · [`08-i18n`](docs/spec/08-i18n.md) | Client behaviour and localisation |
-| [`09-eval-golden-queries`](docs/spec/09-eval-golden-queries.md) · [`10-runbook`](docs/spec/10-runbook.md) · [`11-demo-script`](docs/spec/11-demo-script.md) | Evaluation, operations, demo |
-| [`12-intent-classifier-improvement-plan`](docs/spec/12-intent-classifier-improvement-plan.md) | TF-IDF classifier roadmap |
+| [`00-poc-charter`](docs/archive/spec/00-poc-charter.md) | Scope, success criteria, non-goals |
+| [`01-domain-model`](docs/archive/spec/01-domain-model.md) · [`02-csv-mapping`](docs/archive/spec/02-csv-mapping.md) | The canonical `Place` entity and how CSVs map onto it |
+| [`03-query-planner`](docs/archive/spec/03-query-planner.md) · [`04-ranking-spec`](docs/archive/spec/04-ranking-spec.md) | Retrieval precedence and ranking rules |
+| [`05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) | Frozen API contract consumed by the client |
+| [`06-llm-contract`](docs/archive/spec/06-llm-contract.md) | Summarise-only, no-hallucination rules for the model |
+| [`07-ux-flutter`](docs/archive/spec/07-ux-flutter.md) · [`08-i18n`](docs/archive/spec/08-i18n.md) | Client behaviour and localisation |
+| [`09-eval-golden-queries`](docs/archive/spec/09-eval-golden-queries.md) · [`10-runbook`](docs/archive/spec/10-runbook.md) · [`11-demo-script`](docs/archive/spec/11-demo-script.md) | Evaluation, operations, demo |
+| [`12-intent-classifier-improvement-plan`](docs/archive/spec/12-intent-classifier-improvement-plan.md) | TF-IDF classifier roadmap |
 
-Architecture decisions are recorded in [`docs/spec/decisions/`](docs/spec/decisions/).
+Architecture decisions are recorded in [`docs/archive/spec/decisions/`](docs/archive/spec/decisions/).
 
 ## Contributing
 
 Issues and pull requests are welcome. Before opening a PR:
 
-1. Check the relevant spec in [`docs/spec/`](docs/spec/) — behaviour changes should update it.
+1. Check the relevant phase in [`specs/mvp/`](specs/mvp/spec.md) — behaviour changes should update it.
 2. Run `ruff check .` and `pytest`.
 3. Keep the LLM contract intact: the model summarises retrieved places and nothing else.
 

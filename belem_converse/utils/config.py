@@ -12,7 +12,7 @@ DATA_DIR = Path(os.getenv("BELEM_DATA_DIR", str(BASE_DIR / "data")))
 CHROMA_DB_DIR = Path(os.getenv("CHROMA_PERSIST_DIR", str(DATA_DIR / "chroma_db")))
 
 # LLM Configuration. ``MODEL_GGUF_PATH`` overrides the bundled default per
-# docs/spec/10-runbook.md.
+# docs/archive/spec/10-runbook.md.
 _DEFAULT_LLM = MODELS_DIR / "llm" / "Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf"
 LLM_CONFIG = {
     "model_path": os.getenv("MODEL_GGUF_PATH", str(_DEFAULT_LLM)),

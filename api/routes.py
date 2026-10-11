@@ -1,6 +1,6 @@
 """HTTP routes for BelemConverse.
 
-Pipeline per `docs/spec/`:
+Pipeline per `docs/archive/spec/`:
     Chat request -> Query Plan (TF-IDF intent + slots)
                  -> Deterministic retrieval (open-hours -> proximity -> category -> rank)
                  -> LLM summarization of <=5 results.
@@ -174,7 +174,7 @@ async def get_place(placeId: str) -> Place:
     },
 )
 async def chat(request: ChatRequest) -> ChatResponse:
-    """Plan -> retrieve -> summarize per OpenAPI spec (`docs/spec/05-openapi.yaml`)."""
+    """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
 
     if not is_system_ready():
@@ -321,7 +321,7 @@ def _generate_answer(places: List[dict], language: str) -> str:
     ``utils/config.py`` for the prompt templates). This template path keeps
     the API responsive even when the GGUF weights are not available.
     FUTURE: wire this back through ``agent.query`` for fully grounded
-    natural-language summaries per ``docs/spec/06-llm-contract.md``.
+    natural-language summaries per ``docs/archive/spec/06-llm-contract.md``.
     """
     if not places:
         if language == "pt-BR":
