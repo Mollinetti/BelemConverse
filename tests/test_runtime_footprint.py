@@ -99,3 +99,16 @@ def test_ready_without_llm(tmp_path):
 
     assert result.returncode == 0, result.stderr[-2000:]
     assert result.stdout.strip().splitlines()[-1] == "READY"
+
+
+def test_dotenv_file_is_loaded(tmp_path):
+    # LLM_* settings live in .env (gitignored); the API must read it at startup.
+    workdir = tmp_path / "cwd"
+    workdir.mkdir()
+    (workdir / ".env").write_text("LLM_MODEL=model-from-dotenv\n", encoding="utf-8")
+    code = "import os\nimport api.main\nprint(os.environ.get('LLM_MODEL'))\n"
+
+    result = _run_python(code, cwd=workdir, env=_isolated_env(tmp_path))
+
+    assert result.returncode == 0, result.stderr[-2000:]
+    assert result.stdout.strip().splitlines()[-1] == "model-from-dotenv"

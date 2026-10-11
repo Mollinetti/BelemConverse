@@ -9,12 +9,18 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from dotenv import find_dotenv, load_dotenv
 
-from . import __version__
-from .dependencies import initialize_rag_system
-from .routes import router
+# Before anything reads the environment (data dirs, LLM_* settings). Searches
+# upward from the working directory; never overrides variables already set.
+load_dotenv(find_dotenv(usecwd=True))
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+from . import __version__  # noqa: E402
+from .dependencies import initialize_rag_system  # noqa: E402
+from .routes import router  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,

@@ -220,9 +220,12 @@ class UnifiedRetriever:
                 logger.info("Step 2: Skipping proximity filter")
         
         # STEP 3: Filter by category - THIRD
-        categories = slots.get('categories') or (
-            [slots.get('place_type')] if slots.get('place_type') else None
-        )
+        # The planner gives place_type as a list; wrapping it again ([[...]])
+        # crashed the category matcher for questions with no category words.
+        place_type = slots.get('place_type')
+        if isinstance(place_type, str):
+            place_type = [place_type]
+        categories = slots.get('categories') or place_type or None
         if categories:
             logger.info(f"Step 3: Filtering by categories: {categories}")
             candidates = self._filter_by_category(candidates, categories)
