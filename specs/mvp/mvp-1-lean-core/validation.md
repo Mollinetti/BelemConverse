@@ -102,7 +102,7 @@ Run the memory procedure above and record the number.
 | Diagnostic after (T24) | _tbd_ |
 | Catalog rows in → kept / merged / dropped | _tbd_ |
 | Rows with parsed hours / needs_review | _tbd_ |
-| OSM match rate / coordinate mismatches > 150 m (T15) | _tbd_ |
+| OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
 | Peak RSS after 20 requests | _tbd_ MB |
 
 **Model benchmark (T23):**
