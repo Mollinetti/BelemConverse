@@ -48,6 +48,8 @@ class CityConfig:
     
     # Data paths (relative to project root)
     csv_path: str = ""
+    # Built place catalog, relative to DATA_DIR (BELEM_DATA_DIR overrides it).
+    catalog_path: str = ""
     chroma_db_path: str = ""
     
     # Category mappings - map generic categories to city-specific terms
