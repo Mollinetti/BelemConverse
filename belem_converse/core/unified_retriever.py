@@ -14,8 +14,12 @@ Validates: Requirements 4.1, 4.2, 4.3, 2.2, 2.3, 2.4
 """
 
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
+
+from belem_converse.cities import get_city_config
 
 from .place_cache import PlaceCache
 from .category_matcher import CategoryMatcher
@@ -77,6 +81,8 @@ class UnifiedRetriever:
         self.ranking_engine = ranking_engine
         self.vector_store = vector_store
         self.osm_client = osm_client
+        # "Open now" is judged on the city's clock, not the server's (UTC).
+        self.timezone = ZoneInfo(get_city_config().timezone)
         
         logger.info(
             "UnifiedRetriever initialized with "
@@ -260,11 +266,10 @@ class UnifiedRetriever:
         Returns:
             List of places that are currently open or have unknown status
         """
-        from datetime import datetime
         from belem_converse.utils.business_hours_parser import BusinessHoursParser
-        
+
         parser = BusinessHoursParser()
-        now = datetime.now()
+        now = datetime.now(self.timezone)
         
         open_places = []
         unknown_places = []
