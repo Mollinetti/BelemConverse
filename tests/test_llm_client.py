@@ -171,3 +171,24 @@ def test_place_text_stays_inside_places_block():
     assert INJECTION_TITLE in places_block
     outside = user["content"].replace(f"<places>{places_block}</places>", "")
     assert INJECTION_TITLE not in outside
+
+
+def test_non_string_content_returns_none():
+    # Some OpenAI-compatible providers return content as a list of parts.
+    def handler(request):
+        return httpx.Response(200, json={"choices": [{"message": {"content": [{"type": "text", "text": "hi"}]}}]})
+
+    assert run("q", handler=handler) is None
+
+
+@pytest.mark.parametrize("name, value", [("LLM_TIMEOUT_S", "abc"), ("LLM_MAX_TOKENS", "")])
+def test_unparseable_numeric_settings_fall_back_to_defaults(monkeypatch, name, value):
+    monkeypatch.setenv(name, value)
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        return completion("ok")
+
+    assert run("q", handler=handler) == "ok"
+    assert seen[0]["max_tokens"] == 250

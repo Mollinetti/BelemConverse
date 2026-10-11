@@ -84,6 +84,14 @@ def _providers() -> list[_Provider]:
     return providers
 
 
+def _number_setting(name: str, default, cast):
+    """A numeric env setting; a missing or unparseable value means the default."""
+    try:
+        return cast(os.getenv(name, ""))
+    except ValueError:
+        return default
+
+
 def _place_line(index: int, place: dict, labels: dict) -> str:
     parts = [place.get("title") or "?"]
     if place.get("categoryName"):
@@ -117,10 +125,10 @@ async def _complete(client: httpx.AsyncClient, provider: _Provider, messages: li
         json={"model": provider.model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.2},
     )
     response.raise_for_status()
-    content = (response.json()["choices"][0]["message"]["content"] or "").strip()
-    if not content:
-        raise ValueError("empty completion")
-    return content
+    content = response.json()["choices"][0]["message"]["content"]
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError(f"unusable completion content: {type(content).__name__}")
+    return content.strip()
 
 
 async def summarize(
@@ -134,8 +142,8 @@ async def summarize(
     providers = _providers()
     if not providers:
         return None
-    budget = float(os.getenv("LLM_TIMEOUT_S", "10"))
-    max_tokens = int(os.getenv("LLM_MAX_TOKENS", "250"))
+    budget = _number_setting("LLM_TIMEOUT_S", 10.0, float)
+    max_tokens = _number_setting("LLM_MAX_TOKENS", 250, int)
     messages = [
         {"role": "system", "content": PROMPT_PT if language == "pt-BR" else PROMPT_EN},
         {"role": "user", "content": _user_message(question, places, language)},
@@ -148,7 +156,9 @@ async def summarize(
                 break
             try:
                 return await asyncio.wait_for(_complete(client, provider, messages, max_tokens), remaining)
-            except (httpx.HTTPError, TimeoutError, KeyError, IndexError, TypeError, ValueError) as exc:
+            # asyncio.TimeoutError is only an alias of TimeoutError from Python 3.11.
+            except (httpx.HTTPError, TimeoutError, asyncio.TimeoutError,
+                    KeyError, IndexError, TypeError, ValueError) as exc:
                 logger.warning("LLM provider %s failed: %r", provider.base_url, exc)
     return None
 
