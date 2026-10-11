@@ -13,7 +13,6 @@ import logging
 import time
 import traceback
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -28,7 +27,7 @@ from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
 
 from . import __version__
-from .dependencies import get_system_status, is_system_ready
+from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
 from .schemas import (
     ChatFilters,
     ChatRequest,
@@ -43,11 +42,6 @@ from .schemas import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-# Project root: api/routes.py -> api/ -> repo root.
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
-PLACES_FILE = DATA_DIR / "canonical_places.jsonl"
 
 
 # ----- module-level singletons (built lazily on first chat) -----------------
@@ -76,20 +70,15 @@ def _get_query_planner() -> QueryPlanner:
 
 
 def _load_places_index() -> List[dict]:
-    if not PLACES_FILE.exists():
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Places index not found at {PLACES_FILE}. "
-                "Run POST /api/ingest/csv first."
-            ),
-        )
-    with PLACES_FILE.open("r", encoding="utf-8") as fh:
-        return [json.loads(line) for line in fh if line.strip()]
+    """The catalog loaded at startup; 503 until it exists."""
+    catalog = get_catalog()
+    if catalog is None:
+        raise HTTPException(status_code=503, detail=f"Place catalog not loaded. {BUILD_HINT}")
+    return catalog
 
 
 def _get_retriever() -> UnifiedRetriever:
-    """Lazily build the unified retriever from the on-disk places index."""
+    """Lazily build the unified retriever over the loaded catalog."""
     global _place_cache, _category_matcher, _ranking_engine, _retriever
     if _retriever is None:
         places_index = _load_places_index()
@@ -127,28 +116,16 @@ async def get_languages() -> LanguagesResponse:
 
 @router.get("/places/{placeId}", response_model=Place)
 async def get_place(placeId: str) -> Place:
-    if not PLACES_FILE.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="Places index not found. Please run ingestion first.",
-        )
-    try:
-        with PLACES_FILE.open("r", encoding="utf-8") as fh:
-            for line in fh:
-                place = json.loads(line)
-                if place.get("placeId") == placeId:
-                    loc = place.get("location")
-                    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
-                        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
-                    elif isinstance(loc, dict):
-                        place["location"] = None
-                    return Place(**place)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Error retrieving place %s", placeId)
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
+    place = next((p for p in _load_places_index() if p.get("placeId") == placeId), None)
+    if place is None:
+        raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
+    place = dict(place)
+    loc = place.get("location")
+    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
+        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
+    else:
+        place["location"] = None
+    return Place(**place)
 
 
 @router.post(
@@ -167,7 +144,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
     if not is_system_ready():
         raise HTTPException(
             status_code=503,
-            detail="RAG system is still initializing. Please try again in a moment.",
+            detail=f"Place catalog not loaded. {BUILD_HINT}",
         )
 
     # Optional client-supplied "now" timestamp (used by open-hours filtering).
