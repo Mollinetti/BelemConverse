@@ -10,6 +10,17 @@ from belem_converse.tools import bench_llm
 def test_bench_reports_grounding_and_latency(built_catalog, monkeypatch):
     monkeypatch.setenv("LLM_BASE_URL", "https://bench.test/v1")
     monkeypatch.setenv("LLM_API_KEY", "bench-key")
+    # The golden questions are located around the real city; these two retrieve
+    # fixture places, so each one reaches the model.
+    monkeypatch.setattr(
+        bench_llm,
+        "_questions",
+        lambda: [
+            ("restaurantes em Belém", "pt-BR", None),
+            ("lugares bem avaliados", "pt-BR", None),
+            ("academia de musculação", "pt-BR", None),  # beyond queries=2
+        ],
+    )
     models_seen = []
 
     def handler(request):
