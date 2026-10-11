@@ -7,46 +7,7 @@ from typing import Dict, Any
 
 # Base paths (env-overridable for Docker / alternate deploy targets)
 BASE_DIR = Path(__file__).parent.parent.parent
-MODELS_DIR = Path(os.getenv("BELEM_MODELS_DIR", str(BASE_DIR / "models")))
 DATA_DIR = Path(os.getenv("BELEM_DATA_DIR", str(BASE_DIR / "data")))
-CHROMA_DB_DIR = Path(os.getenv("CHROMA_PERSIST_DIR", str(DATA_DIR / "chroma_db")))
-
-# LLM Configuration. ``MODEL_GGUF_PATH`` overrides the bundled default per
-# docs/archive/spec/10-runbook.md.
-_DEFAULT_LLM = MODELS_DIR / "llm" / "Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf"
-LLM_CONFIG = {
-    "model_path": os.getenv("MODEL_GGUF_PATH", str(_DEFAULT_LLM)),
-    "temperature": 0.1,
-    "max_tokens": 2000,
-    "n_ctx": 4096,
-    "n_gpu_layers": int(os.getenv("LLM_N_GPU_LAYERS", "35")),
-    "top_p": 1,
-    "verbose": True,
-}
-
-# Embedding Configuration - Auto-detect device
-def _get_embedding_device():
-    """Auto-detect the best available device for embeddings."""
-    try:
-        import torch
-        if torch.cuda.is_available():
-            return "cuda"
-        elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
-            return "mps"  # Apple Silicon
-    except ImportError:
-        pass
-    return "cpu"
-
-EMBEDDING_CONFIG = {
-    "model_name": str(MODELS_DIR / "embedding" / "all-mpnet-base-v2"),
-    "model_kwargs": {"device": _get_embedding_device()}
-}
-
-# Vector Store Configuration
-VECTOR_STORE_CONFIG = {
-    "persist_directory": str(CHROMA_DB_DIR),
-    "search_kwargs": {"k": 20}
-}
 
 # Data Configuration
 DATA_CONFIG = {
@@ -229,9 +190,6 @@ ENV_VARS = {
 def get_config() -> Dict[str, Any]:
     """Get the complete configuration dictionary."""
     return {
-        "llm": LLM_CONFIG,
-        "embedding": EMBEDDING_CONFIG,
-        "vector_store": VECTOR_STORE_CONFIG,
         "data": DATA_CONFIG,
         "prompts": {
             "travel_guide_en": TRAVEL_GUIDE_PROMPT_EN,
