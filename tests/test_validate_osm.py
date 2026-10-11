@@ -88,6 +88,20 @@ def test_report_lists_only_far_matches_as_coordinate_mismatch(catalog):
     assert saved == report
 
 
+def test_empty_fetch_keeps_existing_verification(catalog):
+    # OSMFetcher.fetch() returns [] when every Overpass endpoint fails.
+    validate(catalog, fetcher=StubFetcher())
+
+    class DownFetcher:
+        def fetch(self, categories=None, progress_callback=None):
+            return []
+
+    with pytest.raises(RuntimeError):
+        validate(catalog, fetcher=DownFetcher())
+
+    assert [row[1] for row in osm_columns(catalog)] == [1, 1, 0]
+
+
 def test_validation_deletes_nothing(catalog):
     validate(catalog, fetcher=StubFetcher())
 
