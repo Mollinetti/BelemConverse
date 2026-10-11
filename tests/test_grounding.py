@@ -43,5 +43,19 @@ def test_result_title_containing_another_catalog_title_is_grounded():
     assert is_grounded("Passe na **Cacau Show Shopping Pátio**.", results, catalog) is True
 
 
+def test_landmark_from_the_question_is_not_a_stray_mention():
+    results = [{"title": "Café da Portugal"}]
+    catalog = ["Café da Portugal", "Theatro da Paz"]
+    answer = "Perto do Theatro da Paz, recomendo **Café da Portugal**."
+    assert is_grounded(answer, results, catalog, question="cafés perto do Theatro da Paz") is True
+
+
+def test_single_word_catalog_titles_read_as_ordinary_words():
+    # "Botequim" and "Outeiro" are also place names in the catalog.
+    catalog = CATALOG + ["Botequim", "Outeiro"]
+    answer = "A **Estação das Docas** tem clima de botequim, bem diferente de Outeiro."
+    assert is_grounded(answer, RESULTS, catalog) is True
+
+
 def test_strip_markers_removes_bold():
     assert strip_markers("Visite a **Estação das Docas** hoje.") == "Visite a Estação das Docas hoje."
