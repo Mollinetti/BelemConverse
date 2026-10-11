@@ -1012,6 +1012,18 @@ class QueryPlanner:
             if primary_intent == 'popularity' and confidence >= 0.3:
                 logger.debug(f"Sort preference: popularity (confidence: {confidence:.3f})")
                 return 'popularity'
+
+            # "Open now" is a filter (the open_now slot), not an ordering, so a
+            # popularity signal behind a business_hours primary still decides
+            # the sort: "best restaurants open now" ranks by popularity.
+            popularity_confidence = max(
+                (i.get('confidence', 0) for i in intent_result.get('intents', [])
+                 if i.get('intent') == 'popularity'),
+                default=0,
+            )
+            if primary_intent == 'business_hours' and popularity_confidence >= 0.3:
+                logger.debug(f"Sort preference: popularity (behind business_hours, {popularity_confidence:.3f})")
+                return 'popularity'
             
             # Check for rating intent (best/top rated)
             # This is a special case of popularity with rating keywords
