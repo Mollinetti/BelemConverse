@@ -45,6 +45,10 @@ def validate(catalog_path: Path | str, fetcher=None) -> dict:
     catalog_path = Path(catalog_path)
     fetcher = fetcher or _default_fetcher(get_city_config())
     osm_places = fetcher.fetch()
+    if not osm_places:
+        # OSMFetcher returns [] when every Overpass endpoint fails; writing
+        # that would silently erase all existing verification.
+        raise RuntimeError("OpenStreetMap returned no places; catalog left unchanged")
 
     conn = sqlite3.connect(catalog_path)
     try:
