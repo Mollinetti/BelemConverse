@@ -224,8 +224,18 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 intent_result=intent_result,
                 user_coordinates=user_coordinates,
             )
+            if not isinstance(answer, str):
+                answer = str(answer)
+            answer = answer.strip()
+            if not answer:
+                answer = (
+                    "Não foi possível obter o texto do roteiro. "
+                    "Tente de novo com critérios diferentes."
+                    if query_plan.language == "pt-BR"
+                    else "Could not produce itinerary text. Please try different criteria."
+                )
             elapsed_ms = (time.time() - start) * 1000
-            logger.info("Tour response generated in %.0fms", elapsed_ms)
+            logger.info("Tour response generated in %.0fms (chars=%d)", elapsed_ms, len(answer))
             return ChatResponse(
                 language=query_plan.language,
                 answer=answer,
@@ -260,8 +270,12 @@ async def chat(request: ChatRequest) -> ChatResponse:
         retrieval_result.strategy_used,
     )
 
+    # API contract (ChatResponse + OpenAPI): at most 5 results; spec/mission
+    # also caps grounded context at ≤5 places. Keep answer and results aligned.
+    places_for_response = retrieval_result.places[:5]
+
     place_results: List[PlaceResult] = []
-    for place in retrieval_result.places:
+    for place in places_for_response:
         try:
             place_dict = place.copy()
             loc = place_dict.get("location")
@@ -282,7 +296,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 detail=f"Error converting place result: {exc}",
             ) from exc
 
-    answer = _generate_answer(retrieval_result.places, query_plan.language)
+    answer = _generate_answer(places_for_response, query_plan.language)
     elapsed_ms = (time.time() - start) * 1000
     logger.info("Chat response generated in %.0fms", elapsed_ms)
 

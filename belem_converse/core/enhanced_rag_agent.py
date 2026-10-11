@@ -11,7 +11,7 @@ Pipeline: Query → TF-IDF Intent → Two-Stage Retrieval → LLM Response
 
 import logging
 import time
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, List, Dict, Optional, Tuple
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 
@@ -30,6 +30,39 @@ from belem_converse.utils.config import (
 from belem_converse.utils.conversation_memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
+
+
+def _llm_message_content_to_str(message: Any) -> str:
+    """Normalize LangChain invoke() output to a single string (chat models may
+    return str, None, or a list of text/tool blocks). Used so API/Flutter never
+    get an empty or wrong-typed *answer* when the model did produce content.
+    """
+    if message is None:
+        return ""
+    raw: Any
+    if hasattr(message, "content"):
+        raw = message.content
+    else:
+        raw = message
+    if raw is None:
+        return ""
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, (list, tuple)):
+        parts: List[str] = []
+        for item in raw:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                t = item.get("text")
+                if isinstance(t, str):
+                    parts.append(t)
+                else:
+                    parts.append(str(item))
+            else:
+                parts.append(str(item))
+        return "\n".join(parts) if parts else ""
+    return str(raw)
 
 
 class EnhancedRAGAgent:
@@ -486,13 +519,34 @@ class EnhancedRAGAgent:
             # #endregion
             
             response = self.llm_model.invoke(formatted_prompt)
-            response_text = response.content
-            
+            response_text = _llm_message_content_to_str(response)
+
             # Clean any prompt leakage
             response_text = self._clean_response_leakage(response_text)
-            
+
+            # If the LLM returned nothing, or the anti-leakage step stripped the
+            # entire body (e.g. over-aggressive === removal), still return the
+            # structured itinerary so the Flutter client always gets a non-empty
+            # *answer* (empty string yields a blank assistant bubble).
+            if not response_text.strip():
+                ctx = (
+                    itinerary.to_context_string()
+                    if hasattr(itinerary, "to_context_string")
+                    else str(itinerary)
+                )
+                ctx = (ctx or "").strip()
+                if ctx:
+                    logger.warning(
+                        "Tour LLM/cleaner produced empty text; returning itinerary context"
+                    )
+                    return ctx
+                return (
+                    "I couldn't build a tour from the current place data. "
+                    "Try a different time, category, or a more specific request."
+                )
+
             return response_text
-            
+
         except Exception as e:
             logger.error(f"Tour response generation failed: {e}")
             # Return raw itinerary if LLM fails
@@ -562,11 +616,11 @@ class EnhancedRAGAgent:
             
             # Generate response
             response = self.llm_model.invoke(formatted_prompt)
-            response_text = response.content
-            
+            response_text = _llm_message_content_to_str(response)
+
             # Clean any prompt leakage
             response_text = self._clean_response_leakage(response_text)
-            
+
             # Extract place names from documents for memory
             places_mentioned = self._extract_place_names(documents)
             
@@ -699,7 +753,16 @@ class EnhancedRAGAgent:
         
         # Trim whitespace
         cleaned = cleaned.strip()
-        
+
+        # If aggressive === stripping removed everything, keep the user-visible
+        # text rather than returning "" (empty string breaks clients that only
+        # show *answer* as message body, e.g. tour branch with results=[]).
+        if not cleaned and response.strip():
+            logger.warning(
+                "Leakage cleaner would return empty; restoring pre-clean text"
+            )
+            return response.strip()
+
         # Log if we removed significant content (for monitoring)
         if original_length > len(cleaned) + 50:  # Removed more than 50 chars
             logger.warning(f"Removed {original_length - len(cleaned)} characters of leaked content from response")

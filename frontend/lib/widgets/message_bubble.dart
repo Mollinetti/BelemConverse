@@ -89,11 +89,19 @@ class MessageBubble extends StatelessWidget {
         ],
       ),
       child: SelectableText(
-        message.content,
+        (!message.isUser && message.content.trim().isEmpty)
+            ? 'Empty assistant text — check POST /api/chat has a non-empty "answer" '
+                '(debug: look for "api chat:" in the console).'
+            : message.content,
         style: TextStyle(
-          color: message.isUser ? Colors.white : ParaColors.textPrimary,
+          color: !message.isUser && message.content.trim().isEmpty
+              ? ParaColors.textSecondary
+              : (message.isUser ? Colors.white : ParaColors.textPrimary),
           fontSize: 15,
           height: 1.4,
+          fontStyle: !message.isUser && message.content.trim().isEmpty
+              ? FontStyle.italic
+              : FontStyle.normal,
         ),
       ),
     );
@@ -206,8 +214,11 @@ class _TypingIndicatorState extends State<_TypingIndicator>
         if (!mounted) return;
         await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) {
-          _controllers[i].forward().then((_) {
-            if (mounted) _controllers[i].reverse();
+          // Capture by value — the `.then` callback runs after `i` may
+          // have advanced, so `i` in the callback would be out of range.
+          final controller = _controllers[i];
+          controller.forward().then((_) {
+            if (mounted) controller.reverse();
           });
         }
       }

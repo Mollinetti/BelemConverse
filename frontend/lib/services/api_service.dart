@@ -1,5 +1,8 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
 import '../config/constants.dart';
 import '../models/message.dart';
 import '../models/place.dart';
@@ -65,18 +68,31 @@ class ApiService {
           .timeout(AppConstants.apiTimeout);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        
-        // Use new format (results, answer) with fallback to legacy (places, response)
-        final results = data['results'] as List<dynamic>?;
-        final places = data['places'] as List<dynamic>?;
-        final placesList = (results ?? places ?? [])
-            .map((p) => Place.fromJson(p as Map<String, dynamic>))
-            .toList();
+        final decoded = jsonDecode(response.body);
+        if (decoded is! Map) {
+          throw FormatException('Chat response is not a JSON object: $decoded');
+        }
+        final data = Map<String, dynamic>.from(decoded);
 
-        final answer = data['answer'] as String? ?? 
-                      data['response'] as String? ?? 
-                      '';
+        if (kDebugMode) {
+          final answerLen = _stringField(data, 'answer')?.length;
+          final responseLen = _stringField(data, 'response')?.length;
+          debugPrint(
+            'api chat: keys=${data.keys.toList()} answerLen=$answerLen '
+            'responseLen=$responseLen',
+          );
+        }
+
+        // Tour responses use results=[]; only the *answer* text is shown. If
+        // any one place object is malformed, we must still show the answer —
+        // never let Place.fromJson break the whole response.
+        final placesList = _parsePlaceResults(data);
+
+        // New format (answer) + legacy (response). Tour often has only answer.
+        var answer = _stringField(data, 'answer') ??
+            _stringField(data, 'response') ??
+            _stringField(data, 'message') ??
+            '';
 
         return Message.assistant(
           content: answer,
@@ -141,6 +157,53 @@ class ApiService {
   void dispose() {
     _client.close();
   }
+}
+
+/// Build [Place] list from `results` or `places` without ever throwing: a single
+/// bad place must not hide a valid `answer` (tour can return `results: []` but
+/// long `answer` text; conversely a bad `results` entry must not blank the UI).
+List<Place> _parsePlaceResults(Map<String, dynamic> data) {
+  final out = <Place>[];
+  final List<dynamic> raw;
+  if (data['results'] is List) {
+    raw = data['results'] as List<dynamic>;
+  } else if (data['places'] is List) {
+    raw = data['places'] as List<dynamic>;
+  } else {
+    return out;
+  }
+  for (var i = 0; i < raw.length; i++) {
+    final item = raw[i];
+    if (item is! Map) {
+      if (kDebugMode) {
+        debugPrint('Skipping place $i: not a Map');
+      }
+      continue;
+    }
+    try {
+      out.add(Place.fromJson(Map<String, dynamic>.from(item)));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Place.fromJson failed at $i: $e');
+      }
+    }
+  }
+  return out;
+}
+
+/// Coerce a JSON value to a non-empty display string, or `null` if missing.
+String? _stringField(Map<String, dynamic> data, String key) {
+  final v = data[key];
+  if (v == null) return null;
+  if (v is String) return v.isEmpty ? null : v;
+  if (v is num || v is bool) return v.toString();
+  if (v is Map) {
+    // Rare: some gateways wrap text; best-effort extract.
+    final t = v['text'] ?? v['content'];
+    if (t is String && t.isNotEmpty) return t;
+  }
+  final s = v.toString();
+  return s.isEmpty ? null : s;
 }
 
 /// Custom exception for API errors
