@@ -7,22 +7,24 @@ there is no vector store.
 
 from __future__ import annotations
 
-import json
 import logging
+import sqlite3
 from typing import List, Optional
 
+from belem_converse.catalog import load_places
+from belem_converse.cities import get_city_config
 from belem_converse.utils.config import DATA_DIR
 
 logger = logging.getLogger(__name__)
+
+BUILD_HINT = "Build it with: python -m belem_converse.tools.build_catalog"
 
 _catalog: Optional[List[dict]] = None
 
 
 def _load_catalog() -> List[dict]:
-    """Read the place catalog from disk."""
-    path = DATA_DIR / "canonical_places.jsonl"
-    with path.open("r", encoding="utf-8") as fh:
-        return [json.loads(line) for line in fh if line.strip()]
+    """Read the current city's place catalog from disk."""
+    return load_places(DATA_DIR / get_city_config().catalog_path)
 
 
 def initialize_rag_system() -> None:
@@ -36,7 +38,7 @@ def initialize_rag_system() -> None:
         return
     try:
         _catalog = _load_catalog()
-    except (OSError, ValueError) as exc:
+    except (OSError, sqlite3.Error) as exc:
         logger.error("Place catalog could not be loaded: %s", exc)
         return
     logger.info("Place catalog loaded: %d places", len(_catalog))
