@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException
 
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
@@ -26,17 +26,15 @@ from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.query_planner import QueryPlanner
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
-from belem_converse.ingest.csv_ingestion import CSVIngestionPipeline
 
 from . import __version__
-from .dependencies import get_rag_agent, get_system_status, is_system_ready
+from .dependencies import get_system_status, is_system_ready
 from .schemas import (
     ChatFilters,
     ChatRequest,
     ChatResponse,
     ErrorResponse,
     HealthResponse,
-    IngestionResponse,
     LanguagesResponse,
     LatLng,
     Place,
@@ -106,15 +104,6 @@ def _get_retriever() -> UnifiedRetriever:
             osm_client=None,    # FUTURE: wire OSM realtime fallback
         )
     return _retriever
-
-
-def _reset_retriever_cache() -> None:
-    """Drop the cached retriever so subsequent chats re-read the JSONL."""
-    global _place_cache, _category_matcher, _ranking_engine, _retriever
-    _place_cache = None
-    _category_matcher = None
-    _ranking_engine = None
-    _retriever = None
 
 
 # ----- endpoints ------------------------------------------------------------
@@ -320,44 +309,3 @@ def _generate_answer(places: List[dict], language: str) -> str:
         return f"Aqui estão os lugares encontrados:\n\n{body}\n\nEstes são os lugares que correspondem à sua busca."
     return f"Here are the places found:\n\n{body}\n\nThese are the places matching your search."
 
-
-@router.post("/ingest/csv", response_model=IngestionResponse)
-async def ingest_csv(file: UploadFile = File(...)) -> IngestionResponse:
-    """Ingest a places CSV and rebuild ``data/canonical_places.jsonl``."""
-    temp_dir = DATA_DIR / "temp"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-    temp_file = temp_dir / file.filename
-
-    try:
-        content = await file.read()
-        temp_file.write_bytes(content)
-        logger.info("Received CSV file: %s, size: %d bytes", file.filename, len(content))
-
-        pipeline = CSVIngestionPipeline()
-        report = pipeline.ingest_csv(temp_file)
-    except Exception as exc:
-        logger.exception("CSV ingestion failed")
-        raise HTTPException(status_code=500, detail=f"CSV ingestion failed: {exc}") from exc
-    finally:
-        if temp_file.exists():
-            temp_file.unlink()
-
-    _reset_retriever_cache()  # next /chat will re-read the new index
-
-    return IngestionResponse(
-        ingestedCount=report["ingestedCount"],
-        skippedCount=report["skippedCount"],
-        outputFiles=report["outputFiles"],
-    )
-
-
-@router.post("/clear-history")
-async def clear_history() -> dict:
-    try:
-        agent = get_rag_agent()
-        if hasattr(agent, "clear_conversation_history"):
-            agent.clear_conversation_history()
-        return {"status": "success", "message": "Conversation history cleared"}
-    except Exception as exc:
-        logger.exception("Error clearing history")
-        raise HTTPException(status_code=500, detail=str(exc)) from exc

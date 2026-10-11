@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """App lifespan: warm up RAG components at startup."""
+    """App lifespan: load the place catalog at startup."""
     logger.info("Starting BelemConverse API...")
     try:
         initialize_rag_system()
     except Exception as exc:  # pragma: no cover - startup logging path
-        logger.error("Failed to initialize RAG system: %s", exc)
+        logger.error("Failed to load the place catalog: %s", exc)
         # Continue running so /api/health can report the degraded state.
     yield
     logger.info("Shutting down BelemConverse API...")
@@ -42,7 +42,6 @@ app = FastAPI(
         "REST API for BelemConverse - Your AI-powered guide to Belem do Para.\n\n"
         "**Endpoints**\n"
         "- `POST /api/chat` - chat with location-aware grounding\n"
-        "- `POST /api/ingest/csv` - ingest a places CSV into the canonical index\n"
         "- `GET /api/health` - liveness + component readiness\n"
     ),
     version=__version__,
