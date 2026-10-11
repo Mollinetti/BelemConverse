@@ -97,8 +97,8 @@ Run the memory procedure above and record the number.
 
 | Item | Value |
 |---|---|
-| Baseline pytest (T00) | _pass/fail list_ |
-| Diagnostic before (T00) | intent 83.2% · category 85.8% · proximity 93.8% · open-now 99.1% (v2.9 report) |
+| Baseline pytest (T00) | 194 collected at `642c707`: 187 passed · 1 failed · 2 errors · 4 skipped. **Failed:** `test_e2e_integration.py::TestCompleteUserJourneys::test_journey_best_restaurants_open_now` (expects sort `popularity`, gets `best_match`; pre-existing). **Errors:** `test_llama31_model.py::test_portuguese_response`, `::test_instruction_following` (fixture `llm` not found; file deleted in T04). **Skipped:** 4 in `test_e2e_integration.py` (lines 334, 589, 611, 630: "Category matching issue … normalize() argument 2 must be str, not list"). |
+| Diagnostic before (T00) | intent 83.2% · category 85.8% · proximity 93.8% · open-now 99.1% (n=113, v2.9 classifier; re-run at `642c707` matches) |
 | Diagnostic after (T24) | _tbd_ |
 | Catalog rows in → kept / merged / dropped | _tbd_ |
 | Rows with parsed hours / needs_review | _tbd_ |
