@@ -2,9 +2,9 @@
   "aggregate": {
     "n": 113,
     "overall": {
-      "intent_acc": 0.832,
+      "intent_acc": 0.823,
       "category_acc": 0.858,
-      "proximity_acc": 0.938,
+      "proximity_acc": 0.912,
       "open_now_acc": 0.991
     },
     "by_corpus": {
@@ -17,9 +17,9 @@
       },
       "corpus_b_diagnostic": {
         "n": 107,
-        "intent_acc": 0.822,
+        "intent_acc": 0.813,
         "category_acc": 0.869,
-        "proximity_acc": 0.953,
+        "proximity_acc": 0.925,
         "open_now_acc": 0.991
       }
     },
@@ -33,28 +33,28 @@
       },
       "ambiguous": {
         "n": 26,
-        "intent_acc": 0.577,
+        "intent_acc": 0.615,
         "category_acc": 0.769,
-        "proximity_acc": 0.923,
+        "proximity_acc": 0.885,
         "open_now_acc": 1.0
       },
       "canonical": {
         "n": 25,
         "intent_acc": 0.96,
         "category_acc": 0.8,
-        "proximity_acc": 0.88,
+        "proximity_acc": 0.84,
         "open_now_acc": 1.0
       },
       "colloquial": {
         "n": 20,
-        "intent_acc": 0.75,
+        "intent_acc": 0.7,
         "category_acc": 0.95,
-        "proximity_acc": 0.9,
+        "proximity_acc": 0.85,
         "open_now_acc": 1.0
       },
       "multi_intent": {
         "n": 17,
-        "intent_acc": 0.882,
+        "intent_acc": 0.824,
         "category_acc": 0.882,
         "proximity_acc": 1.0,
         "open_now_acc": 1.0
@@ -72,14 +72,14 @@
         "n": 13,
         "intent_acc": 0.923,
         "category_acc": 0.692,
-        "proximity_acc": 0.769,
+        "proximity_acc": 0.615,
         "open_now_acc": 1.0
       },
       "pt-BR": {
         "n": 100,
-        "intent_acc": 0.82,
+        "intent_acc": 0.81,
         "category_acc": 0.88,
-        "proximity_acc": 0.96,
+        "proximity_acc": 0.95,
         "open_now_acc": 0.99
       }
     },
@@ -94,22 +94,22 @@
         "support": 23
       },
       "location": {
-        "tp": 30,
-        "fp": 1,
-        "fn": 16,
-        "precision": 0.968,
-        "recall": 0.652,
-        "f1": 0.779,
-        "support": 46
+        "tp": 28,
+        "fp": 3,
+        "fn": 19,
+        "precision": 0.903,
+        "recall": 0.596,
+        "f1": 0.718,
+        "support": 47
       },
       "popularity": {
-        "tp": 38,
-        "fp": 14,
-        "fn": 13,
-        "precision": 0.731,
-        "recall": 0.745,
-        "f1": 0.738,
-        "support": 51
+        "tp": 41,
+        "fp": 15,
+        "fn": 12,
+        "precision": 0.732,
+        "recall": 0.774,
+        "f1": 0.752,
+        "support": 53
       },
       "price": {
         "tp": 7,
@@ -119,15 +119,6 @@
         "recall": 0.5,
         "f1": 0.636,
         "support": 14
-      },
-      "tour_planning": {
-        "tp": 2,
-        "fp": 2,
-        "fn": 1,
-        "precision": 0.5,
-        "recall": 0.667,
-        "f1": 0.571,
-        "support": 3
       },
       "verification": {
         "tp": 2,
@@ -303,25 +294,20 @@
         "location": 1
       },
       "location": {
-        "popularity": 9,
-        "location": 29,
+        "popularity": 12,
+        "location": 27,
         "price": 1
       },
       "popularity": {
-        "popularity": 30,
-        "location": 1,
-        "tour_planning": 1,
+        "popularity": 32,
+        "location": 2,
         "verification": 1
-      },
-      "tour_planning": {
-        "tour_planning": 2,
-        "popularity": 1
       },
       "verification": {
         "verification": 1,
         "popularity": 7,
         "price": 1,
-        "tour_planning": 1
+        "location": 1
       },
       "price": {
         "price": 5
@@ -395,20 +381,20 @@
       }
     },
     "latency": {
-      "intent_ms_p50": 0.461,
-      "intent_ms_p95": 0.55,
-      "category_ms_p50": 0.472,
-      "category_ms_p95": 0.555,
-      "total_ms_p50": 3.32,
-      "total_ms_p95": 3.658
+      "intent_ms_p50": 0.456,
+      "intent_ms_p95": 0.94,
+      "category_ms_p50": 0.467,
+      "category_ms_p95": 0.77,
+      "total_ms_p50": 3.437,
+      "total_ms_p95": 6.619
     },
     "instrumentation": {
       "proximity": {
-        "both_hit": 30,
-        "only_strategy1": 4,
-        "only_strategy2": 5,
-        "neither": 74,
-        "agree_rate": 0.92
+        "both_hit": 29,
+        "only_strategy1": 5,
+        "only_strategy2": 8,
+        "neither": 71,
+        "agree_rate": 0.885
       },
       "open_now": {
         "both_hit": 10,
@@ -439,15 +425,15 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.657798765908244,
+      "predicted_intent_confidence": 0.6560749123812669,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.657798765908244
+          "confidence": 0.6560749123812669
         },
         {
           "intent": "location",
-          "confidence": 0.21397690209820272
+          "confidence": 0.21525808990192358
         }
       ],
       "predicted_category": "nightlife",
@@ -465,9 +451,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 1.170499948784709,
-      "latency_ms_category": 0.5844999104738235,
-      "latency_ms_total": 5.252415779978037,
+      "latency_ms_intent": 2.5532501749694347,
+      "latency_ms_category": 0.6950004026293755,
+      "latency_ms_total": 8.070249576121569,
       "instrumentation_proximity": {
         "query": "Closest restaurants open now",
         "language": "en",
@@ -521,11 +507,15 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5417849857059941,
+      "predicted_intent_confidence": 0.47434491255701394,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5417849857059941
+          "confidence": 0.47434491255701394
+        },
+        {
+          "intent": "business_hours",
+          "confidence": 0.26042844633733037
         }
       ],
       "predicted_category": "restaurant",
@@ -543,9 +533,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4700829740613699,
-      "latency_ms_category": 0.48904214054346085,
-      "latency_ms_total": 3.3490408677607775,
+      "latency_ms_intent": 0.5454998463392258,
+      "latency_ms_category": 0.48737507313489914,
+      "latency_ms_total": 3.483791835606098,
       "instrumentation_proximity": {
         "query": "Best rated sushi near me open now",
         "language": "en",
@@ -598,11 +588,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.9023773632634833,
+      "predicted_intent_confidence": 0.9141877710655083,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.9023773632634833
+          "confidence": 0.9141877710655083
         }
       ],
       "predicted_category": "restaurant",
@@ -620,9 +610,9 @@
       "category_correct": false,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.441625015810132,
-      "latency_ms_category": 0.4553748294711113,
-      "latency_ms_total": 3.513334086164832,
+      "latency_ms_intent": 0.46725012362003326,
+      "latency_ms_category": 0.4486250691115856,
+      "latency_ms_total": 3.3020409755408764,
       "instrumentation_proximity": {
         "query": "Popular bars within 1km",
         "language": "en",
@@ -680,11 +670,11 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.5539016736019483,
+      "predicted_intent_confidence": 0.5065506750467123,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.5539016736019483
+          "confidence": 0.5065506750467123
         }
       ],
       "predicted_category": "restaurant",
@@ -702,9 +692,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5502081476151943,
-      "latency_ms_category": 0.5317919421941042,
-      "latency_ms_total": 3.56833403930068,
+      "latency_ms_intent": 0.45229122042655945,
+      "latency_ms_category": 0.44954242184758186,
+      "latency_ms_total": 3.230624832212925,
       "instrumentation_proximity": {
         "query": "Restaurantes mais próximos abertos agora",
         "language": "pt-BR",
@@ -762,11 +752,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7259326581965654,
+      "predicted_intent_confidence": 0.7291371173221222,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7259326581965654
+          "confidence": 0.7291371173221222
         }
       ],
       "predicted_category": "cafe",
@@ -784,9 +774,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4536248743534088,
-      "latency_ms_category": 0.4600419197231531,
-      "latency_ms_total": 3.5024997778236866,
+      "latency_ms_intent": 0.4520420916378498,
+      "latency_ms_category": 0.577291939407587,
+      "latency_ms_total": 3.544915933161974,
       "instrumentation_proximity": {
         "query": "Melhores cafés perto de mim",
         "language": "pt-BR",
@@ -844,15 +834,15 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.5572201911670801,
+      "predicted_intent_confidence": 0.568212980168363,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.5572201911670801
+          "confidence": 0.568212980168363
         },
         {
           "intent": "location",
-          "confidence": 0.3346124888185713
+          "confidence": 0.34111021456934465
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -870,9 +860,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5724590737372637,
-      "latency_ms_category": 0.5016250070184469,
-      "latency_ms_total": 3.4199580550193787,
+      "latency_ms_intent": 0.4453333094716072,
+      "latency_ms_category": 0.4526670090854168,
+      "latency_ms_total": 3.208292182534933,
       "instrumentation_proximity": {
         "query": "Parque perto de mim aberto agora",
         "language": "pt-BR",
@@ -924,11 +914,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.898468911808591,
+      "predicted_intent_confidence": 0.8834125314943524,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.898468911808591
+          "confidence": 0.8834125314943524
         }
       ],
       "predicted_category": "restaurant",
@@ -946,9 +936,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.491707818582654,
-      "latency_ms_category": 0.4838330205529928,
-      "latency_ms_total": 3.2387920655310154,
+      "latency_ms_intent": 0.42287493124604225,
+      "latency_ms_category": 0.43004192411899567,
+      "latency_ms_total": 3.0973339453339577,
       "instrumentation_proximity": {
         "query": "restaurante perto de mim",
         "language": "pt-BR",
@@ -1005,11 +995,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6647686214819677,
+      "predicted_intent_confidence": 0.677075886072143,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6647686214819677
+          "confidence": 0.677075886072143
         }
       ],
       "predicted_category": "restaurant",
@@ -1027,9 +1017,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46324986033141613,
-      "latency_ms_category": 0.46708411537110806,
-      "latency_ms_total": 3.373832907527685,
+      "latency_ms_intent": 0.4360838793218136,
+      "latency_ms_category": 0.44079218059778214,
+      "latency_ms_total": 3.0968328937888145,
       "instrumentation_proximity": {
         "query": "melhor pizzaria da região",
         "language": "pt-BR",
@@ -1087,15 +1077,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.6197072240724688,
+      "predicted_intent_confidence": 0.565741608855001,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.6197072240724688
+          "confidence": 0.565741608855001
         },
         {
           "intent": "price",
-          "confidence": 0.22216146271052217
+          "confidence": 0.2620707309349888
         }
       ],
       "predicted_category": "acai",
@@ -1113,9 +1103,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4948340356349945,
-      "latency_ms_category": 0.49287499859929085,
-      "latency_ms_total": 3.367082914337516,
+      "latency_ms_intent": 0.4231249913573265,
+      "latency_ms_category": 0.4304996691644192,
+      "latency_ms_total": 3.1114588491618633,
       "instrumentation_proximity": {
         "query": "açaí mais barato perto daqui",
         "language": "pt-BR",
@@ -1173,11 +1163,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.7895960202999358,
+      "predicted_intent_confidence": 0.8106875447294895,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.7895960202999358
+          "confidence": 0.8106875447294895
         }
       ],
       "predicted_category": "health",
@@ -1195,9 +1185,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4363330081105232,
-      "latency_ms_category": 0.4457910545170307,
-      "latency_ms_total": 3.1814170069992542,
+      "latency_ms_intent": 0.42329123243689537,
+      "latency_ms_category": 0.44495798647403717,
+      "latency_ms_total": 3.3743330277502537,
       "instrumentation_proximity": {
         "query": "farmácia aberta agora",
         "language": "pt-BR",
@@ -1248,17 +1238,21 @@
       "language": "pt-BR",
       "failure_class": "canonical",
       "expected_intents": [
-        "tour_planning"
+        "popularity"
       ],
       "expected_category": "tourist_attraction",
       "expected_proximity": false,
       "expected_open_now": null,
-      "predicted_intent": "tour_planning",
-      "predicted_intent_confidence": 0.9121203447796011,
+      "predicted_intent": "popularity",
+      "predicted_intent_confidence": 0.5191023329726278,
       "predicted_top3_intents": [
         {
-          "intent": "tour_planning",
-          "confidence": 0.9121203447796011
+          "intent": "popularity",
+          "confidence": 0.5191023329726278
+        },
+        {
+          "intent": "price",
+          "confidence": 0.2204619990730135
         }
       ],
       "predicted_category": "beauty",
@@ -1276,9 +1270,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43816608376801014,
-      "latency_ms_category": 0.4455419257283211,
-      "latency_ms_total": 3.189999843016267,
+      "latency_ms_intent": 0.5214163102209568,
+      "latency_ms_category": 0.5557918921113014,
+      "latency_ms_total": 3.465792164206505,
       "instrumentation_proximity": {
         "query": "roteiro de um dia em Belém",
         "language": "pt-BR",
@@ -1314,7 +1308,7 @@
         "agree_strategy01": null,
         "result_count": 0
       },
-      "notes": ""
+      "notes": "mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing"
     },
     {
       "id": "B-C06",
@@ -1328,11 +1322,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7555631860114504,
+      "predicted_intent_confidence": 0.806607626762082,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7555631860114504
+          "confidence": 0.806607626762082
         }
       ],
       "predicted_category": "hotel",
@@ -1350,9 +1344,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44591701589524746,
-      "latency_ms_category": 0.4438338801264763,
-      "latency_ms_total": 3.172334050759673,
+      "latency_ms_intent": 0.44291606172919273,
+      "latency_ms_category": 0.43737515807151794,
+      "latency_ms_total": 3.2917079515755177,
       "instrumentation_proximity": {
         "query": "hotel perto do aeroporto",
         "language": "pt-BR",
@@ -1410,11 +1404,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.5899819029502852,
+      "predicted_intent_confidence": 0.661345023505475,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.5899819029502852
+          "confidence": 0.661345023505475
         }
       ],
       "predicted_category": "cafe",
@@ -1432,9 +1426,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 2.4229169357568026,
-      "latency_ms_category": 0.5893341731280088,
-      "latency_ms_total": 5.4709999822080135,
+      "latency_ms_intent": 0.7255827076733112,
+      "latency_ms_category": 0.47220801934599876,
+      "latency_ms_total": 3.451417200267315,
       "instrumentation_proximity": {
         "query": "padaria 24 horas",
         "language": "pt-BR",
@@ -1491,11 +1485,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5719661739014099,
+      "predicted_intent_confidence": 0.39813501845865407,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5719661739014099
+          "confidence": 0.39813501845865407
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.3849769456988167
         }
       ],
       "predicted_category": "wellness",
@@ -1513,9 +1511,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.47754100523889065,
-      "latency_ms_category": 0.47133280895650387,
-      "latency_ms_total": 3.2241670414805412,
+      "latency_ms_intent": 0.41666673496365547,
+      "latency_ms_category": 0.4332498647272587,
+      "latency_ms_total": 3.0403328128159046,
       "instrumentation_proximity": {
         "query": "academia mais próxima",
         "language": "pt-BR",
@@ -1572,11 +1570,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7060361927302177,
+      "predicted_intent_confidence": 0.7462851387203641,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7060361927302177
+          "confidence": 0.7462851387203641
         }
       ],
       "predicted_category": "pets",
@@ -1594,9 +1592,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4515000618994236,
-      "latency_ms_category": 0.47266692854464054,
-      "latency_ms_total": 3.273207927122712,
+      "latency_ms_intent": 0.4215002991259098,
+      "latency_ms_category": 0.46849995851516724,
+      "latency_ms_total": 3.2257912680506706,
       "instrumentation_proximity": {
         "query": "clínica veterinária próxima",
         "language": "pt-BR",
@@ -1654,11 +1652,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8245570335358241,
+      "predicted_intent_confidence": 0.8489655839195479,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8245570335358241
+          "confidence": 0.8489655839195479
         }
       ],
       "predicted_category": "nightlife",
@@ -1676,9 +1674,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4640829283744097,
-      "latency_ms_category": 0.4731249064207077,
-      "latency_ms_total": 3.2652500085532665,
+      "latency_ms_intent": 0.5864580161869526,
+      "latency_ms_category": 0.5337498150765896,
+      "latency_ms_total": 3.48091684281826,
       "instrumentation_proximity": {
         "query": "balada com música ao vivo hoje",
         "language": "pt-BR",
@@ -1735,11 +1733,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7959242007315851,
+      "predicted_intent_confidence": 0.7961643209818718,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7959242007315851
+          "confidence": 0.7961643209818718
         }
       ],
       "predicted_category": "automotive",
@@ -1757,9 +1755,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4567920695990324,
-      "latency_ms_category": 0.46566687524318695,
-      "latency_ms_total": 3.2185411546379328,
+      "latency_ms_intent": 0.4478343762457371,
+      "latency_ms_category": 0.4553329199552536,
+      "latency_ms_total": 3.1995410099625587,
       "instrumentation_proximity": {
         "query": "oficina mecânica perto de casa",
         "language": "pt-BR",
@@ -1818,11 +1816,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.9289299414614505,
+      "predicted_intent_confidence": 0.8993116170772353,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.9289299414614505
+          "confidence": 0.8993116170772353
         }
       ],
       "predicted_category": "beauty",
@@ -1840,9 +1838,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45845797285437584,
-      "latency_ms_category": 0.5763329099863768,
-      "latency_ms_total": 3.672917140647769,
+      "latency_ms_intent": 0.4519578069448471,
+      "latency_ms_category": 0.4681246355175972,
+      "latency_ms_total": 3.2481253147125244,
       "instrumentation_proximity": {
         "query": "salão de beleza com manicure e pedicure",
         "language": "pt-BR",
@@ -1901,11 +1899,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8608714026922728,
+      "predicted_intent_confidence": 0.8335463944501398,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8608714026922728
+          "confidence": 0.8335463944501398
         }
       ],
       "predicted_category": "kids",
@@ -1923,9 +1921,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45329215936362743,
-      "latency_ms_category": 0.4629578907042742,
-      "latency_ms_total": 3.3825840801000595,
+      "latency_ms_intent": 0.42845774441957474,
+      "latency_ms_category": 0.4415842704474926,
+      "latency_ms_total": 3.148040734231472,
       "instrumentation_proximity": {
         "query": "brinquedoteca com parquinho",
         "language": "pt-BR",
@@ -1984,11 +1982,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7736534003580318,
+      "predicted_intent_confidence": 0.7629095117679365,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7736534003580318
+          "confidence": 0.7629095117679365
         }
       ],
       "predicted_category": "sports",
@@ -2006,9 +2004,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4694168455898762,
-      "latency_ms_category": 0.46699983067810535,
-      "latency_ms_total": 3.330707782879472,
+      "latency_ms_intent": 0.422624871134758,
+      "latency_ms_category": 0.43341703712940216,
+      "latency_ms_total": 3.19099985063076,
       "instrumentation_proximity": {
         "query": "quadra de tênis no clube",
         "language": "pt-BR",
@@ -2066,11 +2064,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "verification",
-      "predicted_intent_confidence": 0.8181712368556285,
+      "predicted_intent_confidence": 0.8111626675075074,
       "predicted_top3_intents": [
         {
           "intent": "verification",
-          "confidence": 0.8181712368556285
+          "confidence": 0.8111626675075074
         }
       ],
       "predicted_category": "cafe",
@@ -2088,9 +2086,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45308307744562626,
-      "latency_ms_category": 0.4580419044941664,
-      "latency_ms_total": 3.2860420178622007,
+      "latency_ms_intent": 0.6871246732771397,
+      "latency_ms_category": 0.5351253785192966,
+      "latency_ms_total": 3.6806673742830753,
       "instrumentation_proximity": {
         "query": "ainda tem aquela cafeteria na frente?",
         "language": "pt-BR",
@@ -2147,15 +2145,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.35130627594971303,
+      "predicted_intent_confidence": 0.4492587123164844,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.35130627594971303
+          "confidence": 0.4492587123164844
         },
         {
           "intent": "verification",
-          "confidence": 0.2648005455857425
+          "confidence": 0.2702547296306433
         }
       ],
       "predicted_category": "bar",
@@ -2173,9 +2171,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4569999873638153,
-      "latency_ms_category": 0.47437497414648533,
-      "latency_ms_total": 3.3639580942690372,
+      "latency_ms_intent": 0.4469580017030239,
+      "latency_ms_category": 0.46566734090447426,
+      "latency_ms_total": 3.324167337268591,
       "instrumentation_proximity": {
         "query": "tem um boteco massa por aqui pra tomar uma gelada?",
         "language": "pt-BR",
@@ -2239,11 +2237,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5199865959234528,
+      "predicted_intent_confidence": 0.7737207789753098,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5199865959234528
+          "confidence": 0.7737207789753098
         }
       ],
       "predicted_category": "shopping",
@@ -2261,9 +2259,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5065000150352716,
-      "latency_ms_category": 0.52220793440938,
-      "latency_ms_total": 3.4167079720646143,
+      "latency_ms_intent": 0.46291714534163475,
+      "latency_ms_category": 0.4575406201183796,
+      "latency_ms_total": 3.2827919349074364,
       "instrumentation_proximity": {
         "query": "bora dar um rolê no shopping",
         "language": "pt-BR",
@@ -2320,11 +2318,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6188326180569602,
+      "predicted_intent_confidence": 0.6830810215704752,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6188326180569602
+          "confidence": 0.6830810215704752
         }
       ],
       "predicted_category": "acai",
@@ -2342,9 +2340,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4666668828576803,
-      "latency_ms_category": 0.4724999889731407,
-      "latency_ms_total": 3.2540832180529833,
+      "latency_ms_intent": 0.42562512680888176,
+      "latency_ms_category": 0.43287500739097595,
+      "latency_ms_total": 3.293583169579506,
       "instrumentation_proximity": {
         "query": "quero comer açaí gostoso",
         "language": "pt-BR",
@@ -2407,11 +2405,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.67830007122633,
+      "predicted_intent_confidence": 0.7022825206571681,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.67830007122633
+          "confidence": 0.7022825206571681
         }
       ],
       "predicted_category": "bar",
@@ -2429,9 +2427,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4666249733418226,
-      "latency_ms_category": 0.4867080133408308,
-      "latency_ms_total": 3.299000207334757,
+      "latency_ms_intent": 0.9402078576385975,
+      "latency_ms_category": 0.7124170660972595,
+      "latency_ms_total": 4.2585828341543674,
       "instrumentation_proximity": {
         "query": "onde eu tomo uma cerveja com a galera?",
         "language": "pt-BR",
@@ -2488,11 +2486,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "verification",
-      "predicted_intent_confidence": 0.4509721954610769,
+      "predicted_intent_confidence": 0.4492581300687937,
       "predicted_top3_intents": [
         {
           "intent": "verification",
-          "confidence": 0.4509721954610769
+          "confidence": 0.4492581300687937
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.21781535787484288
         }
       ],
       "predicted_category": "nightlife",
@@ -2510,9 +2512,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5521250423043966,
-      "latency_ms_category": 0.5088341422379017,
-      "latency_ms_total": 3.392999991774559,
+      "latency_ms_intent": 0.4737093113362789,
+      "latency_ms_category": 0.4697497934103012,
+      "latency_ms_total": 3.239791374653578,
       "instrumentation_proximity": {
         "query": "tem festa hoje em algum lugar?",
         "language": "pt-BR",
@@ -2570,11 +2572,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5252946264300846,
+      "predicted_intent_confidence": 0.516092227350719,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5252946264300846
+          "confidence": 0.516092227350719
         }
       ],
       "predicted_category": "beauty",
@@ -2592,9 +2594,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.522832851856947,
-      "latency_ms_category": 0.48016617074608803,
-      "latency_ms_total": 3.7867501378059387,
+      "latency_ms_intent": 0.4359171725809574,
+      "latency_ms_category": 0.4424997605383396,
+      "latency_ms_total": 3.6937501281499863,
       "instrumentation_proximity": {
         "query": "minha sobrancelha tá precisando",
         "language": "pt-BR",
@@ -2658,11 +2660,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7628524147344167,
+      "predicted_intent_confidence": 0.8516247876745107,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7628524147344167
+          "confidence": 0.8516247876745107
         }
       ],
       "predicted_category": "restaurant",
@@ -2680,9 +2682,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.654999865218997,
-      "latency_ms_category": 0.5689170211553574,
-      "latency_ms_total": 3.7368331104516983,
+      "latency_ms_intent": 0.46995794400572777,
+      "latency_ms_category": 0.46574976295232773,
+      "latency_ms_total": 3.3861249685287476,
       "instrumentation_proximity": {
         "query": "tô com fome, quero comer alguma coisa boa",
         "language": "pt-BR",
@@ -2745,20 +2747,20 @@
       "expected_category": "wellness",
       "expected_proximity": true,
       "expected_open_now": null,
-      "predicted_intent": "location",
-      "predicted_intent_confidence": 0.32446742153244185,
+      "predicted_intent": "popularity",
+      "predicted_intent_confidence": 0.31527115803459643,
       "predicted_top3_intents": [
         {
-          "intent": "location",
-          "confidence": 0.32446742153244185
+          "intent": "popularity",
+          "confidence": 0.31527115803459643
         },
         {
           "intent": "verification",
-          "confidence": 0.3098197783086339
+          "confidence": 0.2926807459929747
         },
         {
-          "intent": "popularity",
-          "confidence": 0.20832451918472789
+          "intent": "location",
+          "confidence": 0.27039638190463255
         }
       ],
       "predicted_category": "wellness",
@@ -2772,20 +2774,20 @@
       "proximity_returned": true,
       "open_now_returned": null,
       "categories_returned_count": 1,
-      "intent_correct": true,
+      "intent_correct": false,
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48812502063810825,
-      "latency_ms_category": 0.4693749360740185,
-      "latency_ms_total": 3.280166070908308,
+      "latency_ms_intent": 0.46070804819464684,
+      "latency_ms_category": 0.44408300891518593,
+      "latency_ms_total": 3.1595411710441113,
       "instrumentation_proximity": {
         "query": "quero malhar, tem academia perto?",
         "language": "pt-BR",
         "strategy1_hit": true,
         "strategy1_signal": "word:perto",
-        "strategy2_hit": true,
-        "agree": true,
+        "strategy2_hit": false,
+        "agree": false,
         "result": true
       },
       "instrumentation_open_now": {
@@ -2836,15 +2838,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.31814532423701747,
+      "predicted_intent_confidence": 0.3908263261236652,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.31814532423701747
+          "confidence": 0.3908263261236652
         },
         {
           "intent": "business_hours",
-          "confidence": 0.20271241570041065
+          "confidence": 0.20025348951536268
         }
       ],
       "predicted_category": "nightlife",
@@ -2862,9 +2864,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4540418740361929,
-      "latency_ms_category": 0.45895809307694435,
-      "latency_ms_total": 3.2122910488396883,
+      "latency_ms_intent": 0.4385830834507942,
+      "latency_ms_category": 0.45283278450369835,
+      "latency_ms_total": 3.3012088388204575,
       "instrumentation_proximity": {
         "query": "bora num churrasco hoje à noite",
         "language": "pt-BR",
@@ -2919,11 +2921,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7608193716570624,
+      "predicted_intent_confidence": 0.7571924862358622,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7608193716570624
+          "confidence": 0.7571924862358622
         }
       ],
       "predicted_category": "beauty",
@@ -2941,9 +2943,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48208306543529034,
-      "latency_ms_category": 0.4905418027192354,
-      "latency_ms_total": 3.3213328570127487,
+      "latency_ms_intent": 0.43837493285536766,
+      "latency_ms_category": 0.4559997469186783,
+      "latency_ms_total": 3.199458122253418,
       "instrumentation_proximity": {
         "query": "cadê uma barbearia bacana aqui pertinho?",
         "language": "pt-BR",
@@ -2997,11 +2999,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.754112383446091,
+      "predicted_intent_confidence": 0.7249620984147778,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.754112383446091
+          "confidence": 0.7249620984147778
         }
       ],
       "predicted_category": "restaurant",
@@ -3019,9 +3021,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4597089719027281,
-      "latency_ms_category": 0.4666252061724663,
-      "latency_ms_total": 3.466250142082572,
+      "latency_ms_intent": 0.4429998807609081,
+      "latency_ms_category": 0.4443330690264702,
+      "latency_ms_total": 3.27129103243351,
       "instrumentation_proximity": {
         "query": "alguma lanchonete da hora aberta agora?",
         "language": "pt-BR",
@@ -3078,11 +3080,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8541741805095151,
+      "predicted_intent_confidence": 0.8872316554421823,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8541741805095151
+          "confidence": 0.8872316554421823
         }
       ],
       "predicted_category": "nightlife",
@@ -3100,9 +3102,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5311660934239626,
-      "latency_ms_category": 0.5554580129683018,
-      "latency_ms_total": 3.5340830218046904,
+      "latency_ms_intent": 0.4497920162975788,
+      "latency_ms_category": 0.4591657780110836,
+      "latency_ms_total": 3.2730838283896446,
       "instrumentation_proximity": {
         "query": "quero curtir uma noitada com música ao vivo",
         "language": "pt-BR",
@@ -3164,16 +3166,12 @@
       "expected_category": "restaurant",
       "expected_proximity": false,
       "expected_open_now": null,
-      "predicted_intent": "tour_planning",
-      "predicted_intent_confidence": 0.37190954733625375,
+      "predicted_intent": "location",
+      "predicted_intent_confidence": 0.4767749938458123,
       "predicted_top3_intents": [
         {
-          "intent": "tour_planning",
-          "confidence": 0.37190954733625375
-        },
-        {
           "intent": "location",
-          "confidence": 0.22559411113929392
+          "confidence": 0.4767749938458123
         }
       ],
       "predicted_category": "restaurant",
@@ -3184,24 +3182,24 @@
           "confidence": 0.5
         }
       ],
-      "proximity_returned": false,
+      "proximity_returned": true,
       "open_now_returned": null,
       "categories_returned_count": 0,
       "intent_correct": false,
       "category_correct": true,
-      "proximity_correct": true,
+      "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4661248531192541,
-      "latency_ms_category": 0.47587486915290356,
-      "latency_ms_total": 3.274959046393633,
+      "latency_ms_intent": 0.428082887083292,
+      "latency_ms_category": 0.44195912778377533,
+      "latency_ms_total": 3.1455419957637787,
       "instrumentation_proximity": {
         "query": "me indica um rodízio que valha a pena",
         "language": "pt-BR",
         "strategy1_hit": false,
         "strategy1_signal": null,
-        "strategy2_hit": false,
-        "agree": true,
-        "result": false
+        "strategy2_hit": true,
+        "agree": false,
+        "result": true
       },
       "instrumentation_open_now": {
         "query": "me indica um rodízio que valha a pena",
@@ -3249,11 +3247,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7701585841972373,
+      "predicted_intent_confidence": 0.7439528592069867,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7701585841972373
+          "confidence": 0.7439528592069867
         }
       ],
       "predicted_category": "hotel",
@@ -3271,9 +3269,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48233289271593094,
-      "latency_ms_category": 0.4826248623430729,
-      "latency_ms_total": 3.314084140583873,
+      "latency_ms_intent": 0.4547080025076866,
+      "latency_ms_category": 0.48429099842906,
+      "latency_ms_total": 3.5590841434895992,
       "instrumentation_proximity": {
         "query": "sabe alguma pousada aconchegante aqui pertinho?",
         "language": "pt-BR",
@@ -3330,11 +3328,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.4579417613640735,
+      "predicted_intent_confidence": 0.4823449858398774,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.4579417613640735
+          "confidence": 0.4823449858398774
         }
       ],
       "predicted_category": "kids",
@@ -3352,9 +3350,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46500004827976227,
-      "latency_ms_category": 0.47750002704560757,
-      "latency_ms_total": 3.3041660208255053,
+      "latency_ms_intent": 0.5209590308368206,
+      "latency_ms_category": 0.48179179430007935,
+      "latency_ms_total": 3.36229195818305,
       "instrumentation_proximity": {
         "query": "quero levar as crianças num lugar legal",
         "language": "pt-BR",
@@ -3411,15 +3409,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.3153044112695223,
+      "predicted_intent_confidence": 0.4094683670892225,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.3153044112695223
+          "confidence": 0.4094683670892225
         },
         {
           "intent": "verification",
-          "confidence": 0.25797469465996803
+          "confidence": 0.28246590720855774
         }
       ],
       "predicted_category": "automotive",
@@ -3437,9 +3435,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4555420018732548,
-      "latency_ms_category": 0.4666249733418226,
-      "latency_ms_total": 3.3202501945197582,
+      "latency_ms_intent": 0.42629195377230644,
+      "latency_ms_category": 0.4369579255580902,
+      "latency_ms_total": 3.181666601449251,
       "instrumentation_proximity": {
         "query": "tem um lava jato decente por aqui?",
         "language": "pt-BR",
@@ -3496,15 +3494,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.37853857220465004,
+      "predicted_intent_confidence": 0.4388111543755697,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.37853857220465004
+          "confidence": 0.4388111543755697
         },
         {
           "intent": "location",
-          "confidence": 0.355469464279797
+          "confidence": 0.3578215656154275
         }
       ],
       "predicted_category": "pets",
@@ -3522,9 +3520,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.49716606736183167,
-      "latency_ms_category": 0.502042006701231,
-      "latency_ms_total": 3.47595801576972,
+      "latency_ms_intent": 0.43170806020498276,
+      "latency_ms_category": 0.4387078806757927,
+      "latency_ms_total": 3.238916862756014,
       "instrumentation_proximity": {
         "query": "onde compro ração pro meu cachorro?",
         "language": "pt-BR",
@@ -3587,11 +3585,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.561728260194936,
+      "predicted_intent_confidence": 0.6396888263952655,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.561728260194936
+          "confidence": 0.6396888263952655
         }
       ],
       "predicted_category": "wellness",
@@ -3609,9 +3607,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4505419638007879,
-      "latency_ms_category": 0.46920799650251865,
-      "latency_ms_total": 3.379541914910078,
+      "latency_ms_intent": 0.47466717660427094,
+      "latency_ms_category": 0.6982083432376385,
+      "latency_ms_total": 4.287667106837034,
       "instrumentation_proximity": {
         "query": "quero relaxar, alguma massagem boa?",
         "language": "pt-BR",
@@ -3675,11 +3673,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.562734398089683,
+      "predicted_intent_confidence": 0.6862672193444284,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.562734398089683
+          "confidence": 0.6862672193444284
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -3697,9 +3695,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4553338512778282,
-      "latency_ms_category": 0.47454098239541054,
-      "latency_ms_total": 3.295707982033491,
+      "latency_ms_intent": 0.5414169281721115,
+      "latency_ms_category": 0.6929170340299606,
+      "latency_ms_total": 4.746042191982269,
       "instrumentation_proximity": {
         "query": "bora ver uma exposição esse fim de semana",
         "language": "pt-BR",
@@ -3751,11 +3749,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6013168827203271,
+      "predicted_intent_confidence": 0.6984470596585217,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6013168827203271
+          "confidence": 0.6984470596585217
         }
       ],
       "predicted_category": "cafe",
@@ -3773,9 +3771,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46341586858034134,
-      "latency_ms_category": 0.4688750486820936,
-      "latency_ms_total": 3.3417080994695425,
+      "latency_ms_intent": 0.47841621562838554,
+      "latency_ms_category": 0.4813750274479389,
+      "latency_ms_total": 3.3750422298908234,
       "instrumentation_proximity": {
         "query": "lugar bom pra tomar um café da manhã reforçado",
         "language": "pt-BR",
@@ -3839,11 +3837,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.9104217078945399,
+      "predicted_intent_confidence": 0.8940669816989705,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.9104217078945399
+          "confidence": 0.8940669816989705
         }
       ],
       "predicted_category": "restaurant",
@@ -3861,9 +3859,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4396250005811453,
-      "latency_ms_category": 0.44516706839203835,
-      "latency_ms_total": 3.6466671153903008,
+      "latency_ms_intent": 0.44724997133016586,
+      "latency_ms_category": 0.4575410857796669,
+      "latency_ms_total": 3.482332918792963,
       "instrumentation_proximity": {
         "query": "restaurnte aberto agora",
         "language": "pt-BR",
@@ -3918,11 +3916,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.9147781989888051,
+      "predicted_intent_confidence": 0.8694664365197039,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.9147781989888051
+          "confidence": 0.8694664365197039
         }
       ],
       "predicted_category": "wellness",
@@ -3940,9 +3938,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5347500555217266,
-      "latency_ms_category": 0.47995802015066147,
-      "latency_ms_total": 3.281374927610159,
+      "latency_ms_intent": 0.422042328864336,
+      "latency_ms_category": 0.42729219421744347,
+      "latency_ms_total": 3.059249836951494,
       "instrumentation_proximity": {
         "query": "academai perto de mim",
         "language": "pt-BR",
@@ -3992,11 +3990,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.5709760258820672,
+      "predicted_intent_confidence": 0.6263922770234729,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.5709760258820672
+          "confidence": 0.6263922770234729
         }
       ],
       "predicted_category": "health",
@@ -4014,9 +4012,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4420839250087738,
-      "latency_ms_category": 0.45199994929134846,
-      "latency_ms_total": 3.124666167423129,
+      "latency_ms_intent": 0.4064575769007206,
+      "latency_ms_category": 0.41841715574264526,
+      "latency_ms_total": 3.100250381976366,
       "instrumentation_proximity": {
         "query": "farmcia 24 horas",
         "language": "pt-BR",
@@ -4066,15 +4064,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.4217495357724539,
+      "predicted_intent_confidence": 0.49556088830811273,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.4217495357724539
+          "confidence": 0.49556088830811273
         },
         {
           "intent": "popularity",
-          "confidence": 0.2801735751747844
+          "confidence": 0.24372483245477686
         }
       ],
       "predicted_category": "beauty",
@@ -4092,9 +4090,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4390829708427191,
-      "latency_ms_category": 0.4622910637408495,
-      "latency_ms_total": 3.159875050187111,
+      "latency_ms_intent": 0.4277080297470093,
+      "latency_ms_category": 0.4432499408721924,
+      "latency_ms_total": 3.7012076936662197,
       "instrumentation_proximity": {
         "query": "cabelereira na regiao",
         "language": "pt-BR",
@@ -4149,11 +4147,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.8702778174279262,
+      "predicted_intent_confidence": 0.870921366334203,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.8702778174279262
+          "confidence": 0.870921366334203
         }
       ],
       "predicted_category": "pets",
@@ -4171,9 +4169,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44741597957909107,
-      "latency_ms_category": 0.45454083010554314,
-      "latency_ms_total": 3.2522501423954964,
+      "latency_ms_intent": 0.44670887291431427,
+      "latency_ms_category": 0.4496662877500057,
+      "latency_ms_total": 3.2696248963475227,
       "instrumentation_proximity": {
         "query": "veterenario perto",
         "language": "pt-BR",
@@ -4231,11 +4229,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.9327005333295281,
+      "predicted_intent_confidence": 0.9352933069853371,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.9327005333295281
+          "confidence": 0.9352933069853371
         }
       ],
       "predicted_category": "pets",
@@ -4253,9 +4251,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44212513603270054,
-      "latency_ms_category": 0.4480830393731594,
-      "latency_ms_total": 3.277708077803254,
+      "latency_ms_intent": 0.4359171725809574,
+      "latency_ms_category": 0.4371250979602337,
+      "latency_ms_total": 4.205790814012289,
       "instrumentation_proximity": {
         "query": "petshop perto deki",
         "language": "pt-BR",
@@ -4313,15 +4311,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.36813592181882143,
+      "predicted_intent_confidence": 0.40324612867494575,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.36813592181882143
+          "confidence": 0.40324612867494575
         },
         {
           "intent": "popularity",
-          "confidence": 0.24933232129904473
+          "confidence": 0.27819043702885304
         }
       ],
       "predicted_category": "restaurant",
@@ -4339,9 +4337,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.49287499859929085,
-      "latency_ms_category": 0.4918328486382961,
-      "latency_ms_total": 3.2421250361949205,
+      "latency_ms_intent": 2.042708918452263,
+      "latency_ms_category": 1.8271668814122677,
+      "latency_ms_total": 11.685583274811506,
       "instrumentation_proximity": {
         "query": "lanchonte barata",
         "language": "pt-BR",
@@ -4393,11 +4391,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.8005331817777535,
+      "predicted_intent_confidence": 0.8209806983157895,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.8005331817777535
+          "confidence": 0.8209806983157895
         }
       ],
       "predicted_category": "hotel",
@@ -4415,9 +4413,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44633285142481327,
-      "latency_ms_category": 0.4577499348670244,
-      "latency_ms_total": 3.1892501283437014,
+      "latency_ms_intent": 2.901709172874689,
+      "latency_ms_category": 0.6909999065101147,
+      "latency_ms_total": 10.114207863807678,
       "instrumentation_proximity": {
         "query": "padaira aberta agora",
         "language": "pt-BR",
@@ -4467,11 +4465,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.7303000600376919,
+      "predicted_intent_confidence": 0.7881348809165869,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.7303000600376919
+          "confidence": 0.7881348809165869
         }
       ],
       "predicted_category": "ice_cream",
@@ -4489,9 +4487,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4373330157250166,
-      "latency_ms_category": 0.4585420247167349,
-      "latency_ms_total": 3.1385421752929688,
+      "latency_ms_intent": 2.2147498093545437,
+      "latency_ms_category": 1.4945422299206257,
+      "latency_ms_total": 8.582166396081448,
       "instrumentation_proximity": {
         "query": "sorvetria proxima",
         "language": "pt-BR",
@@ -4548,11 +4546,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.9258964831816495,
+      "predicted_intent_confidence": 0.926843351045537,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.9258964831816495
+          "confidence": 0.926843351045537
         }
       ],
       "predicted_category": "automotive",
@@ -4570,9 +4568,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43720798566937447,
-      "latency_ms_category": 0.4819589667022228,
-      "latency_ms_total": 3.168417140841484,
+      "latency_ms_intent": 0.6202920340001583,
+      "latency_ms_category": 2.3840409703552723,
+      "latency_ms_total": 11.279582977294922,
       "instrumentation_proximity": {
         "query": "mecanca perto de mim",
         "language": "pt-BR",
@@ -4622,15 +4620,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.3812774479651984,
+      "predicted_intent_confidence": 0.4481652607423682,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.3812774479651984
+          "confidence": 0.4481652607423682
         },
         {
           "intent": "popularity",
-          "confidence": 0.2420596237365094
+          "confidence": 0.24225277904020687
         }
       ],
       "predicted_category": "restaurant",
@@ -4648,9 +4646,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4409998655319214,
-      "latency_ms_category": 0.44712494127452374,
-      "latency_ms_total": 3.116083098575473,
+      "latency_ms_intent": 1.6684159636497498,
+      "latency_ms_category": 1.5520001761615276,
+      "latency_ms_total": 10.433957912027836,
       "instrumentation_proximity": {
         "query": "pizaria barata",
         "language": "pt-BR",
@@ -4702,11 +4700,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.9273977650717704,
+      "predicted_intent_confidence": 0.9349891239424609,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.9273977650717704
+          "confidence": 0.9349891239424609
         }
       ],
       "predicted_category": "restaurant",
@@ -4724,9 +4722,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5041249096393585,
-      "latency_ms_category": 0.5004589911550283,
-      "latency_ms_total": 3.340083872899413,
+      "latency_ms_intent": 0.8132504299283028,
+      "latency_ms_category": 1.0054996237158775,
+      "latency_ms_total": 6.618625018745661,
       "instrumentation_proximity": {
         "query": "sushiy aberto agora",
         "language": "pt-BR",
@@ -4784,15 +4782,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.47329684853634446,
+      "predicted_intent_confidence": 0.49870290978026477,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.47329684853634446
+          "confidence": 0.49870290978026477
         },
         {
           "intent": "location",
-          "confidence": 0.37010408164249886
+          "confidence": 0.3744920263771379
         }
       ],
       "predicted_category": "hotel",
@@ -4810,9 +4808,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.49341702833771706,
-      "latency_ms_category": 0.46683289110660553,
-      "latency_ms_total": 3.2591670751571655,
+      "latency_ms_intent": 0.5224593915045261,
+      "latency_ms_category": 0.5172081291675568,
+      "latency_ms_total": 4.159583244472742,
       "instrumentation_proximity": {
         "query": "hotell barato proximo",
         "language": "pt-BR",
@@ -4866,11 +4864,19 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.2982661288949226,
+      "predicted_intent_confidence": 0.36654485702304945,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.2982661288949226
+          "confidence": 0.36654485702304945
+        },
+        {
+          "intent": "location",
+          "confidence": 0.2194525378750622
+        },
+        {
+          "intent": "verification",
+          "confidence": 0.20972148794943477
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -4888,9 +4894,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4409998655319214,
-      "latency_ms_category": 0.4504588432610035,
-      "latency_ms_total": 3.1109170522540808,
+      "latency_ms_intent": 0.7236669771373272,
+      "latency_ms_category": 0.6065419875085354,
+      "latency_ms_total": 4.142249934375286,
       "instrumentation_proximity": {
         "query": "parqu da cidade",
         "language": "pt-BR",
@@ -4945,11 +4951,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7333585092222062,
+      "predicted_intent_confidence": 0.7938927570282165,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7333585092222062
+          "confidence": 0.7938927570282165
         }
       ],
       "predicted_category": "restaurant",
@@ -4967,9 +4973,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43933303095400333,
-      "latency_ms_category": 0.4537501372396946,
-      "latency_ms_total": 3.1662078108638525,
+      "latency_ms_intent": 0.6944169290363789,
+      "latency_ms_category": 0.550583004951477,
+      "latency_ms_total": 4.359124694019556,
       "instrumentation_proximity": {
         "query": "bairo bom pra comer",
         "language": "pt-BR",
@@ -5024,11 +5030,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.7992373282402553,
+      "predicted_intent_confidence": 0.8264718606923698,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.7992373282402553
+          "confidence": 0.8264718606923698
         }
       ],
       "predicted_category": "acai",
@@ -5046,9 +5052,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43754209764301777,
-      "latency_ms_category": 0.4543750546872616,
-      "latency_ms_total": 3.398583037778735,
+      "latency_ms_intent": 0.9897500276565552,
+      "latency_ms_category": 1.4734170399606228,
+      "latency_ms_total": 5.63050014898181,
       "instrumentation_proximity": {
         "query": "acai cremoso e barato",
         "language": "pt-BR",
@@ -5106,15 +5112,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.41789159798238723,
+      "predicted_intent_confidence": 0.4747521457960702,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.41789159798238723
+          "confidence": 0.4747521457960702
         },
         {
           "intent": "popularity",
-          "confidence": 0.20087293937505638
+          "confidence": 0.20883478633410085
         }
       ],
       "predicted_category": "health",
@@ -5132,9 +5138,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": false,
-      "latency_ms_intent": 0.5088329780846834,
-      "latency_ms_category": 0.6034169346094131,
-      "latency_ms_total": 3.657666966319084,
+      "latency_ms_intent": 0.443791039288044,
+      "latency_ms_category": 0.4409579560160637,
+      "latency_ms_total": 4.004375077784061,
       "instrumentation_proximity": {
         "query": "farmacia aberta hoje",
         "language": "pt-BR",
@@ -5191,11 +5197,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5719661739014099,
+      "predicted_intent_confidence": 0.39813501845865407,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5719661739014099
+          "confidence": 0.39813501845865407
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.3849769456988167
         }
       ],
       "predicted_category": "wellness",
@@ -5213,9 +5223,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4462089855223894,
-      "latency_ms_category": 0.45604188926517963,
-      "latency_ms_total": 3.217665944248438,
+      "latency_ms_intent": 0.504916999489069,
+      "latency_ms_category": 0.4719169810414314,
+      "latency_ms_total": 3.437416162341833,
       "instrumentation_proximity": {
         "query": "academia mais proxima",
         "language": "pt-BR",
@@ -5273,11 +5283,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.529172553751674,
+      "predicted_intent_confidence": 0.5926987060920799,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.529172553751674
+          "confidence": 0.5926987060920799
         }
       ],
       "predicted_category": "nightlife",
@@ -5295,9 +5305,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43891603127121925,
-      "latency_ms_category": 0.45616691932082176,
-      "latency_ms_total": 3.2450000289827585,
+      "latency_ms_intent": 0.4671248607337475,
+      "latency_ms_category": 0.466375146061182,
+      "latency_ms_total": 3.7963339127600193,
       "instrumentation_proximity": {
         "query": "musica ao vivo hoje a noite",
         "language": "pt-BR",
@@ -5355,15 +5365,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.32210500997801383,
+      "predicted_intent_confidence": 0.3732171609358334,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.32210500997801383
+          "confidence": 0.3732171609358334
         },
         {
           "intent": "location",
-          "confidence": 0.21238898205259785
+          "confidence": 0.2602611165440793
         }
       ],
       "predicted_category": "cafe",
@@ -5381,9 +5391,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.43266708962619305,
-      "latency_ms_category": 0.44008390977978706,
-      "latency_ms_total": 3.1957088503986597,
+      "latency_ms_intent": 0.462499912828207,
+      "latency_ms_category": 0.4691248759627342,
+      "latency_ms_total": 3.663084004074335,
       "instrumentation_proximity": {
         "query": "cafe da manha",
         "language": "pt-BR",
@@ -5441,11 +5451,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.53040661450261,
+      "predicted_intent_confidence": 0.5082451420445782,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.53040661450261
+          "confidence": 0.5082451420445782
         }
       ],
       "predicted_category": "sports",
@@ -5463,9 +5473,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4392080008983612,
-      "latency_ms_category": 0.4556670319288969,
-      "latency_ms_total": 3.411833895370364,
+      "latency_ms_intent": 0.5485420115292072,
+      "latency_ms_category": 0.4802918992936611,
+      "latency_ms_total": 4.019708372652531,
       "instrumentation_proximity": {
         "query": "estadio para assistir jogo",
         "language": "pt-BR",
@@ -5523,11 +5533,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8262032320566484,
+      "predicted_intent_confidence": 0.8545180535770545,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8262032320566484
+          "confidence": 0.8545180535770545
         }
       ],
       "predicted_category": "sports",
@@ -5549,9 +5559,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5467499140650034,
-      "latency_ms_category": 0.5136660765856504,
-      "latency_ms_total": 3.412917023524642,
+      "latency_ms_intent": 0.5748327821493149,
+      "latency_ms_category": 0.6637079641222954,
+      "latency_ms_total": 3.9674160070717335,
       "instrumentation_proximity": {
         "query": "ginasio com piscina",
         "language": "pt-BR",
@@ -5609,11 +5619,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.731452073751627,
+      "predicted_intent_confidence": 0.7627891454423724,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.731452073751627
+          "confidence": 0.7627891454423724
         }
       ],
       "predicted_category": "cafe",
@@ -5631,9 +5641,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.47279102727770805,
-      "latency_ms_category": 0.4715831018984318,
-      "latency_ms_total": 3.215417033061385,
+      "latency_ms_intent": 0.47562457621097565,
+      "latency_ms_category": 0.4867906682193279,
+      "latency_ms_total": 3.6562923341989517,
       "instrumentation_proximity": {
         "query": "confeitaria proxima a mim",
         "language": "pt-BR",
@@ -5685,11 +5695,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.9065572998673622,
+      "predicted_intent_confidence": 0.8757864536050725,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.9065572998673622
+          "confidence": 0.8757864536050725
         }
       ],
       "predicted_category": "restaurant",
@@ -5707,9 +5717,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4550840239971876,
-      "latency_ms_category": 0.470584025606513,
-      "latency_ms_total": 3.215041011571884,
+      "latency_ms_intent": 0.5740001797676086,
+      "latency_ms_category": 0.5291248671710491,
+      "latency_ms_total": 4.5131659135222435,
       "instrumentation_proximity": {
         "query": "otimo restaurante para almoco",
         "language": "pt-BR",
@@ -5766,11 +5776,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.4674600741677573,
+      "predicted_intent_confidence": 0.4987967096265632,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.4674600741677573
+          "confidence": 0.4987967096265632
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -5788,9 +5798,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4472502041608095,
-      "latency_ms_category": 0.45745912939310074,
-      "latency_ms_total": 3.1833748798817396,
+      "latency_ms_intent": 0.5504582077264786,
+      "latency_ms_category": 0.49458304420113564,
+      "latency_ms_total": 3.7096249870955944,
       "instrumentation_proximity": {
         "query": "ponto turistico famoso",
         "language": "pt-BR",
@@ -5850,19 +5860,19 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.3593882173264725,
+      "predicted_intent_confidence": 0.3611380723312018,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.3593882173264725
+          "confidence": 0.3611380723312018
         },
         {
           "intent": "location",
-          "confidence": 0.2763802257306396
+          "confidence": 0.2896085754692756
         },
         {
           "intent": "popularity",
-          "confidence": 0.21227587299997874
+          "confidence": 0.209670820733335
         }
       ],
       "predicted_category": "restaurant",
@@ -5880,9 +5890,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4712499212473631,
-      "latency_ms_category": 0.4783750046044588,
-      "latency_ms_total": 3.2908751163631678,
+      "latency_ms_intent": 0.508124940097332,
+      "latency_ms_category": 0.5466658622026443,
+      "latency_ms_total": 3.640542272478342,
       "instrumentation_proximity": {
         "query": "melhor restaurante barato aberto agora perto de mim",
         "language": "pt-BR",
@@ -5937,15 +5947,15 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.47730679246922764,
+      "predicted_intent_confidence": 0.45347137919468744,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.47730679246922764
+          "confidence": 0.45347137919468744
         },
         {
           "intent": "business_hours",
-          "confidence": 0.23870900660350694
+          "confidence": 0.30307110458478026
         }
       ],
       "predicted_category": "acai",
@@ -5963,9 +5973,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45570801012218,
-      "latency_ms_category": 0.4885829985141754,
-      "latency_ms_total": 3.332667052745819,
+      "latency_ms_intent": 0.4464578814804554,
+      "latency_ms_category": 0.45858416706323624,
+      "latency_ms_total": 3.2235421240329742,
       "instrumentation_proximity": {
         "query": "açaí cremoso barato 24 horas",
         "language": "pt-BR",
@@ -6023,12 +6033,16 @@
       "expected_category": "wellness",
       "expected_proximity": true,
       "expected_open_now": null,
-      "predicted_intent": "location",
-      "predicted_intent_confidence": 0.6770970716252838,
+      "predicted_intent": "popularity",
+      "predicted_intent_confidence": 0.47151871685832186,
       "predicted_top3_intents": [
         {
+          "intent": "popularity",
+          "confidence": 0.47151871685832186
+        },
+        {
           "intent": "location",
-          "confidence": 0.6770970716252838
+          "confidence": 0.29056416201624446
         }
       ],
       "predicted_category": "wellness",
@@ -6042,20 +6056,20 @@
       "proximity_returned": true,
       "open_now_returned": null,
       "categories_returned_count": 3,
-      "intent_correct": true,
+      "intent_correct": false,
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5002079997211695,
-      "latency_ms_category": 0.4876658786088228,
-      "latency_ms_total": 3.4629160072654486,
+      "latency_ms_intent": 0.44216588139533997,
+      "latency_ms_category": 0.4609157331287861,
+      "latency_ms_total": 3.452999982982874,
       "instrumentation_proximity": {
         "query": "academia barata perto pra começar musculação",
         "language": "pt-BR",
         "strategy1_hit": true,
         "strategy1_signal": "word:perto",
-        "strategy2_hit": true,
-        "agree": true,
+        "strategy2_hit": false,
+        "agree": false,
         "result": true
       },
       "instrumentation_open_now": {
@@ -6106,11 +6120,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.6753708480504523,
+      "predicted_intent_confidence": 0.6449386602234286,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.6753708480504523
+          "confidence": 0.6449386602234286
         }
       ],
       "predicted_category": "pets",
@@ -6128,9 +6142,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4925411194562912,
-      "latency_ms_category": 0.4935001488775015,
-      "latency_ms_total": 3.4145829267799854,
+      "latency_ms_intent": 0.468292273581028,
+      "latency_ms_category": 0.6811660714447498,
+      "latency_ms_total": 3.701833076775074,
       "instrumentation_proximity": {
         "query": "petshop barato pra banho e tosa do meu cachorro",
         "language": "pt-BR",
@@ -6190,11 +6204,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8115342679658779,
+      "predicted_intent_confidence": 0.8325006154621297,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8115342679658779
+          "confidence": 0.8325006154621297
         }
       ],
       "predicted_category": "nightlife",
@@ -6212,9 +6226,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4697497934103012,
-      "latency_ms_category": 0.4817501176148653,
-      "latency_ms_total": 3.3732920419424772,
+      "latency_ms_intent": 0.4814998246729374,
+      "latency_ms_category": 0.4670829512178898,
+      "latency_ms_total": 3.4853750839829445,
       "instrumentation_proximity": {
         "query": "balada com show ao vivo essa noite com open bar",
         "language": "pt-BR",
@@ -6276,15 +6290,15 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.42274658279652466,
+      "predicted_intent_confidence": 0.4222970208211164,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.42274658279652466
+          "confidence": 0.4222970208211164
         },
         {
           "intent": "location",
-          "confidence": 0.29648795386897336
+          "confidence": 0.31017390819429996
         }
       ],
       "predicted_category": "restaurant",
@@ -6302,16 +6316,16 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.47524995170533657,
-      "latency_ms_category": 0.4765000194311142,
-      "latency_ms_total": 3.5912911407649517,
+      "latency_ms_intent": 0.543458852916956,
+      "latency_ms_category": 0.7702503353357315,
+      "latency_ms_total": 3.6931252107024193,
       "instrumentation_proximity": {
         "query": "restaurante japonês top perto daqui aberto agora barato",
         "language": "pt-BR",
         "strategy1_hit": true,
         "strategy1_signal": "phrase:perto daqui",
-        "strategy2_hit": false,
-        "agree": false,
+        "strategy2_hit": true,
+        "agree": true,
         "result": true
       },
       "instrumentation_open_now": {
@@ -6362,16 +6376,16 @@
       "expected_category": "hotel",
       "expected_proximity": true,
       "expected_open_now": null,
-      "predicted_intent": "location",
-      "predicted_intent_confidence": 0.44165031222502654,
+      "predicted_intent": "popularity",
+      "predicted_intent_confidence": 0.46626283854893397,
       "predicted_top3_intents": [
         {
-          "intent": "location",
-          "confidence": 0.44165031222502654
+          "intent": "popularity",
+          "confidence": 0.46626283854893397
         },
         {
-          "intent": "popularity",
-          "confidence": 0.3797573408246608
+          "intent": "location",
+          "confidence": 0.37798324429564767
         }
       ],
       "predicted_category": "sports",
@@ -6389,9 +6403,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48349983990192413,
-      "latency_ms_category": 0.4967499990016222,
-      "latency_ms_total": 3.3924169838428497,
+      "latency_ms_intent": 0.43237488716840744,
+      "latency_ms_category": 0.4616249352693558,
+      "latency_ms_total": 3.1860838644206524,
       "instrumentation_proximity": {
         "query": "hotel 5 estrelas com piscina perto da praia",
         "language": "pt-BR",
@@ -6447,11 +6461,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.815792456316166,
+      "predicted_intent_confidence": 0.822904879870832,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.815792456316166
+          "confidence": 0.822904879870832
         }
       ],
       "predicted_category": "beauty",
@@ -6469,9 +6483,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44304109178483486,
-      "latency_ms_category": 0.45420811511576176,
-      "latency_ms_total": 3.1847499776631594,
+      "latency_ms_intent": 0.4492085427045822,
+      "latency_ms_category": 0.47220801934599876,
+      "latency_ms_total": 3.4325411543250084,
       "instrumentation_proximity": {
         "query": "cabeleireira boa e barata aqui perto",
         "language": "pt-BR",
@@ -6530,11 +6544,15 @@
       "expected_proximity": true,
       "expected_open_now": true,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5453299527803582,
+      "predicted_intent_confidence": 0.6545360102556742,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5453299527803582
+          "confidence": 0.6545360102556742
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.24784487208011188
         }
       ],
       "predicted_category": "automotive",
@@ -6552,9 +6570,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45974995009601116,
-      "latency_ms_category": 0.46841613948345184,
-      "latency_ms_total": 3.287958912551403,
+      "latency_ms_intent": 0.45741675421595573,
+      "latency_ms_category": 0.460249837487936,
+      "latency_ms_total": 3.257082775235176,
       "instrumentation_proximity": {
         "query": "oficina mecânica 24h perto que faça troca de óleo",
         "language": "pt-BR",
@@ -6612,15 +6630,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.43803586994124305,
+      "predicted_intent_confidence": 0.5284978400944066,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.43803586994124305
+          "confidence": 0.5284978400944066
         },
         {
           "intent": "location",
-          "confidence": 0.38439340003600975
+          "confidence": 0.34466070988792163
         }
       ],
       "predicted_category": "kids",
@@ -6638,9 +6656,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46087498776614666,
-      "latency_ms_category": 0.4758751019835472,
-      "latency_ms_total": 3.341417061164975,
+      "latency_ms_intent": 0.4498749040067196,
+      "latency_ms_category": 0.46345777809619904,
+      "latency_ms_total": 3.388000186532736,
       "instrumentation_proximity": {
         "query": "parque infantil grátis com brinquedoteca perto de casa",
         "language": "pt-BR",
@@ -6698,11 +6716,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6287917223247556,
+      "predicted_intent_confidence": 0.7419979681108484,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6287917223247556
+          "confidence": 0.7419979681108484
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -6720,9 +6738,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44700014404952526,
-      "latency_ms_category": 0.46845804899930954,
-      "latency_ms_total": 3.2498750369995832,
+      "latency_ms_intent": 0.5768751725554466,
+      "latency_ms_category": 0.5910000763833523,
+      "latency_ms_total": 3.850124776363373,
       "instrumentation_proximity": {
         "query": "igreja histórica famosa para visitar",
         "language": "pt-BR",
@@ -6779,15 +6797,15 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.393407510974617,
+      "predicted_intent_confidence": 0.46333682543757904,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.393407510974617
+          "confidence": 0.46333682543757904
         },
         {
           "intent": "popularity",
-          "confidence": 0.3070777918270903
+          "confidence": 0.2940094950667814
         }
       ],
       "predicted_category": "health",
@@ -6805,9 +6823,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5502498243004084,
-      "latency_ms_category": 0.5107088945806026,
-      "latency_ms_total": 3.600583178922534,
+      "latency_ms_intent": 0.4952079616487026,
+      "latency_ms_category": 0.46620797365903854,
+      "latency_ms_total": 3.5041249357163906,
       "instrumentation_proximity": {
         "query": "dentista 24 horas de emergência",
         "language": "pt-BR",
@@ -6864,11 +6882,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6365042798441138,
+      "predicted_intent_confidence": 0.649301432600028,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6365042798441138
+          "confidence": 0.649301432600028
         }
       ],
       "predicted_category": "sports",
@@ -6886,9 +6904,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4562500398606062,
-      "latency_ms_category": 0.480166869238019,
-      "latency_ms_total": 3.3074168022722006,
+      "latency_ms_intent": 0.5033747293055058,
+      "latency_ms_category": 0.498834066092968,
+      "latency_ms_total": 3.626790829002857,
       "instrumentation_proximity": {
         "query": "quadra de futebol pra alugar hoje à noite",
         "language": "pt-BR",
@@ -6945,11 +6963,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8897614805089655,
+      "predicted_intent_confidence": 0.9039172057902398,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8897614805089655
+          "confidence": 0.9039172057902398
         }
       ],
       "predicted_category": "shopping",
@@ -6967,9 +6985,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44137495569884777,
-      "latency_ms_category": 0.4543750546872616,
-      "latency_ms_total": 3.2229169737547636,
+      "latency_ms_intent": 0.4632500931620598,
+      "latency_ms_category": 0.4713330417871475,
+      "latency_ms_total": 3.6539160646498203,
       "instrumentation_proximity": {
         "query": "loja de roupa famosa no shopping",
         "language": "pt-BR",
@@ -7027,11 +7045,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.8071448406121623,
+      "predicted_intent_confidence": 0.8266704072119369,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.8071448406121623
+          "confidence": 0.8266704072119369
         }
       ],
       "predicted_category": "nightlife",
@@ -7053,9 +7071,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4416247829794884,
-      "latency_ms_category": 0.452833017334342,
-      "latency_ms_total": 3.2166249584406614,
+      "latency_ms_intent": 0.460249837487936,
+      "latency_ms_category": 0.45774970203638077,
+      "latency_ms_total": 3.525165840983391,
       "instrumentation_proximity": {
         "query": "cinema barato pra hoje à noite",
         "language": "pt-BR",
@@ -7113,15 +7131,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.4053054959259926,
+      "predicted_intent_confidence": 0.4849071737523339,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.4053054959259926
+          "confidence": 0.4849071737523339
         },
         {
           "intent": "verification",
-          "confidence": 0.37827848186544877
+          "confidence": 0.32947884848142855
         }
       ],
       "predicted_category": "restaurant",
@@ -7139,9 +7157,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.445124926045537,
-      "latency_ms_category": 0.4570828750729561,
-      "latency_ms_total": 3.2039168290793896,
+      "latency_ms_intent": 0.4519578069448471,
+      "latency_ms_category": 0.4526670090854168,
+      "latency_ms_total": 3.1940829940140247,
       "instrumentation_proximity": {
         "query": "tem onde dormir aqui?",
         "language": "pt-BR",
@@ -7202,11 +7220,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.3661623263171502,
+      "predicted_intent_confidence": 0.5729104757733557,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.3661623263171502
+          "confidence": 0.5729104757733557
         }
       ],
       "predicted_category": "hotel",
@@ -7224,9 +7242,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46454090625047684,
-      "latency_ms_category": 0.488499877974391,
-      "latency_ms_total": 3.4576670732349157,
+      "latency_ms_intent": 0.5545830354094505,
+      "latency_ms_category": 0.5419589579105377,
+      "latency_ms_total": 3.680415917187929,
       "instrumentation_proximity": {
         "query": "preciso de um lugar pra ficar essa semana",
         "language": "pt-BR",
@@ -7289,11 +7307,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.41343912961659596,
+      "predicted_intent_confidence": 0.49639702465699165,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.41343912961659596
+          "confidence": 0.49639702465699165
         }
       ],
       "predicted_category": "restaurant",
@@ -7311,9 +7329,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45312498696148396,
-      "latency_ms_category": 0.46749995090067387,
-      "latency_ms_total": 3.5257081035524607,
+      "latency_ms_intent": 0.5011670291423798,
+      "latency_ms_category": 0.5317912437021732,
+      "latency_ms_total": 3.8164579309523106,
       "instrumentation_proximity": {
         "query": "quero ir num lugar bonito pra tirar fotos",
         "language": "pt-BR",
@@ -7374,15 +7392,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.4528412429599946,
+      "predicted_intent_confidence": 0.5025917718707072,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.4528412429599946
+          "confidence": 0.5025917718707072
         },
         {
           "intent": "location",
-          "confidence": 0.22416936106809437
+          "confidence": 0.2789104498754517
         }
       ],
       "predicted_category": "shopping",
@@ -7400,9 +7418,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4509999416768551,
-      "latency_ms_category": 0.4762092139571905,
-      "latency_ms_total": 3.265000181272626,
+      "latency_ms_intent": 0.4613748751580715,
+      "latency_ms_category": 0.458624679595232,
+      "latency_ms_total": 3.2345000654459,
       "instrumentation_proximity": {
         "query": "onde eu compro uma carteira de couro?",
         "language": "pt-BR",
@@ -7457,11 +7475,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5854337753087299,
+      "predicted_intent_confidence": 0.6891829284266228,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5854337753087299
+          "confidence": 0.6891829284266228
         }
       ],
       "predicted_category": "pets",
@@ -7479,9 +7497,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45591709204018116,
-      "latency_ms_category": 0.4705421160906553,
-      "latency_ms_total": 3.399916924536228,
+      "latency_ms_intent": 0.48566563054919243,
+      "latency_ms_category": 0.5173753015697002,
+      "latency_ms_total": 3.6895424127578735,
       "instrumentation_proximity": {
         "query": "alguém pra cuidar do meu cachorro de fim de semana",
         "language": "pt-BR",
@@ -7544,11 +7562,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6509427078355153,
+      "predicted_intent_confidence": 0.742889954963013,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6509427078355153
+          "confidence": 0.742889954963013
         }
       ],
       "predicted_category": "health",
@@ -7566,9 +7584,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4491670988500118,
-      "latency_ms_category": 0.4683749284595251,
-      "latency_ms_total": 3.7909159436821938,
+      "latency_ms_intent": 0.7099579088389874,
+      "latency_ms_category": 0.4758751019835472,
+      "latency_ms_total": 3.6422917619347572,
       "instrumentation_proximity": {
         "query": "preciso comprar remédio pra dor de cabeça",
         "language": "pt-BR",
@@ -7641,11 +7659,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8419105625217059,
+      "predicted_intent_confidence": 0.8849943077615952,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8419105625217059
+          "confidence": 0.8849943077615952
         }
       ],
       "predicted_category": "restaurant",
@@ -7663,9 +7681,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.6118328310549259,
-      "latency_ms_category": 0.5173750687390566,
-      "latency_ms_total": 3.463209141045809,
+      "latency_ms_intent": 0.42345793917775154,
+      "latency_ms_category": 0.4424997605383396,
+      "latency_ms_total": 3.1818337738513947,
       "instrumentation_proximity": {
         "query": "estou com fome",
         "language": "pt-BR",
@@ -7726,15 +7744,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.4778980502621473,
+      "predicted_intent_confidence": 0.4941730897105485,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.4778980502621473
+          "confidence": 0.4941730897105485
         },
         {
           "intent": "verification",
-          "confidence": 0.22329948541254668
+          "confidence": 0.27220928792829624
         }
       ],
       "predicted_category": "wellness",
@@ -7752,9 +7770,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4832078702747822,
-      "latency_ms_category": 0.47212489880621433,
-      "latency_ms_total": 3.338166978210211,
+      "latency_ms_intent": 0.521958339959383,
+      "latency_ms_category": 0.5577080883085728,
+      "latency_ms_total": 3.533000126481056,
       "instrumentation_proximity": {
         "query": "quero relaxar de verdade hoje",
         "language": "pt-BR",
@@ -7810,11 +7828,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7346877052286064,
+      "predicted_intent_confidence": 0.7882891289980772,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7346877052286064
+          "confidence": 0.7882891289980772
         }
       ],
       "predicted_category": "kids",
@@ -7832,9 +7850,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5002499092370272,
-      "latency_ms_category": 0.49391714856028557,
-      "latency_ms_total": 3.447290975600481,
+      "latency_ms_intent": 0.4559578374028206,
+      "latency_ms_category": 0.46783406287431717,
+      "latency_ms_total": 3.637291956692934,
       "instrumentation_proximity": {
         "query": "alguma coisa divertida pra fazer com as crianças",
         "language": "pt-BR",
@@ -7892,21 +7910,21 @@
       "language": "pt-BR",
       "failure_class": "ambiguous",
       "expected_intents": [
-        "tour_planning"
+        "popularity"
       ],
       "expected_category": "tourist_attraction",
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.39707525082662953,
+      "predicted_intent_confidence": 0.46243541208601846,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.39707525082662953
+          "confidence": 0.46243541208601846
         },
         {
           "intent": "verification",
-          "confidence": 0.21153640034115964
+          "confidence": 0.23221100201728395
         }
       ],
       "predicted_category": "tourist_attraction",
@@ -7920,13 +7938,13 @@
       "proximity_returned": false,
       "open_now_returned": null,
       "categories_returned_count": 144,
-      "intent_correct": false,
+      "intent_correct": true,
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46283286064863205,
-      "latency_ms_category": 0.47204201109707355,
-      "latency_ms_total": 3.44754196703434,
+      "latency_ms_intent": 0.44187484309077263,
+      "latency_ms_category": 0.4570828750729561,
+      "latency_ms_total": 3.4000002779066563,
       "instrumentation_proximity": {
         "query": "quero conhecer a cidade hoje",
         "language": "pt-BR",
@@ -7975,7 +7993,7 @@
         "agree_strategy01": true,
         "result_count": 144
       },
-      "notes": "'conhecer' is verification keyword AND tourism intent"
+      "notes": "'conhecer' is verification keyword AND tourism intent. mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing"
     },
     {
       "id": "B-X11",
@@ -7989,11 +8007,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6235771309068877,
+      "predicted_intent_confidence": 0.622397604978082,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6235771309068877
+          "confidence": 0.622397604978082
         }
       ],
       "predicted_category": "ice_cream",
@@ -8011,9 +8029,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48241601325571537,
-      "latency_ms_category": 0.4852921701967716,
-      "latency_ms_total": 3.361582988873124,
+      "latency_ms_intent": 0.4325420595705509,
+      "latency_ms_category": 0.437708105891943,
+      "latency_ms_total": 3.2940004020929337,
       "instrumentation_proximity": {
         "query": "quero algo gelado e doce",
         "language": "pt-BR",
@@ -8074,11 +8092,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.544272594103656,
+      "predicted_intent_confidence": 0.5932848176266332,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.544272594103656
+          "confidence": 0.5932848176266332
         }
       ],
       "predicted_category": "nightlife",
@@ -8096,9 +8114,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5450001917779446,
-      "latency_ms_category": 0.4954170435667038,
-      "latency_ms_total": 3.417291911318898,
+      "latency_ms_intent": 0.4470832645893097,
+      "latency_ms_category": 0.4469999112188816,
+      "latency_ms_total": 3.6068339832127094,
       "instrumentation_proximity": {
         "query": "quero ir numa boate diferente hoje",
         "language": "pt-BR",
@@ -8161,19 +8179,19 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "price",
-      "predicted_intent_confidence": 0.25820698277808274,
+      "predicted_intent_confidence": 0.26685888403309127,
       "predicted_top3_intents": [
         {
           "intent": "price",
-          "confidence": 0.25820698277808274
+          "confidence": 0.26685888403309127
         },
         {
           "intent": "popularity",
-          "confidence": 0.22689865424925124
+          "confidence": 0.26237505198048827
         },
         {
           "intent": "location",
-          "confidence": 0.2171759806414328
+          "confidence": 0.2327304124678192
         }
       ],
       "predicted_category": "wellness",
@@ -8195,9 +8213,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46966690570116043,
-      "latency_ms_category": 0.4718329291790724,
-      "latency_ms_total": 3.291584085673094,
+      "latency_ms_intent": 0.49274973571300507,
+      "latency_ms_category": 0.4747500643134117,
+      "latency_ms_total": 3.3485409803688526,
       "instrumentation_proximity": {
         "query": "preciso pernoitar essa semana",
         "language": "pt-BR",
@@ -8260,11 +8278,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7639105635061878,
+      "predicted_intent_confidence": 0.7634534016959044,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7639105635061878
+          "confidence": 0.7634534016959044
         }
       ],
       "predicted_category": "wellness",
@@ -8282,9 +8300,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4624580033123493,
-      "latency_ms_category": 0.46950019896030426,
-      "latency_ms_total": 3.3203340135514736,
+      "latency_ms_intent": 0.4366249777376652,
+      "latency_ms_category": 0.4371670074760914,
+      "latency_ms_total": 3.3577079884707928,
       "instrumentation_proximity": {
         "query": "estou estressado e cansado de tudo",
         "language": "pt-BR",
@@ -8345,11 +8363,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5168679899135932,
+      "predicted_intent_confidence": 0.6350851127186592,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5168679899135932
+          "confidence": 0.6350851127186592
         }
       ],
       "predicted_category": "shopping",
@@ -8367,9 +8385,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4617080558091402,
-      "latency_ms_category": 0.470499973744154,
-      "latency_ms_total": 3.289999905973673,
+      "latency_ms_intent": 0.46116625890135765,
+      "latency_ms_category": 0.4419581964612007,
+      "latency_ms_total": 3.1772078946232796,
       "instrumentation_proximity": {
         "query": "quero comprar um sapato novo",
         "language": "pt-BR",
@@ -8433,11 +8451,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.6355439816560314,
+      "predicted_intent_confidence": 0.6738532835149201,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.6355439816560314
+          "confidence": 0.6738532835149201
         }
       ],
       "predicted_category": "health",
@@ -8455,9 +8473,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4738329444080591,
-      "latency_ms_category": 0.4783750046044588,
-      "latency_ms_total": 3.56858316808939,
+      "latency_ms_intent": 0.42395805940032005,
+      "latency_ms_category": 0.44079218059778214,
+      "latency_ms_total": 3.5383328795433044,
       "instrumentation_proximity": {
         "query": "preciso de uma consulta médica urgente",
         "language": "pt-BR",
@@ -8522,11 +8540,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.8653154605505642,
+      "predicted_intent_confidence": 0.8853180241788866,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.8653154605505642
+          "confidence": 0.8853180241788866
         }
       ],
       "predicted_category": "restaurant",
@@ -8544,9 +8562,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5344999954104424,
-      "latency_ms_category": 0.4890831187367439,
-      "latency_ms_total": 3.3882909920066595,
+      "latency_ms_intent": 0.588791910558939,
+      "latency_ms_category": 0.5278331227600574,
+      "latency_ms_total": 4.475499968975782,
       "instrumentation_proximity": {
         "query": "lugar legal pra brincar com meus filhos",
         "language": "pt-BR",
@@ -8602,11 +8620,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5271583495874289,
+      "predicted_intent_confidence": 0.6687484579354462,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5271583495874289
+          "confidence": 0.6687484579354462
         }
       ],
       "predicted_category": "ice_cream",
@@ -8624,9 +8642,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4515829496085644,
-      "latency_ms_category": 0.47524995170533657,
-      "latency_ms_total": 3.3389171585440636,
+      "latency_ms_intent": 0.5754581652581692,
+      "latency_ms_category": 0.5125841125845909,
+      "latency_ms_total": 3.4916247241199017,
       "instrumentation_proximity": {
         "query": "quero tomar um geladinho de coco",
         "language": "pt-BR",
@@ -8689,11 +8707,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.821687848687873,
+      "predicted_intent_confidence": 0.8610837258001175,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.821687848687873
+          "confidence": 0.8610837258001175
         }
       ],
       "predicted_category": "bar",
@@ -8711,9 +8729,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4477498587220907,
-      "latency_ms_category": 0.46312506310641766,
-      "latency_ms_total": 3.287083003669977,
+      "latency_ms_intent": 0.45283371582627296,
+      "latency_ms_category": 0.48166699707508087,
+      "latency_ms_total": 3.397915977984667,
       "instrumentation_proximity": {
         "query": "tomar uma cerveja gelada com os amigos",
         "language": "pt-BR",
@@ -8776,11 +8794,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5354896826912887,
+      "predicted_intent_confidence": 0.644684374983535,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5354896826912887
+          "confidence": 0.644684374983535
         }
       ],
       "predicted_category": "nightlife",
@@ -8798,9 +8816,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.46274997293949127,
-      "latency_ms_category": 0.484667019918561,
-      "latency_ms_total": 3.2975838985294104,
+      "latency_ms_intent": 0.44508324936032295,
+      "latency_ms_category": 0.46462472528219223,
+      "latency_ms_total": 3.49733280017972,
       "instrumentation_proximity": {
         "query": "preciso dar um trato no visual antes da festa",
         "language": "pt-BR",
@@ -8852,11 +8870,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.4343534522329567,
+      "predicted_intent_confidence": 0.4677118750299757,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.4343534522329567
+          "confidence": 0.4677118750299757
+        },
+        {
+          "intent": "price",
+          "confidence": 0.22060539787407202
         }
       ],
       "predicted_category": "automotive",
@@ -8874,9 +8896,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4456660244613886,
-      "latency_ms_category": 0.7260411512106657,
-      "latency_ms_total": 3.6425830330699682,
+      "latency_ms_intent": 0.4314999096095562,
+      "latency_ms_category": 0.4515829496085644,
+      "latency_ms_total": 3.2364577054977417,
       "instrumentation_proximity": {
         "query": "meu carro tá fazendo barulho estranho",
         "language": "pt-BR",
@@ -8934,11 +8956,11 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.574750223081852,
+      "predicted_intent_confidence": 0.7104275219053265,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.574750223081852
+          "confidence": 0.7104275219053265
         }
       ],
       "predicted_category": "nightlife",
@@ -8956,9 +8978,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4741249140352011,
-      "latency_ms_category": 0.47316704876720905,
-      "latency_ms_total": 3.3049171324819326,
+      "latency_ms_intent": 0.44450024142861366,
+      "latency_ms_category": 0.470832921564579,
+      "latency_ms_total": 3.6716661415994167,
       "instrumentation_proximity": {
         "query": "lugar bacana pra um happy hour aqui pertinho",
         "language": "pt-BR",
@@ -9023,15 +9045,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5073518869724697,
+      "predicted_intent_confidence": 0.507087337120888,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5073518869724697
+          "confidence": 0.507087337120888
         },
         {
           "intent": "price",
-          "confidence": 0.34799953219184776
+          "confidence": 0.36926124208144345
         }
       ],
       "predicted_category": "restaurant",
@@ -9049,9 +9071,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4327909555286169,
-      "latency_ms_category": 0.44116703793406487,
-      "latency_ms_total": 3.09933302924037,
+      "latency_ms_intent": 0.4392499104142189,
+      "latency_ms_category": 0.45620789751410484,
+      "latency_ms_total": 3.1377077102661133,
       "instrumentation_proximity": {
         "query": "cheap pizza near me",
         "language": "en",
@@ -9108,11 +9130,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.7791342957066569,
+      "predicted_intent_confidence": 0.7891529852623026,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.7791342957066569
+          "confidence": 0.7891529852623026
         }
       ],
       "predicted_category": "cafe",
@@ -9130,9 +9152,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4365828353911638,
-      "latency_ms_category": 0.44350000098347664,
-      "latency_ms_total": 3.1518330797553062,
+      "latency_ms_intent": 0.4231669008731842,
+      "latency_ms_category": 0.5602077580988407,
+      "latency_ms_total": 3.389875404536724,
       "instrumentation_proximity": {
         "query": "best coffee shop downtown",
         "language": "en",
@@ -9190,11 +9212,11 @@
       "expected_proximity": false,
       "expected_open_now": true,
       "predicted_intent": "business_hours",
-      "predicted_intent_confidence": 0.8775852839753061,
+      "predicted_intent_confidence": 0.9081361370264304,
       "predicted_top3_intents": [
         {
           "intent": "business_hours",
-          "confidence": 0.8775852839753061
+          "confidence": 0.9081361370264304
         }
       ],
       "predicted_category": "nightlife",
@@ -9212,9 +9234,9 @@
       "category_correct": false,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4497501067817211,
-      "latency_ms_category": 0.45116618275642395,
-      "latency_ms_total": 3.3818751107901335,
+      "latency_ms_intent": 0.45000016689300537,
+      "latency_ms_category": 0.44612493366003036,
+      "latency_ms_total": 3.19770909845829,
       "instrumentation_proximity": {
         "query": "24 hour pharmacy open right now",
         "language": "en",
@@ -9265,17 +9287,21 @@
       "language": "en",
       "failure_class": "canonical",
       "expected_intents": [
-        "tour_planning"
+        "location"
       ],
       "expected_category": "tourist_attraction",
       "expected_proximity": false,
       "expected_open_now": null,
-      "predicted_intent": "tour_planning",
-      "predicted_intent_confidence": 0.8929007078446523,
+      "predicted_intent": "location",
+      "predicted_intent_confidence": 0.3044980969095787,
       "predicted_top3_intents": [
         {
-          "intent": "tour_planning",
-          "confidence": 0.8929007078446523
+          "intent": "location",
+          "confidence": 0.3044980969095787
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.28545415875386865
         }
       ],
       "predicted_category": "wellness",
@@ -9290,24 +9316,24 @@
           "confidence": 0.21097906290370402
         }
       ],
-      "proximity_returned": false,
+      "proximity_returned": true,
       "open_now_returned": null,
       "categories_returned_count": 0,
       "intent_correct": true,
       "category_correct": false,
-      "proximity_correct": true,
+      "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.5031670443713665,
-      "latency_ms_category": 0.48037501983344555,
-      "latency_ms_total": 3.5350830294191837,
+      "latency_ms_intent": 0.41908398270606995,
+      "latency_ms_category": 0.4335828125476837,
+      "latency_ms_total": 3.1917081214487553,
       "instrumentation_proximity": {
         "query": "things to do in Belém in one day",
         "language": "en",
         "strategy1_hit": false,
         "strategy1_signal": null,
-        "strategy2_hit": false,
-        "agree": true,
-        "result": false
+        "strategy2_hit": true,
+        "agree": false,
+        "result": true
       },
       "instrumentation_open_now": {
         "query": "things to do in Belém in one day",
@@ -9335,7 +9361,7 @@
         "agree_strategy01": null,
         "result_count": 0
       },
-      "notes": ""
+      "notes": "mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing"
     },
     {
       "id": "B-E05",
@@ -9350,15 +9376,15 @@
       "expected_proximity": true,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.5400141256957509,
+      "predicted_intent_confidence": 0.543380867578249,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.5400141256957509
+          "confidence": 0.543380867578249
         },
         {
           "intent": "popularity",
-          "confidence": 0.36051490835851574
+          "confidence": 0.37468290360854917
         }
       ],
       "predicted_category": "wellness",
@@ -9376,9 +9402,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4791249521076679,
-      "latency_ms_category": 0.45787496492266655,
-      "latency_ms_total": 3.291417146101594,
+      "latency_ms_intent": 0.42966706678271294,
+      "latency_ms_category": 0.44116703793406487,
+      "latency_ms_total": 3.4669162705540657,
       "instrumentation_proximity": {
         "query": "best gym with pool nearby",
         "language": "en",
@@ -9429,12 +9455,16 @@
       "expected_category": "hotel",
       "expected_proximity": false,
       "expected_open_now": null,
-      "predicted_intent": "tour_planning",
-      "predicted_intent_confidence": 0.7328113985657664,
+      "predicted_intent": "location",
+      "predicted_intent_confidence": 0.36829315494332343,
       "predicted_top3_intents": [
         {
-          "intent": "tour_planning",
-          "confidence": 0.7328113985657664
+          "intent": "location",
+          "confidence": 0.36829315494332343
+        },
+        {
+          "intent": "popularity",
+          "confidence": 0.2713120579874729
         }
       ],
       "predicted_category": "hotel",
@@ -9445,24 +9475,24 @@
           "confidence": 0.9209321859953115
         }
       ],
-      "proximity_returned": false,
+      "proximity_returned": true,
       "open_now_returned": null,
       "categories_returned_count": 27,
       "intent_correct": false,
       "category_correct": true,
-      "proximity_correct": true,
+      "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.44487486593425274,
-      "latency_ms_category": 0.46220794320106506,
-      "latency_ms_total": 3.286957973614335,
+      "latency_ms_intent": 0.47395937144756317,
+      "latency_ms_category": 0.47129206359386444,
+      "latency_ms_total": 3.2890411093831062,
       "instrumentation_proximity": {
         "query": "i need a place to stay tonight",
         "language": "en",
         "strategy1_hit": false,
         "strategy1_signal": null,
-        "strategy2_hit": false,
-        "agree": true,
-        "result": false
+        "strategy2_hit": true,
+        "agree": false,
+        "result": true
       },
       "instrumentation_open_now": {
         "query": "i need a place to stay tonight",
@@ -9517,15 +9547,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.37022565205261715,
+      "predicted_intent_confidence": 0.5154486559231835,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.37022565205261715
-        },
-        {
-          "intent": "tour_planning",
-          "confidence": 0.23140054601421897
+          "confidence": 0.5154486559231835
         }
       ],
       "predicted_category": "wellness",
@@ -9543,9 +9569,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.45333290472626686,
-      "latency_ms_category": 0.4581250250339508,
-      "latency_ms_total": 3.2551251351833344,
+      "latency_ms_intent": 0.4326668567955494,
+      "latency_ms_category": 0.4774997942149639,
+      "latency_ms_total": 3.2357079908251762,
       "instrumentation_proximity": {
         "query": "where can i get a massage to relax",
         "language": "en",
@@ -9603,11 +9629,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "location",
-      "predicted_intent_confidence": 0.43740902412993105,
+      "predicted_intent_confidence": 0.4376685339862953,
       "predicted_top3_intents": [
         {
           "intent": "location",
-          "confidence": 0.43740902412993105
+          "confidence": 0.4376685339862953
         }
       ],
       "predicted_category": "restaurant",
@@ -9625,9 +9651,9 @@
       "category_correct": true,
       "proximity_correct": false,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4568330477923155,
-      "latency_ms_category": 0.45079109258949757,
-      "latency_ms_total": 3.262959187850356,
+      "latency_ms_intent": 0.4276251420378685,
+      "latency_ms_category": 0.4266672767698765,
+      "latency_ms_total": 3.164249937981367,
       "instrumentation_proximity": {
         "query": "i'm hungry, where should i eat",
         "language": "en",
@@ -9690,11 +9716,11 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "popularity",
-      "predicted_intent_confidence": 0.5919230349685326,
+      "predicted_intent_confidence": 0.6621998826675,
       "predicted_top3_intents": [
         {
           "intent": "popularity",
-          "confidence": 0.5919230349685326
+          "confidence": 0.6621998826675
         }
       ],
       "predicted_category": "ice_cream",
@@ -9712,9 +9738,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.4397500306367874,
-      "latency_ms_category": 0.4517079796642065,
-      "latency_ms_total": 3.3851671032607555,
+      "latency_ms_intent": 0.5478751845657825,
+      "latency_ms_category": 0.4838337190449238,
+      "latency_ms_total": 3.430624958127737,
       "instrumentation_proximity": {
         "query": "best ice cream shop in the area",
         "language": "en",
@@ -9773,15 +9799,15 @@
       "expected_proximity": false,
       "expected_open_now": null,
       "predicted_intent": "verification",
-      "predicted_intent_confidence": 0.3383472930674093,
+      "predicted_intent_confidence": 0.3667126678496398,
       "predicted_top3_intents": [
         {
           "intent": "verification",
-          "confidence": 0.3383472930674093
+          "confidence": 0.3667126678496398
         },
         {
           "intent": "popularity",
-          "confidence": 0.25122692104457234
+          "confidence": 0.30174212716708315
         }
       ],
       "predicted_category": "bar",
@@ -9799,9 +9825,9 @@
       "category_correct": true,
       "proximity_correct": true,
       "open_now_correct": true,
-      "latency_ms_intent": 0.48754201270639896,
-      "latency_ms_category": 0.47745811752974987,
-      "latency_ms_total": 3.562584053725004,
+      "latency_ms_intent": 0.45008305460214615,
+      "latency_ms_category": 0.508749857544899,
+      "latency_ms_total": 3.379582893103361,
       "instrumentation_proximity": {
         "query": "grab a beer with friends downtown",
         "language": "en",
