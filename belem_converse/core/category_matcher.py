@@ -37,7 +37,7 @@ class CategoryMatcher:
         # thousands of places but only hundreds of distinct category strings,
         # so each pair is fuzzy-matched once instead of on every request.
         # ponytail: unbounded, sized by the category vocabulary; LRU if it grows.
-        self._match_cache: Dict[tuple, bool] = {}
+        self._match_cache: dict[tuple, bool] = {}
     
     def _load_special_cases(self) -> Dict[str, List[str]]:
         """
