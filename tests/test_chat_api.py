@@ -139,3 +139,12 @@ def test_health_ready(client):
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
+
+
+def test_model_crash_returns_template(client, monkeypatch):
+    fake_model(monkeypatch, side_effect=RuntimeError("provider client blew up"))
+
+    body = ask(client, "lugares bem avaliados")
+
+    assert body["answer"].startswith(TEMPLATE_PREFIX)
+    assert body["debug"]["answer_source"] == "template"
