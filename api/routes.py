@@ -3,7 +3,7 @@
 Pipeline per `docs/archive/spec/`:
     Chat request -> Query Plan (TF-IDF intent + slots)
                  -> Deterministic retrieval (open-hours -> proximity -> category -> rank)
-                 -> LLM summarization of <=5 results.
+                 -> hosted LLM summary of the top 5 results, or a template answer.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 
+from belem_converse import llm
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
@@ -42,6 +43,8 @@ from .schemas import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+MAX_RESULTS = 5  # spec: an answer shows at most five places
 
 
 # ----- module-level singletons (built lazily on first chat) -----------------
@@ -194,9 +197,10 @@ async def chat(request: ChatRequest) -> ChatResponse:
         len(retrieval_result.places),
         retrieval_result.strategy_used,
     )
+    top_places = retrieval_result.places[:MAX_RESULTS]
 
     place_results: List[PlaceResult] = []
-    for place in retrieval_result.places:
+    for place in top_places:
         try:
             place_dict = place.copy()
             loc = place_dict.get("location")
@@ -217,29 +221,37 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 detail=f"Error converting place result: {exc}",
             ) from exc
 
-    answer = _generate_answer(retrieval_result.places, query_plan.language)
+    answer, answer_source = await _answer(request.message, top_places, query_plan.language)
     elapsed_ms = (time.time() - start) * 1000
-    logger.info("Chat response generated in %.0fms", elapsed_ms)
+    logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
 
     return ChatResponse(
         language=query_plan.language,
         answer=answer,
         results=place_results,
-        debug=query_plan.debug,
+        debug={**(query_plan.debug or {}), "answer_source": answer_source},
         response=answer,
         processing_time_ms=round(elapsed_ms, 1),
     )
 
 
-def _generate_answer(places: List[dict], language: str) -> str:
-    """Template-based summarization placeholder.
+async def _answer(question: str, places: List[dict], language: str) -> tuple[str, str]:
+    """(answer, source): the model's grounded answer, else the template.
 
-    The real LLM summarisation lives in ``EnhancedRAGAgent`` (see
-    ``utils/config.py`` for the prompt templates). This template path keeps
-    the API responsive even when the GGUF weights are not available.
-    FUTURE: wire this back through ``agent.query`` for fully grounded
-    natural-language summaries per ``docs/archive/spec/06-llm-contract.md``.
+    The model is called at most once, and not at all when nothing was found.
     """
+    if places:
+        text = await llm.summarize(question, places, language)
+        if text is not None:
+            catalog_titles = [p.get("title") or "" for p in get_catalog() or []]
+            if llm.is_grounded(text, places, catalog_titles):
+                return llm.strip_markers(text), "llm"
+            logger.warning("Model answer named places outside the results; using the template")
+    return _generate_answer(places, language), "template"
+
+
+def _generate_answer(places: List[dict], language: str) -> str:
+    """Template answer: used when the model is unconfigured, fails, or strays."""
     if not places:
         if language == "pt-BR":
             return (
