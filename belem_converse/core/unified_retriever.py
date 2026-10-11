@@ -716,8 +716,6 @@ class UnifiedRetriever:
         
         try:
             # Query OSM using the realtime search client
-            from langchain_core.documents import Document
-            
             osm_documents = self.osm_client.search(
                 query=original_query,
                 user_coordinates=(user_location.latitude, user_location.longitude),
