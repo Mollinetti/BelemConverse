@@ -137,6 +137,7 @@ async def summarize(
     language: str,
     *,
     transport: httpx.AsyncBaseTransport | None = None,
+    started_at: float | None = None,
 ) -> str | None:
     """The model's answer about ``places``, or None if no provider answered in time."""
     providers = _providers()
@@ -148,7 +149,9 @@ async def summarize(
         {"role": "system", "content": PROMPT_PT if language == "pt-BR" else PROMPT_EN},
         {"role": "user", "content": _user_message(question, places, language)},
     ]
-    deadline = time.monotonic() + budget
+    # The budget runs from when the visitor's request began (time.monotonic()),
+    # so planning and retrieval time count against it too.
+    deadline = (started_at if started_at is not None else time.monotonic()) + budget
     async with httpx.AsyncClient(transport=transport, timeout=budget) as client:
         for provider in providers:
             remaining = deadline - time.monotonic()

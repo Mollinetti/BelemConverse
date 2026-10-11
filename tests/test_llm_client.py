@@ -173,6 +173,23 @@ def test_place_text_stays_inside_places_block():
     assert INJECTION_TITLE not in outside
 
 
+def test_budget_counts_from_request_start(monkeypatch):
+    # Time already spent planning and retrieving comes out of the same budget,
+    # so the visitor's total wait stays under the spec's 12 s.
+    monkeypatch.setenv("LLM_TIMEOUT_S", "0.5")
+
+    async def slow(request):
+        await asyncio.sleep(5)
+        return completion("too late")
+
+    start = time.monotonic()
+    answer = asyncio.run(
+        llm.summarize("q", PLACES, "pt-BR", transport=httpx.MockTransport(slow), started_at=start - 0.4)
+    )
+    assert answer is None
+    assert time.monotonic() - start < 0.3
+
+
 def test_non_string_content_returns_none():
     # Some OpenAI-compatible providers return content as a list of parts.
     def handler(request):
