@@ -470,23 +470,24 @@ class UnifiedRetriever:
             user_location: User's location
             
         Returns:
-            List of places with distanceKm field added
+            Copies of the places with a distanceKm field. The input dicts are
+            the shared catalog, so they are never written to: one visitor's
+            distances must not show up in another visitor's results.
         """
+        annotated = []
         for place in places:
-            location = place.get('location', {})
+            location = place.get('location') or {}
             place_lat = location.get('lat')
             place_lng = location.get('lng')
-            
+
+            distance_km = None
             if place_lat is not None and place_lng is not None:
                 distance_km = self._haversine_distance(
                     user_location.latitude, user_location.longitude,
                     place_lat, place_lng
                 )
-                place['distanceKm'] = distance_km
-            else:
-                place['distanceKm'] = None
-        
-        return places
+            annotated.append({**place, 'distanceKm': distance_km})
+        return annotated
     
     def _haversine_distance(
         self,
