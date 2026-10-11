@@ -37,7 +37,7 @@ class SimpleTFIDFIntentClassifier:
     #
     # Changelog
     # ---------
-    # 2.9 — P1 quick wins from docs/spec/12-intent-classifier-improvement-plan.md:
+    # 2.9 — P1 quick wins from docs/archive/spec/12-intent-classifier-improvement-plan.md:
     #       (F5) implicit-category lexicon at
     #            belem_converse/classifiers/data/implicit_category_lexicon.json
     #            now wired into the **category** classifier as additional
@@ -99,7 +99,7 @@ class SimpleTFIDFIntentClassifier:
                 # question/search words like "find", "looking for", "tem",
                 # "where is the", "currently" — they appear in nearly every
                 # conversational query and cause this intent to over-fire
-                # (see docs/spec/12-intent-classifier-improvement-plan.md F2).
+                # (see docs/archive/spec/12-intent-classifier-improvement-plan.md F2).
                 # Only true existence-verification phrases belong here.
                 #
                 # Existence checking

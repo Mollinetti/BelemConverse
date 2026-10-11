@@ -19,7 +19,7 @@ file-existence and version-string assertions, so it runs in well under a
 second and never depends on a cached model being present at test time.
 
 Per open question #1 in
-``docs/spec/12-intent-classifier-improvement-plan.md`` (answered "yes").
+``docs/archive/spec/12-intent-classifier-improvement-plan.md`` (answered "yes").
 """
 
 from __future__ import annotations

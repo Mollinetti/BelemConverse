@@ -14,7 +14,7 @@ Requirement → Code Files → Tests mapping for PoC compliance.
 | Deterministic retrieval: structured filters | `LLM/src/core/deterministic_retriever.py::is_eligible()` | `LLM/tests/test_golden_queries.py` |
 | Deterministic ranking (distance + rating + popularity) | `LLM/src/core/deterministic_retriever.py::rank_candidates()` | `LLM/tests/test_golden_queries.py` |
 | API: /chat returns text answer + 5 structured results | `LLM/api/routes.py::chat()` | `LLM/tests/test_golden_queries.py` |
-| One-command local run | `docs/spec/10-runbook.md` | - |
+| One-command local run | `docs/archive/spec/10-runbook.md` | - |
 
 ## 01-domain-model.md
 
