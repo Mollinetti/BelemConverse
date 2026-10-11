@@ -241,7 +241,11 @@ async def _answer(question: str, places: List[dict], language: str) -> tuple[str
     The model is called at most once, and not at all when nothing was found.
     """
     if places:
-        text = await llm.summarize(question, places, language)
+        try:
+            text = await llm.summarize(question, places, language)
+        except Exception:  # the visitor always gets an answer, whatever the model client does
+            logger.exception("Model call failed unexpectedly; using the template")
+            text = None
         if text is not None:
             catalog_titles = [p.get("title") or "" for p in get_catalog() or []]
             if llm.is_grounded(text, places, catalog_titles):
