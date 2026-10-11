@@ -248,7 +248,7 @@ async def _answer(question: str, places: List[dict], language: str) -> tuple[str
             text = None
         if text is not None:
             catalog_titles = [p.get("title") or "" for p in get_catalog() or []]
-            if llm.is_grounded(text, places, catalog_titles):
+            if llm.is_grounded(text, places, catalog_titles, question=question):
                 return llm.strip_markers(text), "llm"
             logger.warning("Model answer named places outside the results; using the template")
     return _generate_answer(places, language), "template"
