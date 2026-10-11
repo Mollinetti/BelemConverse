@@ -37,6 +37,14 @@ class CityConfig:
     
     # Timezone
     timezone: str = "UTC"
+
+    # Short state code written to the catalog (e.g., "PA").
+    state_code: str = ""
+    # Catalog build: values of the export's `city` column that belong to this
+    # municipality (matched accent-insensitively; districts included).
+    municipalities: List[str] = field(default_factory=list)
+    # Words left lowercase when an all-caps or all-lowercase title is recased.
+    title_case_exceptions: List[str] = field(default_factory=list)
     
     # Data paths (relative to project root)
     csv_path: str = ""
