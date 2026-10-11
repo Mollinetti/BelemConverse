@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from belem_converse import llm
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
@@ -143,6 +144,7 @@ async def get_place(placeId: str) -> Place:
 async def chat(request: ChatRequest) -> ChatResponse:
     """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
+    started_at = time.monotonic()  # the model's time budget counts from here
 
     if not is_system_ready():
         raise HTTPException(
@@ -191,7 +193,8 @@ async def chat(request: ChatRequest) -> ChatResponse:
         "proximity_intent_detected": query_plan.slots.get("proximity_intent_detected", False),
         "language": query_plan.language,
     }
-    retrieval_result = retriever.retrieve(query_plan_dict)
+    # CPU-bound: run it off the event loop so other requests are not stalled.
+    retrieval_result = await run_in_threadpool(retriever.retrieve, query_plan_dict)
     logger.info(
         "Retrieved %d places via %s",
         len(retrieval_result.places),
@@ -221,7 +224,9 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 detail=f"Error converting place result: {exc}",
             ) from exc
 
-    answer, answer_source = await _answer(request.message, top_places, query_plan.language)
+    answer, answer_source = await _answer(
+        request.message, top_places, query_plan.language, started_at
+    )
     elapsed_ms = (time.time() - start) * 1000
     logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
 
@@ -235,14 +240,16 @@ async def chat(request: ChatRequest) -> ChatResponse:
     )
 
 
-async def _answer(question: str, places: List[dict], language: str) -> tuple[str, str]:
+async def _answer(
+    question: str, places: List[dict], language: str, started_at: float
+) -> tuple[str, str]:
     """(answer, source): the model's grounded answer, else the template.
 
     The model is called at most once, and not at all when nothing was found.
     """
     if places:
         try:
-            text = await llm.summarize(question, places, language)
+            text = await llm.summarize(question, places, language, started_at=started_at)
         except Exception:  # the visitor always gets an answer, whatever the model client does
             logger.exception("Model call failed unexpectedly; using the template")
             text = None
