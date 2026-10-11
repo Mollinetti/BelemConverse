@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 import sqlite3
-from typing import List, Optional
 
 from belem_converse.catalog import load_places
 from belem_converse.cities import get_city_config
@@ -19,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 BUILD_HINT = "Build it with: python -m belem_converse.tools.build_catalog"
 
-_catalog: Optional[List[dict]] = None
+_catalog: list[dict] | None = None
 
 
-def _load_catalog() -> List[dict]:
+def _load_catalog() -> list[dict]:
     """Read the current city's place catalog from disk."""
     return load_places(DATA_DIR / get_city_config().catalog_path)
 
@@ -44,7 +43,7 @@ def initialize_rag_system() -> None:
     logger.info("Place catalog loaded: %d places", len(_catalog))
 
 
-def get_catalog() -> Optional[List[dict]]:
+def get_catalog() -> list[dict] | None:
     return _catalog
 
 

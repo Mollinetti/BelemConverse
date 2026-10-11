@@ -20,7 +20,6 @@ import re
 import sqlite3
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import pandas as pd
 
@@ -100,7 +99,7 @@ def _is_garbled(title: str) -> bool:
     return "?" in title or "�" in title
 
 
-def _recase(title: str, exceptions: List[str]) -> str:
+def _recase(title: str, exceptions: list[str]) -> str:
     """Title-case an all-lowercase or multi-word all-caps title."""
     # ponytail: single all-caps words are left alone (brands like "KFC");
     # an exceptions list per brand is the upgrade if that misfires.
@@ -115,9 +114,9 @@ def _recase(title: str, exceptions: List[str]) -> str:
 # --- loading ----------------------------------------------------------------
 
 
-def _load_repairs(raw_dir: Path) -> Dict[str, str]:
+def _load_repairs(raw_dir: Path) -> dict[str, str]:
     """placeId → a clean title, from any raw export under ``raw_dir``."""
-    repairs: Dict[str, str] = {}
+    repairs: dict[str, str] = {}
     for path in sorted(Path(raw_dir).glob("*.csv")):
         try:
             df = pd.read_csv(
@@ -129,14 +128,14 @@ def _load_repairs(raw_dir: Path) -> Dict[str, str]:
             continue
         if not {"placeId", "title"} <= set(df.columns):
             continue
-        for place_id, title in zip(df["placeId"], df["title"]):
+        for place_id, title in zip(df["placeId"], df["title"], strict=True):
             title = title.strip()
             if place_id and title and not _is_garbled(title):
                 repairs.setdefault(place_id, title)
     return repairs
 
 
-def _record(row: pd.Series, index: int, pipeline: CSVIngestionPipeline) -> Optional[dict]:
+def _record(row: pd.Series, index: int, pipeline: CSVIngestionPipeline) -> dict | None:
     place = pipeline.process_row(row, index)
     if place is None:
         return None
@@ -154,16 +153,16 @@ def _record(row: pd.Series, index: int, pipeline: CSVIngestionPipeline) -> Optio
 # --- pipeline ---------------------------------------------------------------
 
 
-def _dedupe(records: List[dict]) -> tuple[List[dict], int]:
+def _dedupe(records: list[dict]) -> tuple[list[dict], int]:
     """One record per placeId: the most-reviewed row, categories unioned."""
-    groups: Dict[str, List[dict]] = {}
+    groups: dict[str, list[dict]] = {}
     for rec in records:
         groups.setdefault(rec["placeId"], []).append(rec)
     kept, merged = [], 0
     for rows in groups.values():
         keep = max(rows, key=lambda r: r["reviewsCount"] or 0)
         if len(rows) > 1:
-            categories: List[str] = []
+            categories: list[str] = []
             for rec in [keep] + [r for r in rows if r is not keep]:
                 categories += [c for c in rec["categories"] if c not in categories]
             keep["categories"] = categories
@@ -180,7 +179,7 @@ def _in_municipality(rec: dict, city: CityConfig) -> bool:
     return lat is None or lng is None or city.is_within_bounds(lat, lng)
 
 
-def _hours(raw: Optional[str], parser: BusinessHoursParser) -> tuple[Optional[str], Optional[str], str]:
+def _hours(raw: str | None, parser: BusinessHoursParser) -> tuple[str | None, str | None, str]:
     """(hours JSON, cleaned hours_raw, outcome) for one businessTime value."""
     if raw and any(marker in raw for marker in GARBAGE_HOURS_MARKERS):
         return None, None, "garbage"
@@ -197,7 +196,7 @@ def build(
     csv_path: Path = DEFAULT_CSV,
     raw_dir: Path = DEFAULT_RAW_DIR,
     out_dir: Path = DEFAULT_OUT,
-    city: Optional[CityConfig] = None,
+    city: CityConfig | None = None,
 ) -> dict:
     """Build ``places.sqlite`` and ``cleaning_report.json`` in ``out_dir``; return the report."""
     city = city or get_city_config()
@@ -307,7 +306,7 @@ def build(
     return report
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--csv", type=Path, default=DEFAULT_CSV, help="combined raw export")
     parser.add_argument("--raw-dir", type=Path, default=DEFAULT_RAW_DIR, help="raw exports used to repair titles")
