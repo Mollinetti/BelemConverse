@@ -94,7 +94,9 @@ def run(
                 start = time.perf_counter()
                 answer = asyncio.run(llm.summarize(question, places, language, transport=transport))
                 latencies.append((time.perf_counter() - start) * 1000)
-                grounded = answer is not None and llm.is_grounded(answer, places, catalog_titles)
+                grounded = answer is not None and llm.is_grounded(
+                    answer, places, catalog_titles, question=question
+                )
                 answers.append({"question": question, "language": language, "answer": answer, "grounded": grounded})
             n = len(answers)
             rows.append(
