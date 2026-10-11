@@ -100,10 +100,11 @@ Run the memory procedure above and record the number.
 | Baseline pytest (T00) | 194 collected at `642c707`: 187 passed · 1 failed · 2 errors · 4 skipped. **Failed:** `test_e2e_integration.py::TestCompleteUserJourneys::test_journey_best_restaurants_open_now` (expects sort `popularity`, gets `best_match`; pre-existing). **Errors:** `test_llama31_model.py::test_portuguese_response`, `::test_instruction_following` (fixture `llm` not found; file deleted in T04). **Skipped:** 4 in `test_e2e_integration.py` (lines 334, 589, 611, 630: "Category matching issue … normalize() argument 2 must be str, not list"). |
 | Diagnostic before (T00) | intent 83.2% · category 85.8% · proximity 93.8% · open-now 99.1% (n=113, v2.9 classifier; re-run at `642c707` matches) |
 | Diagnostic after (T24) | intent 82.3% · category 85.8% · proximity 91.2% · open-now 99.1% (n=113, v3.0 classifier, no tour intent). Intent ≥ 80% ✓. The 3 former tour items were relabelled to the v3.0 routing (T02), so they score correct by construction; excluding them, intent is 90/110 = 81.8%. Proximity −2.6 pts vs baseline. |
-| Catalog rows in → kept / merged / dropped | _tbd_ |
-| Rows with parsed hours / needs_review | _tbd_ |
+| Catalog rows in → kept / merged / dropped | 3,446 → 2,901 kept / 306 merged / 239 dropped (1 null `placeId`, 238 outside the Belém municipality); `input = kept + merged + dropped` holds. 0 duplicate ids; every row `municipality = Belém`, `state = PA`; 37 Mosqueiro/Outeiro places kept. |
+| Rows with parsed hours / needs_review | Hours parsed for 1,844 of 1,845 usable strings (the miss is the literal text "Invalid format"); 45 serialized-Series values cleared to null; 1,057 rows unknown. The spec's floor is stated over raw rows (2,132 non-null − 45 garbage = 2,087 of 3,446); after dedupe and the municipality filter the catalog has 2,901 rows, and parsing loses only that one usable string. `needs_review`: 8 — mostly legitimate `?` in brand names ("UATA?!", "Com Q? Açaí") plus one URL-as-title; 56 garbled titles repaired from `data/Raw`. |
 | OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
-| Peak RSS after 20 requests | _tbd_ MB |
+| Peak RSS after 20 requests | 196 MiB (205,307,904 bytes; macOS `/usr/bin/time -l`, uvicorn, 20 × the pt-BR request above, no model configured) — under 512 MB. |
+| Backend time excluding the model | Median of 3 per query, real catalog, no model: with a user location 39–133 ms; without one, category questions take 1.0–2.7 s ("restaurantes perto da Praça da República" 2.65 s, "bares abertos agora" 1.0 s) because the category matcher's difflib fuzzy match runs over all 2,901 places when no radius narrows them first; "lugares bem avaliados" 5 ms. Spec target ≤ 100 ms median is met only when the client sends a location. |
 
 **Model benchmark (T23):**
 
@@ -113,17 +114,18 @@ Run the memory procedure above and record the number.
 
 ## Definition of done
 
-- [ ] All P1 acceptance criteria are covered by the tests in the map above, and
+- [x] All P1 acceptance criteria are covered by the tests in the map above, and
       those tests pass.
-- [ ] The required gate (`pytest -q`) passes with no new skips; deleted tests
-      are listed in their commit messages.
-- [ ] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
-- [ ] The ground-rules check in `plan.md` is clean.
+- [x] The required gate (`pytest -q`) passes with no new skips; deleted tests
+      are listed in their commit messages. (270 passed, 0 skipped, 0 failed; the
+      4 baseline skips and the baseline failure are fixed.)
+- [x] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
+- [x] The ground-rules check in `plan.md` is clean.
 - [ ] Every Evidence row is filled in, and the chosen model is written into
       `../spec.md` D2 and `.env.example`.
-- [ ] Peak RSS < 512 MB.
-- [ ] Diagnostic intent accuracy ≥ 80%.
-- [ ] README has no instructions pointing at removed endpoints or local model
+- [x] Peak RSS < 512 MB.
+- [x] Diagnostic intent accuracy ≥ 80%.
+- [x] README has no instructions pointing at removed endpoints or local model
       weights.
 - [ ] The branch `mvp-1` is rebased on `main` with no conflicts. The PR is titled
       `mvp-1 — Lean grounded core`, links `specs/mvp/mvp-1-lean-core/`, and
