@@ -142,9 +142,10 @@ _CANONICAL = [
     ),
     DiagnosticQuery(
         id="B-C05", query="roteiro de um dia em Belém", language="pt-BR",
-        expected_intents={"tour_planning"}, expected_category="tourist_attraction",
+        expected_intents={"popularity"}, expected_category="tourist_attraction",
         expected_proximity=False, expected_open_now=None,
         failure_class="canonical",
+        notes="mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing",
     ),
     DiagnosticQuery(
         id="B-C06", query="hotel perto do aeroporto", language="pt-BR",
@@ -693,10 +694,10 @@ _AMBIGUOUS = [
     ),
     DiagnosticQuery(
         id="B-X10", query="quero conhecer a cidade hoje", language="pt-BR",
-        expected_intents={"tour_planning"}, expected_category="tourist_attraction",
+        expected_intents={"popularity"}, expected_category="tourist_attraction",
         expected_proximity=False, expected_open_now=None,
         failure_class="ambiguous",
-        notes="'conhecer' is verification keyword AND tourism intent",
+        notes="'conhecer' is verification keyword AND tourism intent. mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing",
     ),
     DiagnosticQuery(
         id="B-X11", query="quero algo gelado e doce", language="pt-BR",
@@ -806,9 +807,10 @@ _EN_SMOKE = [
     ),
     DiagnosticQuery(
         id="B-E04", query="things to do in Belém in one day", language="en",
-        expected_intents={"tour_planning"}, expected_category="tourist_attraction",
+        expected_intents={"location"}, expected_category="tourist_attraction",
         expected_proximity=False, expected_open_now=None,
         failure_class="canonical",
+        notes="mvp-1: tour_planning removed; relabelled to the v3.0 classifier's routing",
     ),
     DiagnosticQuery(
         id="B-E05", query="best gym with pool nearby", language="en",
