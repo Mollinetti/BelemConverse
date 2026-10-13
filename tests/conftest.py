@@ -80,8 +80,11 @@ def fake_model(monkeypatch, **behaviour):
 
 @pytest.fixture(autouse=True)
 def fresh_state(monkeypatch):
-    """Conversations start empty in every test."""
+    """Conversations, the visitor limit and the daily model cap start empty in every test."""
     import api.routes as routes
+    from belem_converse.limits import DailyCap, RateLimiter
     from belem_converse.sessions import SessionStore
 
     monkeypatch.setattr(routes, "sessions", SessionStore())
+    monkeypatch.setattr(routes, "rate_limiter", RateLimiter())
+    monkeypatch.setattr(routes, "daily_cap", DailyCap())
