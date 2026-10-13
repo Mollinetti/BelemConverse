@@ -31,7 +31,7 @@ from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.query_planner import QueryPlanner
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
-from belem_converse.utils.config import DATA_DIR
+from belem_converse.utils.config import BASE_DIR
 
 MAX_RESULTS = 5
 
@@ -79,7 +79,7 @@ def run(
     delay: float = 0.0,
 ) -> list[dict]:
     """One row per model: model, n, grounded_pct, p50_ms, answers."""
-    catalog = catalog or DATA_DIR / get_city_config().catalog_path
+    catalog = catalog or BASE_DIR / get_city_config().catalog_path
     questions = _questions()[:queries] if queries else _questions()
     retrieved, catalog_titles = _retrieve_all(catalog, questions)
 
