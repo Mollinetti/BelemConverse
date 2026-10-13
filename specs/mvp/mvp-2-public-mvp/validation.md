@@ -114,6 +114,7 @@ S=$(uuidgen); for i in $(seq 21); do curl -s -o /dev/null -w '%{http_code}\n' \
 
 | Item | Value |
 |---|---|
+| T00 baseline on `main` @ 937fa59 (mvp-1 DoD fully checked) | `pytest -q`: 311 passed, 0 skipped, 0 failed · `ruff check .`: 676 findings (pre-existing) · `flutter analyze`: 14 infos · `flutter test`: 1 passed |
 | Backend URL / frontend URL | _tbd_ |
 | Frontend first load on 4G | _tbd_ s |
 | Cold start until first answer | _tbd_ s |
