@@ -11,19 +11,17 @@ Tests error handling for:
 Validates Requirements: 1.4, 2.1, 4.5, 11.2, 12.7
 """
 
-import sys
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import pytest
 import logging
+from unittest.mock import Mock
+
+import pytest
+
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
+from belem_converse.core.ranking_engine import RankingEngine
 
 # Add src to path
-
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.category_matcher import CategoryMatcher
-from belem_converse.core.ranking_engine import RankingEngine
-from belem_converse.core.query_planner import QueryPlanner
+from belem_converse.core.unified_retriever import RetrievalResult, UnifiedRetriever
 
 
 class TestOSMAPIFailureHandling:
@@ -284,7 +282,7 @@ class TestDatabaseConnectionFailures:
         # Current behavior: exception is raised
         # Future enhancement: should catch and handle gracefully
         with pytest.raises(Exception, match="Database connection lost"):
-            result = retriever.retrieve(query_plan)
+            retriever.retrieve(query_plan)
 
 
 class TestInvalidQueryPlanHandling:

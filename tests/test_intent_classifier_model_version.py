@@ -33,7 +33,6 @@ from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
 
-
 _MODELS_DIR = Path(__file__).parent.parent / "belem_converse" / "classifiers" / "models"
 
 

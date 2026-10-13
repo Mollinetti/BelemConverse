@@ -4,14 +4,12 @@ Tests for Intent_Classifier fallback handling in Query_Planner.
 Validates Requirement 1.4: Fallback handling when Intent_Classifier fails.
 """
 
-import pytest
 import logging
-import sys
-from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+
+import pytest
 
 # Add src to path
-
 from belem_converse.core.query_planner import QueryPlanner
 
 
@@ -338,8 +336,8 @@ class TestProximityInstrumentation:
         ]
         assert instrumentation_records, "Instrumentation event must be emitted"
         event = instrumentation_records[-1]
-        assert getattr(event, 'strategy1_hit') is True
-        assert getattr(event, 'result') is True
+        assert event.strategy1_hit is True
+        assert event.result is True
         assert getattr(event, 'strategy1_signal', '').startswith('phrase:near me')
 
     def test_instrumentation_event_records_agreement_when_both_strategies_hit(self, caplog):
@@ -365,11 +363,11 @@ class TestProximityInstrumentation:
         events = [r for r in caplog.records if r.message == "proximity_intent_detection"]
         assert events, "Instrumentation event must be emitted"
         event = events[-1]
-        assert getattr(event, 'strategy1_hit') is True
-        assert getattr(event, 'strategy2_hit') is True
-        assert getattr(event, 'agree') is True
-        assert getattr(event, 'language') == 'pt-BR'
-        assert getattr(event, 'query') == 'perto de mim'
+        assert event.strategy1_hit is True
+        assert event.strategy2_hit is True
+        assert event.agree is True
+        assert event.language == 'pt-BR'
+        assert event.query == 'perto de mim'
 
     def test_instrumentation_event_records_disagreement_when_only_classifier_hits(self, caplog):
         """When Strategy 1 misses but the classifier catches the intent, the
@@ -397,10 +395,10 @@ class TestProximityInstrumentation:
         events = [r for r in caplog.records if r.message == "proximity_intent_detection"]
         assert events
         event = events[-1]
-        assert getattr(event, 'strategy1_hit') is False
-        assert getattr(event, 'strategy2_hit') is True
-        assert getattr(event, 'agree') is False
-        assert getattr(event, 'strategy1_signal') is None
+        assert event.strategy1_hit is False
+        assert event.strategy2_hit is True
+        assert event.agree is False
+        assert event.strategy1_signal is None
 
 
 class TestOpenNowInstrumentation:
@@ -451,8 +449,8 @@ class TestOpenNowInstrumentation:
         events = [r for r in caplog.records if r.message == "open_now_detection"]
         assert events, "Instrumentation event must be emitted"
         event = events[-1]
-        assert getattr(event, 'strategy1_hit') is True
-        assert getattr(event, 'result') is True
+        assert event.strategy1_hit is True
+        assert event.result is True
         assert getattr(event, 'strategy1_signal', '').startswith('phrase:aberto agora')
 
     def test_closed_phrase_overrides_open_phrase_in_strategy1(self, caplog):
@@ -481,9 +479,9 @@ class TestOpenNowInstrumentation:
         events = [r for r in caplog.records if r.message == "open_now_detection"]
         assert events
         event = events[-1]
-        assert getattr(event, 'strategy1_hit') is False
+        assert event.strategy1_hit is False
         assert getattr(event, 'strategy1_signal', '').startswith('closed_override:')
-        assert getattr(event, 'result') is None
+        assert event.result is None
 
     def test_instrumentation_records_disagreement_when_only_classifier_hits(self, caplog):
         """A colloquial PT-BR query like "ta servindo agora?" expresses
@@ -513,10 +511,10 @@ class TestOpenNowInstrumentation:
         events = [r for r in caplog.records if r.message == "open_now_detection"]
         assert events
         event = events[-1]
-        assert getattr(event, 'strategy1_hit') is False
-        assert getattr(event, 'strategy2_hit') is True
-        assert getattr(event, 'agree') is False
-        assert getattr(event, 'language') == 'pt-BR'
+        assert event.strategy1_hit is False
+        assert event.strategy2_hit is True
+        assert event.agree is False
+        assert event.language == 'pt-BR'
 
 
 if __name__ == "__main__":

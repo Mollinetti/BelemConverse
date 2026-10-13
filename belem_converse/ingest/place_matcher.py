@@ -7,9 +7,10 @@ matching to identify matches between OSM places and existing database entries.
 
 import logging
 import math
-from typing import List, Dict, Any, Optional, Tuple
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 try:
     from rapidfuzz import fuzz
@@ -33,14 +34,14 @@ class MatchStatus(Enum):
 @dataclass
 class MatchResult:
     """Result of matching an OSM place to CSV data."""
-    osm_place: Optional[OSMPlace]
-    csv_place: Optional[Dict[str, Any]]
+    osm_place: OSMPlace | None
+    csv_place: dict[str, Any] | None
     status: MatchStatus
-    distance_meters: Optional[float] = None
-    name_similarity: Optional[float] = None
+    distance_meters: float | None = None
+    name_similarity: float | None = None
     confidence: float = 0.0
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for reporting."""
         return {
             'status': self.status.value,
@@ -181,8 +182,8 @@ class PlaceMatcher:
     def find_best_match(
         self,
         osm_place: OSMPlace,
-        csv_places: List[Dict[str, Any]]
-    ) -> Optional[Tuple[Dict[str, Any], float, float, float]]:
+        csv_places: list[dict[str, Any]]
+    ) -> tuple[dict[str, Any], float, float, float] | None:
         """
         Find the best matching CSV place for an OSM place.
         
@@ -261,10 +262,10 @@ class PlaceMatcher:
     
     def match_all(
         self,
-        osm_places: List[OSMPlace],
-        csv_places: List[Dict[str, Any]],
-        progress_callback: Optional[callable] = None
-    ) -> List[MatchResult]:
+        osm_places: list[OSMPlace],
+        csv_places: list[dict[str, Any]],
+        progress_callback: Callable | None = None
+    ) -> list[MatchResult]:
         """
         Match all OSM places against CSV places.
         
@@ -345,7 +346,7 @@ class PlaceMatcher:
         
         return results
     
-    def get_match_summary(self, results: List[MatchResult]) -> Dict[str, Any]:
+    def get_match_summary(self, results: list[MatchResult]) -> dict[str, Any]:
         """
         Generate a summary of match results.
         

@@ -3,7 +3,7 @@ Configuration settings for the RAG-based travel guide agent.
 """
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 # Base paths (env-overridable for Docker / alternate deploy targets)
 BASE_DIR = Path(__file__).parent.parent.parent
@@ -183,7 +183,7 @@ ENV_VARS = {
     "TOKENIZERS_PARALLELISM": "false"
 }
 
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     """Get the complete configuration dictionary."""
     return {
         "data": DATA_CONFIG,

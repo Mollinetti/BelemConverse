@@ -7,11 +7,13 @@ and flagging potentially closed establishments.
 """
 
 import logging
-import pandas as pd
+import shutil
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional
-import shutil
+from typing import Any
+
+import pandas as pd
 
 from .osm_fetcher import OSMPlace
 from .place_matcher import MatchResult, MatchStatus, PlaceMatcher
@@ -88,7 +90,7 @@ class DataMerger:
         
         return backup_path
     
-    def osm_place_to_csv_row(self, osm_place: OSMPlace) -> Dict[str, Any]:
+    def osm_place_to_csv_row(self, osm_place: OSMPlace) -> dict[str, Any]:
         """
         Convert an OSM place to a CSV row format.
         
@@ -130,9 +132,9 @@ class DataMerger:
     
     def merge(
         self,
-        match_results: List[MatchResult],
+        match_results: list[MatchResult],
         update_coordinates: bool = False,
-        progress_callback: Optional[callable] = None
+        progress_callback: Callable | None = None
     ) -> pd.DataFrame:
         """
         Merge OSM data with CSV based on match results.
@@ -169,7 +171,6 @@ class DataMerger:
         
         new_rows = []
         matched_count = 0
-        updated_count = 0
         closed_count = 0
         
         if progress_callback:
@@ -254,7 +255,7 @@ class DataMerger:
     
     def generate_report(
         self,
-        match_results: List[MatchResult],
+        match_results: list[MatchResult],
         matcher: PlaceMatcher
     ) -> str:
         """
@@ -397,12 +398,12 @@ class DataMerger:
 
 def run_full_merge(
     csv_path: str,
-    osm_places: List[OSMPlace],
+    osm_places: list[OSMPlace],
     output_dir: str = None,
     update_coordinates: bool = False,
     dry_run: bool = False,
-    progress_callback: Optional[callable] = None
-) -> Dict[str, Any]:
+    progress_callback: Callable | None = None
+) -> dict[str, Any]:
     """
     Run the full merge process.
     

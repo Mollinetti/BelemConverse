@@ -7,18 +7,17 @@ This test validates that semantic search:
 3. Re-ranks with structured filters
 """
 
-import sys
-from pathlib import Path
 
 # Add project root to path
 
-import pytest
 from unittest.mock import Mock
 
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
+import pytest
+
 from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.ranking_engine import RankingEngine
+from belem_converse.core.unified_retriever import UnifiedRetriever
 
 
 @pytest.fixture
