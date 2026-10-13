@@ -98,14 +98,23 @@ Rejected:
 - The provider is set by `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`. Local
   dev can point at a llama.cpp server or Ollama without code changes.
 - `httpx` moves from the test dependencies to the runtime ones.
-- The model is picked by the mvp-1 benchmark. Candidates (free tiers as of
-  2026-10):
-  - Google AI Studio: small Gemma models, and Gemini Flash-Lite (about 500–1,000
-    requests/day).
-  - Groq: `llama-3.1-8b-instant` (14.4k requests/day, 30 RPM) and
-    `gpt-oss-20b`.
-- Rule: pick the **smallest model that passes the grounding check and the pt-BR
-  quality check**, with at least 1,000 free requests/day.
+- The model is picked by the mvp-1 benchmark. Rule: pick the **smallest model
+  that passes the grounding check and the pt-BR quality check**, with at least
+  1,000 free requests/day.
+- **Chosen (mvp-1 benchmark, 2026-10-13; evidence in
+  `mvp-1-lean-core/validation.md`):**
+  - **Primary:** Google AI Studio `gemini-3.5-flash-lite`. Grounded 20/21,
+    pt-BR 10/11, 1.06 s p50.
+  - **Fallback:** Groq `qwen/qwen3.8-27b`. Grounded 21/21, pt-BR 9/11, 0.57 s
+    p50; 1,000 requests/day and 8,000 tokens/min.
+- **Free tiers have shifted since drafting.** Groq dropped
+  `llama-3.1-8b-instant` for new accounts and cut its chat models to 1,000
+  requests/day. Gemma on AI Studio returns its reasoning text, and Gemini 2.5
+  Flash-Lite answers 404 for a new key. The 1,000/day floor holds only for
+  primary plus fallback combined, and only if AI Studio shows at least about
+  800/day for the primary.
+- Local alternative (not benchmarked): Ollama `gemma4:e4b` through the same
+  OpenAI-compatible endpoint.
 - Budget: exactly **1 LLM call per answered turn**, ≤250 output tokens, and a
   compact prompt (≤5 places, only the fields needed).
 
