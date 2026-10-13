@@ -20,6 +20,17 @@ def test_dockerfile_is_slim():
     assert "$port" in dockerfile or "${port" in dockerfile
 
 
+def test_requirements_match_pyproject():
+    # The image installs requirements.txt; the package declares pyproject's list.
+    import tomllib
+
+    declared = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["dependencies"]
+    lines = (ROOT / "requirements.txt").read_text().splitlines()
+    pinned = [line.split("#")[0].strip() for line in lines]
+
+    assert sorted(filter(None, pinned)) == sorted(declared)
+
+
 def test_catalog_is_committed_and_loads():
     tracked = subprocess.run(
         ["git", "ls-files", "--error-unmatch", "catalog/belem.sqlite"],
