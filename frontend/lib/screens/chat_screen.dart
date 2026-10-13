@@ -4,11 +4,28 @@ import '../config/theme.dart';
 import '../config/constants.dart';
 import '../providers/chat_provider.dart';
 import '../providers/settings_provider.dart';
+import '../utils/input_gate.dart';
 import '../widgets/message_bubble.dart';
 
 /// Main chat screen
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
+
+  /// Example questions on the empty state; each must pass the input gate.
+  static const examples = {
+    'pt-BR': [
+      'Melhores restaurantes de Belém',
+      'Pontos turísticos perto de mim',
+      'Onde comer açaí?',
+      'Bares abertos agora',
+    ],
+    'en': [
+      'Best restaurants in Belém',
+      'Tourist spots nearby',
+      'Where to eat açaí?',
+      'Highly rated hotels',
+    ],
+  };
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -18,6 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  int _shownMessages = 0;
 
   @override
   void dispose() {
@@ -27,32 +45,41 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  /// Called after the frame that added a message, so the extent is final.
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
-  void _handleSubmit() {
-    final text = _textController.text.trim();
-    if (text.isEmpty) return;
+  /// 'pt-BR' or 'en' per the OpenAPI spec.
+  String get _languageCode {
+    final code = context.read<SettingsProvider>().languageCode;
+    return code == 'pt' ? 'pt-BR' : code;
+  }
 
-    final settings = context.read<SettingsProvider>();
-    // Ensure language code is 'pt-BR' or 'en' per OpenAPI spec
-    final languageCode = settings.languageCode == 'pt' ? 'pt-BR' : settings.languageCode;
-    context.read<ChatProvider>().sendMessage(
-          text,
-          language: languageCode,
-        );
+  bool get _isPortuguese => context.watch<SettingsProvider>().languageCode != 'en';
 
+  void _handleSubmit() => _ask(_textController.text);
+
+  void _ask(String text) {
+    final chat = context.read<ChatProvider>();
+    if (text.trim().isEmpty || !chat.canSend) return;
+    chat.sendMessage(text, language: _languageCode);
     _textController.clear();
-    _scrollToBottom();
+  }
+
+  void _seeMore() {
+    context.read<ChatProvider>().seeMore(language: _languageCode);
+  }
+
+  String _turnsLeftLabel(int n, bool pt) {
+    if (pt) return n == 1 ? '1 pergunta restante' : '$n perguntas restantes';
+    return n == 1 ? '1 question left' : '$n questions left';
   }
 
   @override
@@ -61,6 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
+          _buildWakingBanner(),
           _buildFilterChips(),
           Expanded(child: _buildMessageList()),
           _buildInputArea(),
@@ -77,7 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.chat, size: 20),
@@ -116,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
             chat.useLocation ? Icons.location_on : Icons.location_off,
             color: chat.hasLocation
                 ? Colors.white
-                : Colors.white.withOpacity(0.5),
+                : Colors.white.withValues(alpha: 0.5),
           ),
           onPressed: () {
             chat.toggleLocation();
@@ -135,8 +163,8 @@ class _ChatScreenState extends State<ChatScreen> {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         switch (value) {
-          case 'clear':
-            _showClearHistoryDialog();
+          case 'new':
+            context.read<ChatProvider>().newConversation();
             break;
           case 'about':
             _showAboutDialog();
@@ -144,13 +172,13 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'clear',
+        PopupMenuItem(
+          value: 'new',
           child: Row(
             children: [
-              Icon(Icons.delete_outline, color: ParaColors.textSecondary),
-              SizedBox(width: 8),
-              Text('Clear history'),
+              const Icon(Icons.refresh, color: ParaColors.textSecondary),
+              const SizedBox(width: 8),
+              Text(_isPortuguese ? 'Nova conversa' : 'New conversation'),
             ],
           ),
         ),
@@ -175,17 +203,28 @@ class _ChatScreenState extends State<ChatScreen> {
           return _buildEmptyState();
         }
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
+        if (chat.messages.length != _shownMessages) {
+          _shownMessages = chat.messages.length;
+          WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+        }
+
+        // Chips and "Ver mais" belong to the newest answer only.
+        final latest = chat.isLoading
+            ? -1
+            : chat.messages.lastIndexWhere((m) => !m.isUser && !m.isLoading);
+        final pt = _isPortuguese;
 
         return ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(vertical: 16),
           itemCount: chat.messages.length,
           itemBuilder: (context, index) {
+            final isLatest = index == latest;
             return MessageBubble(
               message: chat.messages[index],
+              onFollowUp: isLatest && chat.canSend ? _ask : null,
+              onSeeMore: isLatest ? _seeMore : null,
+              seeMoreLabel: pt ? 'Ver mais' : 'See more',
             );
           },
         );
@@ -206,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ParaColors.vermelho.withOpacity(0.1),
+                color: ParaColors.vermelho.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -244,19 +283,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildSuggestions(bool isPortuguese) {
-    final suggestions = isPortuguese
-        ? [
-            'Melhores restaurantes de Belém',
-            'Pontos turísticos perto de mim',
-            'Onde comer açaí?',
-            'Hotéis bem avaliados',
-          ]
-        : [
-            'Best restaurants in Belém',
-            'Tourist spots nearby',
-            'Where to eat açaí?',
-            'Highly rated hotels',
-          ];
+    final suggestions = ChatScreen.examples[isPortuguese ? 'pt-BR' : 'en']!;
 
     return Wrap(
       spacing: 8,
@@ -267,110 +294,130 @@ class _ChatScreenState extends State<ChatScreen> {
           label: Text(suggestion),
           backgroundColor: ParaColors.surface,
           side: BorderSide(color: ParaColors.divider),
-          onPressed: () {
-            _textController.text = suggestion;
-            _handleSubmit();
-          },
+          onPressed: () => _ask(suggestion),
         );
       }).toList(),
     );
   }
 
+  Widget _buildWakingBanner() {
+    return Consumer<ChatProvider>(
+      builder: (context, chat, _) {
+        if (chat.serverReady) return const SizedBox.shrink();
+        final pt = _isPortuguese;
+        final text = chat.serverUnavailable
+            ? (pt
+                ? 'O servidor não respondeu. Recarregue a página para tentar de novo.'
+                : 'The server did not respond. Reload the page to try again.')
+            : (pt
+                ? 'Acordando o servidor (até 1 min)…'
+                : 'Waking up the server (up to 1 min)…');
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: ParaColors.azul.withValues(alpha: 0.08),
+          child: Row(
+            children: [
+              if (!chat.serverUnavailable) ...[
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(child: Text(text)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildInputArea() {
+    final chat = context.watch<ChatProvider>();
+    final pt = _isPortuguese;
+    final finished = chat.turnsLeft == 0;
     return Container(
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
         top: 12,
-        bottom: MediaQuery.of(context).padding.bottom + 12,
+        bottom: MediaQuery.of(context).padding.bottom + 8,
       ),
       decoration: BoxDecoration(
         color: ParaColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              focusNode: _focusNode,
-              maxLength: AppConstants.maxMessageLength,
-              maxLines: 4,
-              minLines: 1,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _handleSubmit(),
-              decoration: InputDecoration(
-                hintText: (context.watch<SettingsProvider>().languageCode == 'pt-BR' ||
-                          context.watch<SettingsProvider>().languageCode == 'pt')
-                    ? 'Digite sua pergunta...'
-                    : 'Type your question...',
-                counterText: '',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _textController,
+                  focusNode: _focusNode,
+                  enabled: !finished,
+                  inputFormatters: inputGateFormatters,
+                  maxLength: AppConstants.maxMessageLength,
+                  maxLines: 4,
+                  minLines: 1,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _handleSubmit(),
+                  decoration: InputDecoration(
+                    hintText: finished
+                        ? (pt ? 'Conversa encerrada' : 'Conversation over')
+                        : (pt ? 'Digite sua pergunta...' : 'Type your question...'),
+                    counterText: '',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: ParaColors.background,
+                  ),
                 ),
-                filled: true,
-                fillColor: ParaColors.background,
               ),
-            ),
+              const SizedBox(width: 8),
+              if (finished)
+                FilledButton.icon(
+                  onPressed: chat.newConversation,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(pt ? 'Nova conversa' : 'New conversation'),
+                )
+              else
+                FloatingActionButton(
+                  onPressed: chat.canSend ? _handleSubmit : null,
+                  mini: true,
+                  elevation: 0,
+                  child: chat.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.send),
+                ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Consumer<ChatProvider>(
-            builder: (context, chat, _) {
-              return FloatingActionButton(
-                onPressed: chat.isLoading ? null : _handleSubmit,
-                mini: true,
-                elevation: 0,
-                child: chat.isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showClearHistoryDialog() {
-    final settings = context.read<SettingsProvider>();
-    final isPortuguese = settings.languageCode == 'pt-BR' || settings.languageCode == 'pt';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          isPortuguese ? 'Limpar histórico' : 'Clear history',
-        ),
-        content: Text(
-          isPortuguese
-              ? 'Deseja apagar todas as mensagens?'
-              : 'Do you want to delete all messages?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(isPortuguese ? 'Cancelar' : 'Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<ChatProvider>().clearHistory();
-              Navigator.pop(context);
-            },
-            child: Text(isPortuguese ? 'Limpar' : 'Clear'),
+          const SizedBox(height: 4),
+          Text(
+            '${pt ? 'Letras, números e , . : ? !' : 'Letters, digits and , . : ? !'}'
+            ' · ${_turnsLeftLabel(chat.turnsLeft, pt)}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: ParaColors.textSecondary,
+                ),
           ),
         ],
       ),
@@ -409,14 +456,14 @@ class _ChatScreenState extends State<ChatScreen> {
         final settings = context.watch<SettingsProvider>();
         final isPortuguese = settings.languageCode == 'pt-BR' || settings.languageCode == 'pt';
         
-        if (!chat.selectedPlaceTypes.isEmpty || chat.openNowFilter) {
+        if (chat.selectedPlaceTypes.isNotEmpty || chat.openNowFilter) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: ParaColors.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -510,7 +557,7 @@ class _ChatScreenState extends State<ChatScreen> {
       selected: isSelected,
       onSelected: (_) => onTap(),
       backgroundColor: ParaColors.surface,
-      selectedColor: ParaColors.vermelho.withOpacity(0.2),
+      selectedColor: ParaColors.vermelho.withValues(alpha: 0.2),
       checkmarkColor: ParaColors.vermelho,
       labelStyle: TextStyle(
         color: isSelected ? ParaColors.vermelho : ParaColors.textPrimary,
