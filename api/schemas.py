@@ -38,7 +38,7 @@ class ChatRequest(BaseModel):
     session_id: UUID = Field(..., description="Conversation id: a UUID the client makes per conversation")
     message: Optional[str] = Field(
         default=None,
-        description="Visitor question: letters, digits, spaces and , . : only; required unless action is 'more'",
+        description="Visitor question: letters, digits, spaces and , . : ? ! only; required unless action is 'more'",
         json_schema_extra={"maxLength": gate.MAX_LEN},
     )
     action: Optional[Literal["more"]] = Field(
@@ -66,7 +66,7 @@ class ChatRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "session_id": "3f1c2b9e-8d4a-4c6e-9b1a-2e7f5d0c4a11",
-                "message": "Quais são os melhores restaurantes perto de mim",
+                "message": "Quais são os melhores restaurantes perto de mim?",
                 "language": "pt-BR",
                 "userLocation": {"lat": -1.4695, "lng": -48.4665}
             }

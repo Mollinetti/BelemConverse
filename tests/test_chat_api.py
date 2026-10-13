@@ -101,7 +101,7 @@ def test_tour_query_returns_places(client, monkeypatch):
 
 @pytest.mark.parametrize(
     "message",
-    ["me indica lugares bons em Belém", "o que tem para fazer aqui", "me mostra tudo"],
+    ["me indica lugares bons em Belém", "o que tem para fazer aqui?", "me mostra tudo"],
 )
 def test_questions_without_categories_are_answered(client, monkeypatch, message):
     # The planner gives these a place_type list and no categories.

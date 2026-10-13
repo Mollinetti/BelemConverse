@@ -27,9 +27,9 @@
 
 - **T01 [P]** Write failing tests in `tests/test_input_gate.py`.
   Unit tests on `gate.clean_message`:
-  - **Accepted:** `Restaurantes abertos perto da Praça da República, 20:00`, and
-    accented letters `ãçéíóúâêô`.
-  - **Rejected:** each of `? ! " ' < > { } [ ] ; / \ @ # $ % & * = + - _ ~ | ^`,
+  - **Accepted:** `Restaurantes abertos perto da Praça da República, 20:00`,
+    `Onde tem açaí?!`, and accented letters `ãçéíóúâêô`.
+  - **Rejected:** each of `" ' < > { } [ ] ; / \ @ # $ % & * = + - _ ~ | ^`,
     a newline, a tab, an emoji, 401 letters, `""` and `"   "`.
   - **Normalized:** NFD input (`Belém`) becomes NFC `Belém`, and runs of
     spaces collapse.
@@ -139,7 +139,7 @@
 - **T16 [P]** Write failing tests in `test/input_gate_test.dart`. Applying
   `inputGateFormatters` to a `TextEditingValue`:
   - keeps `Praça da República, 20:00`;
-  - strips `?!"<>{}` and `\n`;
+  - keeps `?` and `!`, and strips `"<>{}` and `\n`;
   - truncates at 400 characters.
 - **T17 [P]** Write failing tests in `test/api_service_test.dart` (`MockClient`):
   - The request body has `session_id`, plus `action:"more"` when paging.
@@ -169,7 +169,6 @@
   - `constants.dart`, `input_gate.dart`, `session_id.dart`, `message.dart`,
     `api_service.dart`, `chat_provider.dart`, `message_bubble.dart` and
     `chat_screen.dart`.
-  - Rewrite the example chips without `?`.
   - Then `flutter analyze` and `flutter test` pass.
   - → depends on T08, T10, T16–T19
 

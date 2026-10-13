@@ -23,8 +23,10 @@ public showcase.
   my phone and start asking right away, with no install or sign-up, so that
   trying the product takes seconds.
 - **P1 — Plain-text input.** As the showcase owner, I want the chat box to accept
-  only letters, digits, spaces, commas, periods and colons, up to 400
-  characters, and the server to enforce the same rule. That way crafted inputs
+  only letters, digits, spaces, commas, periods, colons, question marks and
+  exclamation marks, up to 400 characters, and the server to enforce the same
+  rule. `?` and `!` are allowed because visitors naturally type them; every
+  other symbol stays out. That way crafted inputs
   cannot steer the assistant.
 - **P1 — Short conversation with memory.** As a visitor, I want up to 4 answered
   questions in one conversation, and a follow-up such as "e abertos agora?" to
@@ -59,10 +61,11 @@ public showcase.
 
 ### Plain-text input (P1)
 
-- **Given** the chat box, **When** a visitor types or pastes `?`, `!`, quotes,
-  angle brackets, braces, newlines or emoji, **Then** those characters do not
-  appear in the box. Letters with Portuguese accents, digits, spaces, `,`, `.`
-  and `:` do appear.
+- **Given** the chat box, **When** a visitor types or pastes quotes, angle
+  brackets, braces, brackets, slashes, `;`, `@`, `#`, `*`, `-`, `_` or any
+  other symbol, newlines or emoji, **Then** those characters do not appear in
+  the box. Letters with Portuguese accents, digits, spaces, `,`, `.`, `:`, `?`
+  and `!` do appear.
 - **Given** the chat box, **When** the text reaches 400 characters, **Then** no
   more can be typed.
 - **Given** a direct call to the backend that bypasses the app, **When** the
@@ -72,7 +75,7 @@ public showcase.
   called.
 - **Given** the message
   `Restaurantes abertos perto da Praça da República, 20:00`, **When** it is sent,
-  **Then** it is accepted.
+  **Then** it is accepted. So is `Onde tem açaí?!`.
 
 ### Short conversation with memory (P1)
 
