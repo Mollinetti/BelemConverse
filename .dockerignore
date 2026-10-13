@@ -4,31 +4,26 @@
 .vscode
 .cursor
 .cursorrules
+.claude
+.kiro
 __pycache__
 *.pyc
-*.pyo
-*.pyd
 *.egg-info
 .pytest_cache
 .mypy_cache
 .ruff_cache
-.coverage
-htmlcov
 .DS_Store
 
-# Heavy assets - mount at runtime instead.
-models/llm/*.gguf
-models/embedding/
-data/chroma_db/
+# Secrets and raw data never enter the image.
+.env
+.env.*
+data/
+models/
 
-# Frontend (separate Dockerfile / build step).
-frontend/build/
-frontend/.dart_tool/
-
-# Repo-only artifacts.
-graphify-out/
-.kiro/
-.rebuild_imports.py
-.strip_syspath.py
+# Not part of the API image.
+frontend/
 docs/
 tests/
+notebooks/
+specs/
+graphify-out/

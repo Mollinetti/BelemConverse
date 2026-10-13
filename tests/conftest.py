@@ -35,7 +35,7 @@ def built_catalog(tmp_path):
     shutil.copy(FIXTURES_DIR / "raw_repair_sample.csv", raw_dir)
     out_dir = tmp_path / "belem"
     build(csv_path=FIXTURES_DIR / "catalog_raw_sample.csv", raw_dir=raw_dir, out_dir=out_dir)
-    return out_dir / "places.sqlite"
+    return out_dir / "belem.sqlite"
 
 
 # --- mvp-2 API fixtures --------------------------------------------------------
