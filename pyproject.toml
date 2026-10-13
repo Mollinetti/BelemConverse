@@ -35,7 +35,7 @@ dependencies = [
     # Data + retrieval
     "numpy>=1.26",
     "scipy>=1.11",
-    "scikit-learn>=1.3",
+    "scikit-learn>=1.8,<1.9",  # the committed classifier pickles are 1.8
     "rapidfuzz>=3.0",
     "h3>=3.7",
     "requests>=2.31",

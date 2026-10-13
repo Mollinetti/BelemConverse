@@ -417,7 +417,10 @@ class QueryPlanner:
         matches_by_category: dict[str, list[str]] = {}
         for cat_name, keywords in self.intent_classifier.category_keywords.items():
             for keyword in keywords:
-                if self.normalize_text(keyword) in message_norm:
+                # Whole words, optionally plural: "bares" finds "bar", but
+                # "sorvete" must not find "vet" nor "República" find "pub".
+                pattern = rf"(?<!\w){re.escape(self.normalize_text(keyword))}(?:e?s)?(?!\w)"
+                if re.search(pattern, message_norm):
                     matched_in_order.append(keyword.lower())
                     matches_by_category.setdefault(cat_name, []).append(keyword.lower())
         return matched_in_order, matches_by_category

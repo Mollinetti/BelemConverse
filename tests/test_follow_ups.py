@@ -5,8 +5,14 @@ import uuid
 import pytest
 
 from belem_converse import follow_ups, gate
+from belem_converse.catalog import load_places
 from belem_converse.cities import get_city_config
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
+from belem_converse.core.ranking_engine import RankingEngine
+from belem_converse.core.unified_retriever import UnifiedRetriever
 from tests.conftest import fake_model
+from tests.test_deploy_files import CATALOG
 
 LANGUAGES = ["pt-BR", "en"]
 CITY = get_city_config()
@@ -75,7 +81,9 @@ def test_sibling_is_never_the_current_category(category, language):
 
 
 @pytest.mark.parametrize(
-    ("spelling", "category"), [(["açaí"], "acai"), (["ice cream"], "ice_cream"), (["pub", "bar"], "bar")]
+    ("spelling", "category"),
+    [(["açaí"], "acai"), (["ice cream"], "ice_cream"), (["sorveteria"], "ice_cream"),
+     (["pub", "bar"], "bar")],
 )
 def test_planner_spellings_are_recognized(spelling, category):
     # The planner returns "açaí" and "ice cream"; the sibling must still skip them.
@@ -112,6 +120,14 @@ def test_filter_chips_set_their_filter(planner, language):
     assert slots_for(planner, follow_ups.CHIPS["top_rated"][language], language)["min_rating"]
 
 
+# Main catalog categories each suggested kind of place should bring back.
+CATALOG_CATEGORIES = {
+    "cafe": {"Cafe", "Bakery", "Coffee shop"},
+    "acai": {"Açaí shop"},
+    "ice_cream": {"Ice cream shop"},
+}
+
+
 @pytest.mark.parametrize("language", LANGUAGES)
 @pytest.mark.parametrize("category", sorted(set(follow_ups.SIBLING.values())))
 def test_category_chips_name_their_category(planner, category, language):
@@ -120,6 +136,21 @@ def test_category_chips_name_their_category(planner, category, language):
     found = slots_for(planner, label, language)["categories"] or []
 
     assert follow_ups.canonical(found) == category
+
+
+@pytest.mark.parametrize("language", LANGUAGES)
+@pytest.mark.parametrize("category", ["acai", "ice_cream", "cafe"])
+def test_category_chips_find_that_kind_of_place(planner, category, language):
+    # On the real catalog, tapping the chip brings back that kind of place.
+    retriever = UnifiedRetriever(
+        PlaceCache(load_places(CATALOG)), CategoryMatcher(planner.intent_classifier), RankingEngine()
+    )
+    plan = planner.create_query_plan(CITY.category_labels[category][language], explicit_language=language)
+    places = retriever.retrieve({"intent": plan.intent, "slots": plan.slots,
+                                 "retrieval_strategy": "structured_only",
+                                 "proximity_intent_detected": False}).places
+
+    assert {p["categoryName"] for p in places[:5]} <= CATALOG_CATEGORIES[category]
 
 
 def test_answer_carries_follow_ups(client, monkeypatch):

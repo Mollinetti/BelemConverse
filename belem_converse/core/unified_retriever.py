@@ -150,9 +150,21 @@ class UnifiedRetriever:
             mode=ranking_mode,
             user_location=user_location
         )
-        # Open places before places with unknown hours; sort is stable, so each
-        # group keeps its ranked order.
-        ranked_results.sort(key=lambda p: p.get('openNowStatus') == 'unknown')
+        # Places whose main category was asked for come first, then places
+        # matched only by a secondary tag (an açaí shop also tagged
+        # "Restaurant"); within each, open before unknown hours. The sort is
+        # stable, so each group keeps its ranked order.
+        asked = self._asked_categories(slots)
+
+        def secondary_only(place: dict[str, Any]) -> bool:
+            main = place.get('categoryName')
+            return bool(asked and main) and not self.category_matcher.matches(
+                {'categories': [main]}, asked
+            )
+
+        ranked_results.sort(
+            key=lambda p: (secondary_only(p), p.get('openNowStatus') == 'unknown')
+        )
 
         logger.info(
             f"Retrieval complete: {len(ranked_results)} results, "
@@ -223,12 +235,7 @@ class UnifiedRetriever:
                 logger.info("Step 2: Skipping proximity filter")
         
         # STEP 3: Filter by category - THIRD
-        # The planner gives place_type as a list; wrapping it again ([[...]])
-        # crashed the category matcher for questions with no category words.
-        place_type = slots.get('place_type')
-        if isinstance(place_type, str):
-            place_type = [place_type]
-        categories = slots.get('categories') or place_type or None
+        categories = self._asked_categories(slots)
         if categories:
             logger.info(f"Step 3: Filtering by categories: {categories}")
             candidates = self._filter_by_category(candidates, categories)
@@ -262,6 +269,16 @@ class UnifiedRetriever:
         logger.info(f"Filter-first complete: {len(candidates)} candidates")
         return candidates
     
+    @staticmethod
+    def _asked_categories(slots: dict[str, Any]) -> list[str] | None:
+        """The categories a plan asks for: its categories, else its place types."""
+        # The planner gives place_type as a list; wrapping it again ([[...]])
+        # crashed the category matcher for questions with no category words.
+        place_type = slots.get('place_type')
+        if isinstance(place_type, str):
+            place_type = [place_type]
+        return slots.get('categories') or place_type or None
+
     def _filter_by_open_now(self, places: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Judge each place's businessTime against the current time in the city.
