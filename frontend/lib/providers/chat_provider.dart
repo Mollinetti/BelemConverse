@@ -1,23 +1,27 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
 import '../models/message.dart';
 import '../services/api_service.dart';
 import '../services/location_service.dart';
+import '../utils/session_id.dart';
 
-/// Provider for managing chat state
+/// Provider for one conversation: up to [AppConstants.maxTurns] questions,
+/// free "see more" pages, and a fresh start on "Nova conversa" or reload.
 class ChatProvider extends ChangeNotifier {
   final ApiService _apiService;
   final LocationService _locationService;
-  
-  List<Message> _messages = [];
+
+  final List<Message> _messages = [];
   bool _isLoading = false;
   String? _error;
   bool _useLocation = true;
   double? _latitude;
   double? _longitude;
-  
+  String _sessionId = newSessionId();
+  int _turnsLeft = AppConstants.maxTurns;
+  bool _serverReady = false;
+  bool _serverUnavailable = false;
+
   // Filters
   final Set<String> _selectedPlaceTypes = {};
   bool _openNowFilter = false;
@@ -38,77 +42,117 @@ class ChatProvider extends ChangeNotifier {
   double? get longitude => _longitude;
   Set<String> get selectedPlaceTypes => Set.unmodifiable(_selectedPlaceTypes);
   bool get openNowFilter => _openNowFilter;
+  String get sessionId => _sessionId;
+  int get turnsLeft => _turnsLeft;
+  bool get canSend => _turnsLeft > 0 && !_isLoading;
+
+  /// The backend has answered a health check (it may have been asleep).
+  bool get serverReady => _serverReady;
+
+  /// The backend did not wake up within [AppConstants.serverWakeTimeout].
+  bool get serverUnavailable => _serverUnavailable;
 
   /// Initialize the provider
   Future<void> initialize() async {
-    await _loadHistory();
-    await _updateLocation();
+    _updateLocation();
+    await _waitForServer();
   }
 
-  /// Send a message
-  Future<void> sendMessage(String content, {required String language}) async {
-    if (content.trim().isEmpty) return;
+  /// Poll the health endpoint until it answers: a free-tier server sleeps
+  /// when idle and takes about a minute to wake up.
+  Future<void> _waitForServer() async {
+    final attempts = AppConstants.serverWakeTimeout.inMilliseconds ~/
+        AppConstants.healthPollInterval.inMilliseconds;
+    for (var i = 0; i < attempts && !_serverReady; i++) {
+      if (await _apiService.checkHealth()) {
+        _markReady();
+        return;
+      }
+      await Future.delayed(AppConstants.healthPollInterval);
+    }
+    if (!_serverReady) {
+      _serverUnavailable = true;
+      notifyListeners();
+    }
+  }
 
-    // Clear any previous error
-    _error = null;
-
-    // Add user message
-    final userMessage = Message.user(content.trim());
-    _messages.add(userMessage);
+  void _markReady() {
+    _serverReady = true;
+    _serverUnavailable = false;
     notifyListeners();
+  }
 
-    // Show loading indicator
+  /// Ask a question; spends one of the conversation's questions.
+  Future<void> sendMessage(String content, {required String language}) async {
+    if (content.trim().isEmpty || !canSend) return;
+    _messages.add(Message.user(content.trim()));
+    await _request(language, (location) {
+      final filters = <String, dynamic>{
+        if (_selectedPlaceTypes.isNotEmpty) 'placeType': _selectedPlaceTypes.toList(),
+        if (_openNowFilter) 'openNow': true,
+      };
+      return _apiService.sendMessage(
+        message: content.trim(),
+        language: language,
+        sessionId: _sessionId,
+        latitude: location ? _latitude : null,
+        longitude: location ? _longitude : null,
+        filters: filters,
+      );
+    });
+  }
+
+  /// The next results of the last answer; free, no question spent.
+  Future<void> seeMore({required String language}) async {
+    if (_isLoading) return;
+    final previous = _messages.lastWhere((m) => !m.isUser, orElse: () => Message.loading());
+    await _request(language, (_) async {
+      final page = await _apiService.sendMessage(
+        language: language,
+        sessionId: _sessionId,
+        action: 'more',
+      );
+      // Keep offering the last answer's follow-ups under the newest page.
+      return Message.assistant(
+        content: page.content,
+        places: page.places,
+        followUps: previous.followUps,
+        hasMore: page.hasMore,
+        turnsLeft: page.turnsLeft,
+      );
+    });
+  }
+
+  Future<void> _request(String language, Future<Message> Function(bool location) call) async {
+    _error = null;
     _isLoading = true;
     _messages.add(Message.loading());
     notifyListeners();
-
     try {
-      // Update location if enabled
-      if (_useLocation) {
-        await _updateLocation();
-      }
-
-      // Build filters
-      final filters = <String, dynamic>{};
-      if (_selectedPlaceTypes.isNotEmpty) {
-        filters['placeType'] = _selectedPlaceTypes.toList();
-      }
-      if (_openNowFilter) {
-        filters['openNow'] = true;
-      }
-      
-      // Get current time in ISO-8601 format
-      final nowIso = DateTime.now().toUtc().toIso8601String();
-      
-      // Send to API
-      final response = await _apiService.sendMessage(
-        message: content,
-        language: language,
-        latitude: _useLocation ? _latitude : null,
-        longitude: _useLocation ? _longitude : null,
-        nowIso: nowIso,
-        filters: filters.isNotEmpty ? filters : null,
-      );
-
-      // Remove loading message and add response
+      if (_useLocation) await _updateLocation();
+      final response = await call(_useLocation);
       _messages.removeWhere((m) => m.isLoading);
       _messages.add(response);
-      
-      // Save history
-      await _saveHistory();
+      _turnsLeft = response.turnsLeft ?? _turnsLeft;
+      if (!_serverReady) _markReady();
     } catch (e) {
-      // Remove loading message
       _messages.removeWhere((m) => m.isLoading);
-      
-      // Add error message
       _error = e.toString();
-      _messages.add(Message.assistant(
-        content: _getErrorMessage(e, language),
-      ));
+      if (e is ConversationFinished) _turnsLeft = 0;
+      _messages.add(Message.assistant(content: _errorMessage(e, language == 'en')));
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Start a new conversation with all its questions.
+  void newConversation() {
+    _messages.clear();
+    _error = null;
+    _sessionId = newSessionId();
+    _turnsLeft = AppConstants.maxTurns;
+    notifyListeners();
   }
 
   /// Toggle place type filter
@@ -120,13 +164,13 @@ class ChatProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-  
+
   /// Toggle open now filter
   void toggleOpenNowFilter() {
     _openNowFilter = !_openNowFilter;
     notifyListeners();
   }
-  
+
   /// Clear all filters
   void clearFilters() {
     _selectedPlaceTypes.clear();
@@ -134,15 +178,30 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get user-friendly error message
-  String _getErrorMessage(dynamic error, String language) {
-    if (language == 'pt-BR' || language == 'pt') {
-      return 'Desculpe, ocorreu um erro ao processar sua mensagem. '
-          'Por favor, tente novamente.';
-    } else {
-      return 'Sorry, an error occurred while processing your message. '
-          'Please try again.';
+  String _errorMessage(Object error, bool english) {
+    if (error is ConversationFinished) {
+      return english
+          ? 'This conversation is over. Tap "New conversation" to keep exploring.'
+          : 'Esta conversa terminou. Toque em "Nova conversa" para continuar.';
     }
+    if (error is NoPreviousResults) {
+      return english
+          ? 'There are no more results for that search. Ask a new question.'
+          : 'Não há mais resultados para essa busca. Faça uma nova pergunta.';
+    }
+    if (error is TooManyRequests) {
+      return english
+          ? 'Too many messages in a short time. Please wait a few minutes.'
+          : 'Muitas mensagens em pouco tempo. Aguarde alguns minutos.';
+    }
+    if (error is InvalidInput) {
+      return english
+          ? 'Use only letters, digits, spaces and the marks , . : ? !'
+          : 'Use apenas letras, números, espaços e os sinais , . : ? !';
+    }
+    return english
+        ? 'Sorry, an error occurred while processing your message. Please try again.'
+        : 'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.';
   }
 
   /// Toggle location usage
@@ -177,62 +236,9 @@ class ChatProvider extends ChangeNotifier {
     return false;
   }
 
-  /// Clear all messages
-  Future<void> clearHistory() async {
-    _messages.clear();
-    _error = null;
-    await _apiService.clearHistory();
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(AppConstants.chatHistoryKey);
-    
-    notifyListeners();
-  }
-
-  /// Load chat history from local storage
-  Future<void> _loadHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final historyJson = prefs.getString(AppConstants.chatHistoryKey);
-      
-      if (historyJson != null) {
-        final List<dynamic> historyList = jsonDecode(historyJson);
-        _messages = historyList
-            .map((json) => Message.fromJson(json as Map<String, dynamic>))
-            .toList();
-        
-        // Limit history size
-        if (_messages.length > AppConstants.maxHistoryMessages) {
-          _messages = _messages.sublist(
-            _messages.length - AppConstants.maxHistoryMessages,
-          );
-        }
-        
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('Error loading chat history: $e');
-    }
-  }
-
-  /// Save chat history to local storage
-  Future<void> _saveHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final historyJson = jsonEncode(
-        _messages.where((m) => !m.isLoading).map((m) => m.toJson()).toList(),
-      );
-      await prefs.setString(AppConstants.chatHistoryKey, historyJson);
-    } catch (e) {
-      debugPrint('Error saving chat history: $e');
-    }
-  }
-
   @override
   void dispose() {
     _apiService.dispose();
     super.dispose();
   }
 }
-
-
