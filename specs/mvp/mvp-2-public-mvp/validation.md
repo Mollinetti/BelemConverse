@@ -139,6 +139,8 @@ S=$(uuidgen); for i in $(seq 21); do curl -s -o /dev/null -w '%{http_code}\n' \
       returns nothing.
 - [ ] The README and project site describe the free-tier deploy and "use it for
       another town", with no local-model instructions left.
+- [ ] The [mvp-3 security audit](../mvp-3-security-audit/validation.md) Definition
+      of done is checked. Until then the PR is not merged and the link is not shared.
 - [ ] The branch `mvp-2` is rebased on `main` with no conflicts. The PR is titled
       `mvp-2 — Public conversational MVP`, links `specs/mvp/mvp-2-public-mvp/`,
       and includes the URLs and the Evidence table.
