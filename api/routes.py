@@ -19,7 +19,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from belem_converse import llm
+from belem_converse import follow_ups, llm
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
@@ -248,6 +248,7 @@ async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         results=place_results,
         turns_left=session.turns_left,
         has_more=session.cursor < len(session.ranked_ids),
+        follow_ups=follow_ups.build(slots, query_plan.language, user_location is not None),
         debug={**(query_plan.debug or {}), "answer_source": answer_source},
         processing_time_ms=round(elapsed_ms, 1),
     )

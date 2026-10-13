@@ -58,6 +58,10 @@ class CityConfig:
     # Subcategory mappings - map subcategories to parent categories
     subcategory_mappings: Dict[str, str] = field(default_factory=dict)
     
+    # Follow-up chip text per category and language ({"bar": {"pt-BR": "Bares", "en": "Bars"}}).
+    # Each label must be letters and spaces only, and the planner must read it as that category.
+    category_labels: Dict[str, Dict[str, str]] = field(default_factory=dict)
+
     # Special local categories (unique to this city)
     local_categories: List[str] = field(default_factory=list)
     
