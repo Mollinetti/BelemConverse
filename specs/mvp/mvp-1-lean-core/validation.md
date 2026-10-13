@@ -102,15 +102,47 @@ Run the memory procedure above and record the number.
 | Diagnostic after (T24) | intent 82.3% · category 85.8% · proximity 91.2% · open-now 99.1% (n=113, v3.0 classifier, no tour intent). Intent ≥ 80% ✓. The 3 former tour items were relabelled to the v3.0 routing (T02), so they score correct by construction; excluding them, intent is 90/110 = 81.8%. Proximity −2.6 pts vs baseline. |
 | Catalog rows in → kept / merged / dropped | 3,446 → 2,901 kept / 306 merged / 239 dropped (1 null `placeId`, 238 outside the Belém municipality); `input = kept + merged + dropped` holds. 0 duplicate ids; every row `municipality = Belém`, `state = PA`; 37 Mosqueiro/Outeiro places kept. |
 | Rows with parsed hours / needs_review | Hours parsed for 1,844 of 1,845 usable strings (the miss is the literal text "Invalid format"); 45 serialized-Series values cleared to null; 1,057 rows unknown. The spec's floor is stated over raw rows (2,132 non-null − 45 garbage = 2,087 of 3,446); after dedupe and the municipality filter the catalog has 2,901 rows, and parsing loses only that one usable string. `needs_review`: 8 — mostly legitimate `?` in brand names ("UATA?!", "Com Q? Açaí") plus one URL-as-title; 56 garbled titles repaired from `data/Raw`. |
-| OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
+| OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11; re-run 2026-10-13 after the catalog rebuild: 1,373 features, same 142 / 14); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
 | Peak RSS after 20 requests | 197 MiB (206,127,104 bytes; macOS `/usr/bin/time -l`, uvicorn, 20 × the pt-BR request above, no model configured; re-measured after the review fixes) — under 512 MB. |
 | Backend time excluding the model | Real catalog, no model. After the review fixes (memoized category matching): warm 5–10 ms for located and unlocated questions alike, 68 ms for "bares abertos agora"; the first time a category pairing is seen in a process, 145–234 ms. Median well under 100 ms. (Before the fixes: 1.0–3.3 s for category questions without a location.) A provider that accepts the connection and never answers: HTTP 200 template answer in 10.01 s (< 12 s). |
 
 **Model benchmark (T23):**
 
-| Model | Provider | Grounded % | pt-BR OK /10 | p50 latency | Free requests/day | Chosen |
+Run 2026-10-13 at 04:10 Belém time, over the 21 golden questions that return
+places (23 in the set; 11 of the 21 in Portuguese), one provider at a time with
+the fallback switched off, paced with `--delay 6` (Google) and `--delay 10`
+(Groq) so per-minute limits do not count as grounding failures. Command:
+`python -m belem_converse.tools.bench_llm MODEL --delay N`.
+
+| Model | Provider | Grounded % | pt-BR OK | p50 latency | Free allowance | Chosen |
 |---|---|---|---|---|---|---|
-| _tbd_ | | | | | | |
+| `gemini-3.5-flash-lite` | Google AI Studio | 95.2 (20/21) | 10/11 | 1.06 s | not exposed by the API; read it in AI Studio (published figures 500–1,000 requests/day) | **primary** |
+| `qwen/qwen3.8-27b` | Groq | 100 (21/21) | 9/11 | 0.57 s | 1,000 requests/day, 8,000 tokens/min (response headers); ~200K tokens/day ≈ 200 answers | **fallback** |
+| `gemini-3.1-flash-lite` | Google AI Studio | 75 (3/4, first 6-question set) | — | 1.9 s | — | no |
+| `gemini-2.5-flash-lite` | Google AI Studio | 0 — every call HTTP 404 | — | — | — | no |
+| `gemma-4-26b-a4b-it` | Google AI Studio | 0 — returns its `<thought>` text; HTTP 500s | — | 3.3 s | — | no |
+| `openai/gpt-oss-20b` | Groq | 0 — HTTP 413: this Groq project caps it at 100 tokens/min | — | — | — | no |
+
+- **The one ungrounded Gemini answer** is a false positive of the stray-name
+  scan: "nosso açaí tradicional" contains the catalog title "Nosso Açaí". The
+  visitor would get the template answer. This is the documented ceiling of
+  `is_grounded`.
+- **pt-BR misses.**
+  - Gemini: it respelled "Nostalgic Bar" as "Nostalgiç Bar".
+  - Qwen: it called the Estação das Docas results "restaurantes abertos"
+    although their hours were not checked, and wrote "é um esportivo popular".
+- **Open now at 04:10:** every place either model called open was a 24-hour
+  place, which is correct. Places with unknown hours were described as
+  unconfirmed.
+- **Benchmark fixes on this branch:**
+  - A bold landmark from the question no longer fails grounding.
+  - Open-now hours are now judged correctly: implied AM/PM, hours past
+    midnight, and per-day "24 horas".
+  - Each result carries `openNowStatus` (open, then unknown).
+  - The prompt states "horário desconhecido".
+- **Daily allowance metric (≥ 1,000).** Unverified for Gemini. Primary plus
+  fallback together reach it only if AI Studio shows at least about 800
+  requests/day for `gemini-3.5-flash-lite`.
 
 ## Definition of done
 
@@ -121,7 +153,7 @@ Run the memory procedure above and record the number.
       4 baseline skips and the baseline failure are fixed.)
 - [x] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
 - [x] The ground-rules check in `plan.md` is clean.
-- [ ] Every Evidence row is filled in, and the chosen model is written into
+- [x] Every Evidence row is filled in, and the chosen model is written into
       `../spec.md` D2 and `.env.example`.
 - [x] Peak RSS < 512 MB.
 - [x] Diagnostic intent accuracy ≥ 80%.
