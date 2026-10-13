@@ -1,6 +1,6 @@
 """Benchmark candidate models on the golden questions.
 
-    python -m belem_converse.tools.bench_llm MODEL [MODEL ...] [--queries N] [--catalog PATH]
+    python -m belem_converse.tools.bench_llm MODEL [MODEL ...] [--queries N] [--catalog PATH] [--delay S]
 
 Each golden question goes through the same planner → retriever → top 5 path
 as the API, then to ``llm.summarize``; the answer is checked with
@@ -76,6 +76,7 @@ def run(
     queries: int | None = None,
     catalog: Path | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
+    delay: float = 0.0,
 ) -> list[dict]:
     """One row per model: model, n, grounded_pct, p50_ms, answers."""
     catalog = catalog or DATA_DIR / get_city_config().catalog_path
@@ -94,6 +95,7 @@ def run(
                 start = time.perf_counter()
                 answer = asyncio.run(llm.summarize(question, places, language, transport=transport))
                 latencies.append((time.perf_counter() - start) * 1000)
+                time.sleep(delay)  # stay under free-tier requests/tokens per minute
                 grounded = answer is not None and llm.is_grounded(
                     answer, places, catalog_titles, question=question
                 )
@@ -121,9 +123,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("models", nargs="+", help="model names to benchmark on the configured provider")
     parser.add_argument("--queries", type=int, default=None, help="only the first N golden questions")
     parser.add_argument("--catalog", type=Path, default=None, help="places.sqlite (default: the city's catalog)")
+    parser.add_argument("--delay", type=float, default=0.0, help="seconds to wait after each model call")
     args = parser.parse_args(argv)
 
-    rows = run(args.models, args.queries, args.catalog)
+    rows = run(args.models, args.queries, args.catalog, delay=args.delay)
     print("| Model | n | Grounded % | p50 latency (ms) |")
     print("|---|---|---|---|")
     for row in rows:
