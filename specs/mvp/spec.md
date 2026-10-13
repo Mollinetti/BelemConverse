@@ -158,12 +158,12 @@ Keep `ingest/osm_fetcher.py` for the validation scrape.
 **Server** (Pydantic validator on `ChatRequest.message`):
 1. NFC-normalise and collapse whitespace.
 2. Require 1–400 characters.
-3. Allow only characters where `isalpha() or isdigit()`, plus space, `,`, `.`
-   and `:`.
+3. Allow only characters where `isalpha() or isdigit()`, plus space, `,`, `.`,
+   `:`, `?` and `!`.
 4. Anything else returns 422 with a localized message.
 
 **Client:** mirror the rule with `maxLength: 400` and
-`FilteringTextInputFormatter.allow(RegExp(r"[\p{L}\p{N} ,.:]", unicode: true))`.
+`FilteringTextInputFormatter.allow(RegExp(r"[\p{L}\p{N} ,.:?!]", unicode: true))`.
 
 The gate is a mitigation, not a complete defence. The prompt also fences place
 data as data, and LLM output is length-capped and grounding-checked (D2).

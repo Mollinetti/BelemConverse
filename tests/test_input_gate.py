@@ -10,11 +10,15 @@ from belem_converse.core.unified_retriever import UnifiedRetriever
 from tests.conftest import fake_model
 
 EXAMPLE = "Restaurantes abertos perto da Praça da República, 20:00"
-DISALLOWED = list("?!\"'<>{}[];/\\@#$%&*=+-_~|^") + ["\n", "\t", "🍕"]
+DISALLOWED = list("\"'<>{}[];/\\@#$%&*=+-_~|^") + ["\n", "\t", "🍕"]
 
 
 def test_accepts_example_message():
     assert gate.clean_message(EXAMPLE) == EXAMPLE
+
+
+def test_accepts_question_and_exclamation_marks():
+    assert gate.clean_message("Onde tem açaí?!") == "Onde tem açaí?!"
 
 
 def test_accepts_accented_letters():
@@ -50,7 +54,7 @@ def test_collapses_runs_of_spaces():
 @pytest.mark.parametrize("language", ["pt-BR", "en"])
 def test_error_message_is_localized(language):
     with pytest.raises(gate.GateError) as excinfo:
-        gate.clean_message("bares?", language=language)
+        gate.clean_message("bares{", language=language)
     assert str(excinfo.value) == gate.MESSAGES["bad_chars"][language]
 
 
