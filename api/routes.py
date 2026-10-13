@@ -15,7 +15,7 @@ import traceback
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -28,6 +28,7 @@ from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.query_planner import QueryPlanner, merge_slots
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
+from belem_converse.limits import DailyCap, RateLimiter, client_ip
 from belem_converse.sessions import SessionStore
 
 from . import __version__
@@ -57,6 +58,8 @@ SEE_MORE_LINE = {
 
 
 sessions = SessionStore()
+rate_limiter = RateLimiter()
+daily_cap = DailyCap()
 
 # ----- module-level singletons (built lazily on first chat) -----------------
 _intent_classifier: Optional[SimpleTFIDFIntentClassifier] = None
@@ -147,16 +150,24 @@ async def get_place(placeId: str) -> Place:
     response_model=ChatResponse,
     responses={
         400: {"model": ErrorResponse, "description": "Bad request"},
+        429: {"description": "rate_limited: too many messages from this visitor"},
         409: {"description": "conversation_finished: no questions left; "
                             "no_previous_results: nothing to see more of"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
         503: {"model": ErrorResponse, "description": "Service unavailable"},
     },
 )
-async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
+async def chat(request: ChatRequest, http_request: Request) -> ChatResponse | JSONResponse:
     """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
     started_at = time.monotonic()  # the model's time budget counts from here
+
+    visitor = client_ip(
+        http_request.headers.get("x-forwarded-for"),
+        http_request.client.host if http_request.client else None,
+    )
+    if not rate_limiter.hit(visitor):
+        return JSONResponse(status_code=429, content={"code": "rate_limited"})
 
     if not is_system_ready():
         raise HTTPException(
@@ -311,7 +322,7 @@ async def _answer(
 
     The model is called at most once, and not at all when nothing was found.
     """
-    if places:
+    if places and daily_cap.take():
         try:
             text = await llm.summarize(question, places, language, started_at=started_at)
         except Exception:  # the visitor always gets an answer, whatever the model client does
