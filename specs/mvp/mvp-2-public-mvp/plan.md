@@ -44,7 +44,7 @@
 
 All new modules are small single files, and none adds a dependency.
 
-- **`gate.py`:** `ALLOWED_PUNCT = " ,.:"`,
+- **`gate.py`:** `ALLOWED_PUNCT = " ,.:?!"`,
   `clean_message(text: str, max_len=400) -> str`, and the `GateError(ValueError)`
   class with pt-BR and en messages.
 - **`sessions.py`:**
@@ -88,7 +88,7 @@ No new packages (spec ground rule 2).
   - `maxMessageLength = 400`, `maxTurns = 4`.
   - Remove `maxHistoryMessages` and `chatHistoryKey`.
 - **`lib/utils/input_gate.dart`:**
-  - `final allowedChars = RegExp(r'[\p{L}\p{N} ,.:]', unicode: true);`
+  - `final allowedChars = RegExp(r'[\p{L}\p{N} ,.:?!]', unicode: true);`
   - `final inputGateFormatters = [FilteringTextInputFormatter.allow(allowedChars), LengthLimitingTextInputFormatter(400)];`
 - **`lib/utils/session_id.dart`:** `String newSessionId()`, a UUID v4 built from
   `Random.secure()` in about 8 lines. That avoids adding the `uuid` package.
@@ -119,8 +119,7 @@ No new packages (spec ground rule 2).
     shows.
   - A waking-up banner while `!serverReady`.
   - The existing clear-history action becomes "Nova conversa".
-  - Example chips on the empty state must pass the gate. Today's examples
-    contain `?`; rewrite them.
+  - Example chips on the empty state must pass the gate (`?` is allowed).
 
 ### Packaging and deploy
 
@@ -201,7 +200,7 @@ Render free (Docker) ── FastAPI
 |---|---|---|
 | `ChatRequest.session_id` | none | required UUID |
 | `ChatRequest.action` | none | `"more"` or absent |
-| `ChatRequest.message` | 1–2000 chars, any | 1–400 chars, letters/digits/space `, . :`; optional when `action="more"` |
+| `ChatRequest.message` | 1–2000 chars, any | 1–400 chars, letters/digits/space `, . : ? !`; optional when `action="more"` |
 | `ChatResponse.follow_ups` | none | `list[str]`, 2–3 items, empty for `more` |
 | `ChatResponse.has_more` | none | bool |
 | `ChatResponse.turns_left` | none | int 0–4 |
@@ -220,9 +219,11 @@ Render free (Docker) ── FastAPI
   proxy. If Render's header behaviour differs, the limiter falls back to the
   socket address, so it is still bounded per proxy IP. Verify once against a
   deploy (validation.md).
-- **The gate blocks `?` and `!`,** which users naturally type. The client filters
-  them silently while typing. Pasted text loses them, and the hint text explains
-  the allowed characters. This was the user's explicit choice.
+- **The gate allows `?` and `!` and nothing else,** because users naturally type
+  them and they carry no structure a prompt injection can use (no quotes,
+  brackets, markup, separators or newlines). Every other symbol is filtered
+  silently while typing; pasted text loses it, and the hint text explains the
+  allowed characters. This was the user's explicit choice.
 - **Flutter web bundle size.** CanvasKit is a few MB, so a first load ≤ 5 s on 4G
   is tight. Measure it, and if it misses, try `--wasm`/skwasm or accept and
   record.

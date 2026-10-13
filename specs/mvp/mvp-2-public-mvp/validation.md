@@ -62,8 +62,8 @@
 
 ### P1 — Plain-text input
 
-1. Type `Onde tem açaí?!`. **Expected:** the box shows `Onde tem açaí` and the
-   `?!` never appear.
+1. Type `Onde tem açaí?! "já"`. **Expected:** the box shows
+   `Onde tem açaí?! já`: `?` and `!` stay, the quotes never appear.
 2. Paste a 600-character text containing newlines and `<script>`. **Expected:**
    it is cut to 400 characters with no newline, `<` or `>`.
 3. Send a bad message straight to the backend:

@@ -36,13 +36,17 @@ def app_with(monkeypatch, allowed):
 def test_pages_origin_allowed(monkeypatch):
     client = app_with(monkeypatch, PAGES)
 
-    response = preflight(client, PAGES)
-
-    assert response.headers.get("access-control-allow-origin") == PAGES
-    assert "access-control-allow-credentials" not in response.headers
+    assert preflight(client, PAGES).headers.get("access-control-allow-origin") == PAGES
 
 
-def test_other_origin_refused(monkeypatch):
+@pytest.mark.parametrize(("allowed", "origin"), [(PAGES, PAGES), (None, "http://localhost:5173")])
+def test_credentials_disabled(monkeypatch, allowed, origin):
+    client = app_with(monkeypatch, allowed)
+
+    assert "access-control-allow-credentials" not in preflight(client, origin).headers
+
+
+def test_foreign_origin_rejected(monkeypatch):
     client = app_with(monkeypatch, PAGES)
 
     assert "access-control-allow-origin" not in preflight(client, "https://evil.example").headers
@@ -52,10 +56,7 @@ def test_other_origin_refused(monkeypatch):
 def test_localhost_allowed_when_unset(monkeypatch, origin):
     client = app_with(monkeypatch, None)
 
-    response = preflight(client, origin)
-
-    assert response.headers.get("access-control-allow-origin") == origin
-    assert "access-control-allow-credentials" not in response.headers
+    assert preflight(client, origin).headers.get("access-control-allow-origin") == origin
 
 
 @pytest.mark.parametrize(

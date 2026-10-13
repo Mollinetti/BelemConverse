@@ -81,7 +81,7 @@ def test_expired_session_starts_fresh(client, model, monkeypatch):
 def test_rejected_input_does_not_consume_a_turn(client, model):
     session_id = str(uuid.uuid4())
 
-    assert ask(client, session_id, "bares?").status_code == 422
+    assert ask(client, session_id, "bares{").status_code == 422
 
     assert ask(client, session_id, QUESTION).json()["turns_left"] == 3
 

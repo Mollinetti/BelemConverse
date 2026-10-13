@@ -1,7 +1,7 @@
 """The plain-text input gate: what a visitor's message may contain.
 
-Letters (any script, with accents), digits, spaces and ``, . :`` — nothing
-else, at most 400 characters. Crafted punctuation, markup, newlines and emoji
+Letters (any script, with accents), digits, spaces and ``, . : ? !`` —
+nothing else, at most 400 characters. Crafted punctuation, markup, newlines and emoji
 never reach the planner or the model. The Flutter client applies the same
 rule while typing (frontend/lib/utils/input_gate.dart).
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import unicodedata
 
-ALLOWED_PUNCT = " ,.:"
+ALLOWED_PUNCT = " ,.:?!"
 MAX_LEN = 400
 
 MESSAGES = {
@@ -23,8 +23,8 @@ MESSAGES = {
         "en": f"A question can be at most {MAX_LEN} characters long.",
     },
     "bad_chars": {
-        "pt-BR": "Use apenas letras, números, espaços, vírgula, ponto e dois-pontos.",
-        "en": "Use only letters, digits, spaces, commas, periods and colons.",
+        "pt-BR": "Use apenas letras, números, espaços e os sinais , . : ? !",
+        "en": "Use only letters, digits, spaces and the marks , . : ? !",
     },
 }
 
