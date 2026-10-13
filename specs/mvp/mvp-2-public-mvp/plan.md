@@ -24,14 +24,17 @@
   1. Look up the rate limit by client IP → 429.
   2. `sessions.get_or_create(session_id)`. An expired id gets a new session.
   3. **`action == "more"`:** page from `session.ranked_ids[cursor:cursor+5]`
-     through `PlaceCache.get_by_id`, with a template answer line. Return
+     through `PlaceCache.get_by_id`, overlaid with the per-request fields kept
+     in `session.annotations` (`distanceKm`, `openNowStatus`), with a template
+     answer line. Return
      without touching the planner, retriever or LLM. If there is no cached list,
      return 409 (`no_previous_results`).
   4. **Turns exhausted:** if `turns_used == 4`, return 409 with
-     `{"turns_left": 0}`.
+     `{"turns_left": 0}`. Otherwise `turns_used += 1` **now**, before the first
+     `await`, so two parallel requests on one session cannot answer a 5th.
   5. Plan → merge with `session.last_plan` (rule below) → retrieve → keep
      `ranked_ids[:30]` → top 5 → `summarize` behind the daily cap → follow-ups.
-  6. `turns_used += 1`, then store `last_plan`, `ranked_ids` and `cursor=5`.
+  6. Store `last_plan`, `ranked_ids`, `annotations` and `cursor=5`.
 
   Validation failures (422) and 429s never consume a turn.
 - **`api/main.py`:**
@@ -48,14 +51,16 @@ All new modules are small single files, and none adds a dependency.
   `clean_message(text: str, max_len=400) -> str`, and the `GateError(ValueError)`
   class with pt-BR and en messages.
 - **`sessions.py`:**
-  - A `Session` dataclass with `turns_used`, `last_plan`, `ranked_ids`, `cursor`
-    and `touched_at`.
+  - A `Session` dataclass with `turns_used`, `last_plan`, `ranked_ids`,
+    `annotations`, `cursor` and `touched_at`. `annotations` keeps each ranked
+    place's per-request fields (`distanceKm`, `openNowStatus`), so "see more"
+    pages show them too; full place dicts would cost too much memory.
   - `SessionStore(ttl_s=1800, max_sessions=5000, clock=time.monotonic)` over an
     `OrderedDict`. `get_or_create()` evicts expired entries and the LRU tail.
   - Mark it with
     `# ponytail: in-process store; one Render instance. Move to a SQLite table if >1 instance.`
-  - No lock is needed: the handler does not `await` between read and write of
-    the session.
+  - No lock is needed: the handler reserves the turn before its first
+    `await` (step 4 above), and the other writes are last-one-wins.
 - **`plan_merge.py`** (or a function in `query_planner.py`):
   `merge(prev_slots, new_slots) -> slots`.
   - If `new_slots` has categories, return `new_slots` (fresh topic).
@@ -64,10 +69,22 @@ All new modules are small single files, and none adds a dependency.
     `sort` always overrides.
 - **`follow_ups.py`:** `build(slots, language, has_location) -> list[str]`.
   - Fixed pt-BR and en strings: "Abertos agora" / "Open now", "Mais perto de
-    mim" / "Closest to me", "Melhor avaliados" / "Top rated".
+    mim" / "Closest to me", "Mais bem avaliados" / "Top rated".
   - A sibling category from a small dict, e.g. restaurant→cafe, bar→restaurant,
-    cafe→acai, acai→ice_cream, hotel→restaurant. Category labels come from the
-    city profile.
+    cafe→acai, acai→ice_cream, ice_cream→cafe, hotel→restaurant. Category
+    labels come from the city profile (`CityConfig.category_labels`).
+  - Each category chip must bring back that kind of place from the real
+    catalog (tested on `catalog/belem.sqlite`). That needed three retrieval
+    fixes:
+    - the planner matches category keywords as whole words (plural allowed),
+      so "sorvete" no longer yields `vet` nor "República" `pub`;
+    - the category matcher treats açaí and ice cream as kinds of place of
+      their own (no widening to cafés), maps a query term to every category
+      whose keywords contain it ("sorvete" → ice cream), and reads "X shop"
+      as X;
+    - the retriever ranks places whose **main** category was asked for before
+      places matched only by a secondary tag (268 açaí shops are also tagged
+      "Restaurant").
   - Skip any chip whose filter is already applied. Return 2–3 chips.
 - **`limits.py`:**
   - `RateLimiter(max_hits=20, window_s=600, clock=…)`: a dict of IP → `deque` of
@@ -189,7 +206,8 @@ Render free (Docker) ── FastAPI
 ## Data model deltas
 
 - **Session (in memory):** `turns_used: int`, `last_plan: dict`,
-  `ranked_ids: list[str]` (≤30), `cursor: int`, `touched_at: float`.
+  `ranked_ids: list[str]` (≤30), `annotations: dict[str, dict]`, `cursor: int`,
+  `touched_at: float`.
 - **Catalog:** unchanged from mvp-1. Only its location moves to the tracked
   `catalog/`.
 - **Client:** no persisted chat history anymore.

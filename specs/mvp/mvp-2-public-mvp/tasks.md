@@ -97,6 +97,11 @@
   - The sibling category is never the current category.
 - **T10** Implement `follow_ups.py`. Add `follow_ups` to `ChatResponse` (empty
   for `more`). → depends on T06, T09
+- **T10a** Failing tests in `tests/test_category_retrieval.py` (real catalog),
+  then the fixes plan.md lists under `follow_ups.py`: "Açaí", "Sorvete",
+  "Sorveterias" and "Ice cream" bring back açaí or ice-cream shops; keywords
+  never match inside other words; main-category matches rank first. Each
+  category chip brings back its kind of place. → depends on T10
 
 ## Fair use
 

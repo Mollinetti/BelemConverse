@@ -43,32 +43,26 @@ class CategoryMatcher:
         """
         Load special case mappings for category matching.
         
-        Special cases handle situations where:
-        - One category should match another (açaí matches cafe)
-        - Synonyms should be treated as equivalent (hotel matches motel)
-        
+        Synonyms that should be treated as equivalent (hotel matches motel).
+        Açaí and ice cream are kinds of place of their own, not cafés: Belém's
+        catalog has hundreds of açaí shops, and widening an açaí question to
+        cafés buried them under bakeries and coffee shops.
+
         Returns:
-            Dictionary mapping categories to their equivalent categories
+            Dictionary mapping normalized categories to their equivalents
         """
-        return {
-            # Açaí places should match cafe queries
-            'acai': ['cafe', 'acai'],
-            'açaí': ['cafe', 'acai'],
-            
+        cases = {
             # Hotel and motel are interchangeable
             'hotel': ['hotel', 'motel'],
             'motel': ['hotel', 'motel'],
-            
-            # Ice cream can match cafe for dessert queries
-            'ice_cream': ['ice_cream', 'cafe'],
-            'sorvete': ['ice_cream', 'cafe'],
-            
+
             # Tourist attractions can match various specific types
             'tourist_attraction': [
                 'tourist_attraction', 'museum', 'park', 'church',
                 'monument', 'historical', 'beach', 'plaza'
             ],
         }
+        return {self._normalize_text(k): v for k, v in cases.items()}
     
     def _normalize_text(self, text: str) -> str:
         """
@@ -87,9 +81,19 @@ class CategoryMatcher:
         text = unicodedata.normalize('NFD', text)
         text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
         
-        # Lowercase and strip
-        return text.lower().strip()
+        # Lowercase and strip; "ice_cream" (a category name) reads as "ice cream"
+        return text.replace('_', ' ').lower().strip()
     
+    def _keyword_index(self) -> dict[str, set[str]]:
+        """Normalized category name -> its normalized name and keywords."""
+        if getattr(self, '_keyword_index_cache', None) is None:
+            self._keyword_index_cache = {
+                self._normalize_text(name): {self._normalize_text(name)}
+                | {self._normalize_text(k) for k in keywords}
+                for name, keywords in self._get_category_keywords().items()
+            }
+        return self._keyword_index_cache
+
     def _get_category_keywords(self) -> dict[str, list[str]]:
         """
         Get category keywords from Intent_Classifier.
@@ -174,50 +178,42 @@ class CategoryMatcher:
         Returns:
             True if categories match
         """
-        # Normalize both categories
         place_norm = self._normalize_text(place_category)
         query_norm = self._normalize_text(query_category)
-        
-        # Exact match
-        if place_norm == query_norm:
+        # "Ice cream shop" and "Açaí shop" are named after what they sell.
+        place_forms = {place_norm}
+        if place_norm.endswith(' shop'):
+            place_forms.add(place_norm[: -len(' shop')])
+
+        if query_norm in place_forms:
             return True
-        
-        # Check if query category has special case equivalents
-        query_equivalents = self._expand_with_special_cases(query_category)
-        if place_norm in [self._normalize_text(eq) for eq in query_equivalents]:
+
+        # Special-case equivalents (hotel/motel, tourist attraction types)
+        query_equivalents = {
+            self._normalize_text(eq) for eq in self._expand_with_special_cases(query_category)
+        }
+        if place_forms & query_equivalents:
             return True
-        
-        # Check if place category has special case equivalents
-        place_equivalents = self._expand_with_special_cases(place_category)
-        if query_norm in [self._normalize_text(eq) for eq in place_equivalents]:
+        place_equivalents = {
+            self._normalize_text(eq)
+            for form in place_forms
+            for eq in self._expand_with_special_cases(form)
+        }
+        if query_norm in place_equivalents:
             return True
-        
-        # Get keywords for the query category
-        category_keywords = self._get_category_keywords()
-        
-        # Check if place category matches any keywords for the query category
-        for cat_name, keywords in category_keywords.items():
-            cat_norm = self._normalize_text(cat_name)
-            
-            # If this is the query category, check if place matches any keywords
-            if cat_norm == query_norm or cat_norm in query_equivalents:
+
+        # The query term names a category, or is one of its keywords
+        # ("sorvete" -> ice cream): the place matches any of that category's keywords.
+        for cat_norm, keywords in self._keyword_index().items():
+            if cat_norm == query_norm or cat_norm in query_equivalents or query_norm in keywords:
                 for keyword in keywords:
-                    keyword_norm = self._normalize_text(keyword)
-                    
-                    # Exact keyword match
-                    if place_norm == keyword_norm:
-                        return True
-                    
-                    # Fuzzy keyword match
-                    if self._fuzzy_match_score(place_norm, keyword_norm) >= fuzzy_threshold:
-                        return True
-        
+                    for form in place_forms:
+                        if form == keyword or self._fuzzy_match_score(form, keyword) >= fuzzy_threshold:
+                            return True
+
         # Fuzzy match as last resort
-        if self._fuzzy_match_score(place_norm, query_norm) >= fuzzy_threshold:
-            return True
-        
-        return False
-    
+        return any(self._fuzzy_match_score(form, query_norm) >= fuzzy_threshold for form in place_forms)
+
     def matches(
         self, 
         place: Any, 
