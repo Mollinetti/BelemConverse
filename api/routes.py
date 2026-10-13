@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from belem_converse import llm
@@ -24,9 +25,10 @@ from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
 )
 from belem_converse.core.category_matcher import CategoryMatcher
 from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.query_planner import QueryPlanner
+from belem_converse.core.query_planner import QueryPlanner, merge_slots
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
+from belem_converse.sessions import SessionStore
 
 from . import __version__
 from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
@@ -47,6 +49,8 @@ router = APIRouter()
 
 MAX_RESULTS = 5  # spec: an answer shows at most five places
 
+
+sessions = SessionStore()
 
 # ----- module-level singletons (built lazily on first chat) -----------------
 _intent_classifier: Optional[SimpleTFIDFIntentClassifier] = None
@@ -137,11 +141,12 @@ async def get_place(placeId: str) -> Place:
     response_model=ChatResponse,
     responses={
         400: {"model": ErrorResponse, "description": "Bad request"},
+        409: {"description": "conversation_finished: no questions left"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
         503: {"model": ErrorResponse, "description": "Service unavailable"},
     },
 )
-async def chat(request: ChatRequest) -> ChatResponse:
+async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
     started_at = time.monotonic()  # the model's time budget counts from here
@@ -151,6 +156,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
             status_code=503,
             detail=f"Place catalog not loaded. {BUILD_HINT}",
         )
+
+    session = sessions.get_or_create(str(request.session_id))
+    if session.turns_left <= 0:
+        return JSONResponse(
+            status_code=409, content={"code": "conversation_finished", "turns_left": 0}
+        )
+    # Taken before the first await, so parallel requests cannot answer a 5th.
+    session.turns_used += 1
 
     # Optional client-supplied "now" timestamp (used by open-hours filtering).
     if request.nowIso:
@@ -186,11 +199,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
         logger.exception("Retriever build failed")
         raise HTTPException(status_code=500, detail=f"Retriever error: {exc}") from exc
 
+    # A follow-up refines the conversation's previous question.
+    slots = merge_slots(session.last_plan, query_plan.slots)
+    session.last_plan = slots
     query_plan_dict = {
         "intent": query_plan.intent,
-        "slots": query_plan.slots,
+        "slots": slots,
         "retrieval_strategy": "structured_only",
-        "proximity_intent_detected": query_plan.slots.get("proximity_intent_detected", False),
+        "proximity_intent_detected": slots.get("proximity_intent_detected", False),
         "language": query_plan.language,
     }
     # CPU-bound: run it off the event loop so other requests are not stalled.
@@ -234,8 +250,8 @@ async def chat(request: ChatRequest) -> ChatResponse:
         language=query_plan.language,
         answer=answer,
         results=place_results,
+        turns_left=session.turns_left,
         debug={**(query_plan.debug or {}), "answer_source": answer_source},
-        response=answer,
         processing_time_ms=round(elapsed_ms, 1),
     )
 
