@@ -13,11 +13,14 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
+# Dependencies first: this layer is reused until requirements.txt changes.
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 COPY pyproject.toml README.md ./
 COPY api ./api
 COPY belem_converse ./belem_converse
 COPY catalog ./catalog
-RUN pip install . && useradd --create-home app
+RUN pip install --no-deps . && useradd --create-home app
 USER app
 
 EXPOSE 8000
