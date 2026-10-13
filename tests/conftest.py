@@ -76,3 +76,12 @@ def fake_model(monkeypatch, **behaviour):
     mock = AsyncMock(**behaviour)
     monkeypatch.setattr(llm, "summarize", mock)
     return mock
+
+
+@pytest.fixture(autouse=True)
+def fresh_state(monkeypatch):
+    """Conversations start empty in every test."""
+    import api.routes as routes
+    from belem_converse.sessions import SessionStore
+
+    monkeypatch.setattr(routes, "sessions", SessionStore())

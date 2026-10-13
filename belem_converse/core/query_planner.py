@@ -1215,3 +1215,20 @@ class QueryPlanner:
             'retrieval_strategy': plan.retrieval_strategy,
             'debug': plan.debug
         }
+
+
+def merge_slots(previous: Optional[Dict[str, Any]], new: Dict[str, Any]) -> Dict[str, Any]:
+    """The slots for a follow-up question in a conversation.
+
+    A question that names a kind of place starts a fresh search. Otherwise it
+    refines the previous one: every value it sets replaces the old one, and
+    values it leaves unset (None, [] or False) keep the old ones. A new sort
+    always wins.
+    """
+    if previous is None or new.get("categories"):
+        return new
+    merged = dict(previous)
+    for key, value in new.items():
+        if key == "sort_preference" or not (value is None or value is False or value == []):
+            merged[key] = value
+    return merged

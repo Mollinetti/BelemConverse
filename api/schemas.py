@@ -129,31 +129,13 @@ class PlaceResult(Place):
     )
 
 
-class PlaceLegacy(BaseModel):
-    """Legacy Place schema for backward compatibility."""
-    name: str
-    address: Optional[str] = None
-    category: Optional[str] = None
-    rating: Optional[float] = None
-    reviews_count: Optional[int] = None
-    lat: Optional[float] = None
-    lng: Optional[float] = None
-    phone: Optional[str] = None
-    distance_km: Optional[float] = None
-    source: str = Field(default="database", description="Data source: database or osm_realtime")
-
-
 class ChatResponse(BaseModel):
     """Response body for chat endpoint per OpenAPI spec."""
     language: Literal["en", "pt-BR"] = Field(..., description="Response language")
     answer: str = Field(..., description="LLM response text")
     results: List[PlaceResult] = Field(default_factory=list, max_items=5, description="Up to 5 place results")
+    turns_left: int = Field(..., ge=0, description="Questions left in this conversation")
     debug: Optional[dict] = Field(default=None, description="Debug information")
-    
-    # Legacy fields for backward compatibility
-    response: Optional[str] = Field(default=None, description="LLM response text (legacy)")
-    places: Optional[List[PlaceLegacy]] = Field(default=None, description="Extracted places (legacy)")
-    source: Optional[str] = Field(default=None, description="Primary data source used (legacy)")
     processing_time_ms: Optional[float] = None
     
     class Config:
@@ -161,6 +143,7 @@ class ChatResponse(BaseModel):
             "example": {
                 "language": "pt-BR",
                 "answer": "Aqui estão os melhores restaurantes próximos...",
+                "turns_left": 3,
                 "results": [
                     {
                         "placeId": "place_123",
