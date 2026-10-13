@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 # Test location sets
 L1 = {"lat": -1.4500, "lng": -48.4900}
 L2 = {"lat": -1.4300, "lng": -48.4600}
+DOCAS = {"lat": -1.4494, "lng": -48.4993}  # Estação das Docas
 
 
 # Golden Queries (EN)
@@ -71,7 +72,16 @@ GOLDEN_QUERIES_EN = [
         },
         "expected_results_count": (1, 5),
         "expected_reviews_desc": True
-    }
+    },
+    # Q4+ widen the LLM benchmark (bench_llm); they assert no plan.
+    {"id": "Q4", "query": "Restaurants open near Estação das Docas", "location": DOCAS},
+    {"id": "Q5", "query": "Where can I get açaí nearby?", "location": L1},
+    {"id": "Q6", "query": "Best coffee shop near me", "location": L2},
+    {"id": "Q7", "query": "Cocktail bar near me", "location": L2},
+    {"id": "Q8", "query": "Seafood restaurant near me", "location": L1},
+    {"id": "Q9", "query": "Good burger place nearby", "location": L2},
+    {"id": "Q10", "query": "Bakery near me", "location": L1},
+    {"id": "Q11", "query": "Plan a one-day tour of Belém", "location": L1},
 ]
 
 # Golden Queries (pt-BR)
@@ -107,7 +117,17 @@ GOLDEN_QUERIES_PT = [
             "sort_preference": "distance"
         },
         "expected_results_count": (1, 5)
-    }
+    },
+    # P4+ widen the LLM benchmark (bench_llm); they assert no plan.
+    {"id": "P4", "query": "Restaurantes abertos perto da Estação das Docas", "location": DOCAS},
+    {"id": "P5", "query": "Onde tomar açaí perto de mim?", "location": L1},
+    {"id": "P6", "query": "Sorveteria perto de mim", "location": L1},
+    {"id": "P7", "query": "Hambúrguer bem avaliado perto de mim", "location": L2},
+    {"id": "P8", "query": "Restaurante de comida típica paraense", "location": L1},
+    {"id": "P9", "query": "Onde comer peixe perto de mim?", "location": L1},
+    {"id": "P10", "query": "Bar de drinks perto de mim", "location": L1},
+    {"id": "P11", "query": "Lugar para tomar café da manhã perto de mim", "location": L1},
+    {"id": "P12", "query": "Monte um roteiro de um dia em Belém", "location": L1},
 ]
 
 
