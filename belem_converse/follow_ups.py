@@ -17,17 +17,17 @@ CHIPS = {
     "top_rated": {"pt-BR": "Mais bem avaliados", "en": "Top rated"},
 }
 # The kind of place to suggest after each one; anything else gets restaurants.
-# Only restaurants, cafés and bars are suggested: the catalog has no açaí or
-# ice-cream types, so those chips would find nothing or just cafés again.
 SIBLING = {
     "restaurant": "cafe",
-    "cafe": "bar",
     "bar": "restaurant",
-    "acai": "cafe",
+    "cafe": "acai",
+    "acai": "ice_cream",
     "ice_cream": "cafe",
     "hotel": "restaurant",
 }
 DEFAULT_SIBLING = "restaurant"
+# Planner spellings that name a SIBLING category in other words.
+ALIASES = {"sorvete": "ice_cream", "sorveteria": "ice_cream"}
 
 
 def canonical(categories: list[str]) -> str | None:
@@ -35,6 +35,7 @@ def canonical(categories: list[str]) -> str | None:
     for category in categories:
         folded = unicodedata.normalize("NFD", category.lower())
         key = "".join(c for c in folded if unicodedata.category(c) != "Mn").replace(" ", "_")
+        key = ALIASES.get(key, key)
         if key in SIBLING:
             return key
     return None

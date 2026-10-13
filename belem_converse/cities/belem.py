@@ -108,6 +108,8 @@ def get_belem_config() -> CityConfig:
         category_labels={
             'restaurant': {'pt-BR': 'Restaurantes', 'en': 'Restaurants'},
             'cafe': {'pt-BR': 'Cafés', 'en': 'Cafés'},
+            'acai': {'pt-BR': 'Açaí', 'en': 'Açaí'},
+            'ice_cream': {'pt-BR': 'Sorveterias', 'en': 'Ice cream'},
             'bar': {'pt-BR': 'Bares', 'en': 'Bars'},
         },
 

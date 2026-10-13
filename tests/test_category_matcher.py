@@ -3,7 +3,7 @@ Unit tests for CategoryMatcher module.
 
 Tests category matching logic including:
 - Exact matching
-- Special case handling (açaí vs cafe, hotel vs motel)
+- Special case handling (hotel vs motel; açaí and ice cream are not cafés)
 - Fuzzy matching
 - Scoring
 """
@@ -67,15 +67,15 @@ class TestCategoryMatcherBasics:
 class TestSpecialCases:
     """Test special case category matching."""
     
-    def test_acai_matches_cafe(self, category_matcher):
-        """Test that açaí places match cafe queries."""
+    # mvp-2: açaí and ice cream are kinds of place of their own. Widening them
+    # to cafés buried Belém's 712 açaí shops under bakeries and coffee shops.
+    def test_acai_is_not_a_cafe(self, category_matcher):
         place = {'categories': ['acai']}
-        assert category_matcher.matches(place, ['cafe']) is True
-    
-    def test_acai_with_accent_matches_cafe(self, category_matcher):
-        """Test that açaí with accent matches cafe queries."""
+        assert category_matcher.matches(place, ['cafe']) is False
+
+    def test_acai_with_accent_matches_acai(self, category_matcher):
         place = {'categories': ['açaí']}
-        assert category_matcher.matches(place, ['cafe']) is True
+        assert category_matcher.matches(place, ['acai']) is True
     
     def test_hotel_matches_motel(self, category_matcher):
         """Test that hotel matches motel queries."""
@@ -87,10 +87,13 @@ class TestSpecialCases:
         place = {'categories': ['motel']}
         assert category_matcher.matches(place, ['hotel']) is True
     
-    def test_ice_cream_matches_cafe(self, category_matcher):
-        """Test that ice cream places match cafe queries."""
+    def test_ice_cream_is_not_a_cafe(self, category_matcher):
         place = {'categories': ['ice_cream']}
-        assert category_matcher.matches(place, ['cafe']) is True
+        assert category_matcher.matches(place, ['cafe']) is False
+
+    def test_ice_cream_spellings_match(self, category_matcher):
+        place = {'categories': ['ice_cream']}
+        assert category_matcher.matches(place, ['ice cream']) is True
 
 
 class TestFuzzyMatching:
@@ -124,8 +127,8 @@ class TestScoring:
     
     def test_special_case_score(self, category_matcher):
         """Test that special cases get high score."""
-        place = {'categories': ['acai']}
-        score = category_matcher.get_match_score(place, ['cafe'])
+        place = {'categories': ['motel']}
+        score = category_matcher.get_match_score(place, ['hotel'])
         assert score >= 0.9
     
     def test_no_match_score(self, category_matcher):

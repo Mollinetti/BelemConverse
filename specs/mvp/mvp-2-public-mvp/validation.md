@@ -19,6 +19,8 @@
 ### Supporting tests (P2/P3)
 
 - `tests/test_follow_ups.py`
+- `tests/test_category_retrieval.py` (açaí, ice cream and restaurant questions
+  on the real catalog)
 - `tests/test_rate_limit.py` (per-visitor limit and daily cap)
 - `tests/test_env_example.py`
 - `tests/test_deploy_files.py`
