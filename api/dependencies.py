@@ -1,81 +1,60 @@
-"""FastAPI dependencies for RAG agent initialization.
+"""FastAPI startup state: the place catalog.
 
-Provides a singleton RAG agent that is initialized once at startup and reused
-across all requests.
+The API is ready once the catalog is loaded. Nothing else is loaded at
+startup — the language model is a hosted service called per request, and
+there is no vector store.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Optional
+import sqlite3
 
-from belem_converse.core.enhanced_rag_agent import EnhancedRAGAgent
-from belem_converse.ingest.data_loader import DataLoader
-from belem_converse.ingest.vector_store import VectorStoreManager
-from belem_converse.utils.models import ModelManager
+from belem_converse.catalog import load_places
+from belem_converse.cities import get_city_config
+from belem_converse.utils.config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
-_rag_agent: Optional[EnhancedRAGAgent] = None
-_llm_model = None
-_vector_store_manager: Optional[VectorStoreManager] = None
-_is_initialized: bool = False
+BUILD_HINT = "Build it with: python -m belem_converse.tools.build_catalog"
+
+_catalog: list[dict] | None = None
+
+
+def _load_catalog() -> list[dict]:
+    """Read the current city's place catalog from disk."""
+    return load_places(DATA_DIR / get_city_config().catalog_path)
 
 
 def initialize_rag_system() -> None:
-    """Initialize the RAG system (LLM, vector store, agent).
+    """Load the catalog once at startup; later calls are no-ops.
 
-    Called once at application startup; subsequent calls are no-ops.
+    A missing or unreadable catalog leaves the API not ready rather than
+    crashing it, so /api/health can report the state.
     """
-    global _rag_agent, _llm_model, _vector_store_manager, _is_initialized
-
-    if _is_initialized:
+    global _catalog
+    if _catalog is not None:
         return
-
-    logger.info("Initializing RAG system...")
-
-    logger.info("Loading vector store...")
-    _vector_store_manager = VectorStoreManager()
-    _vector_store_manager.initialize()
-
-    logger.info("Loading LLM model...")
-    _llm_model = ModelManager.get_llm()
-
-    logger.info("Creating RAG agent...")
-    _rag_agent = EnhancedRAGAgent(
-        vector_store_manager=_vector_store_manager,
-        llm_model=_llm_model,
-    )
-
-    _is_initialized = True
-    logger.info("RAG system initialized successfully")
+    try:
+        _catalog = _load_catalog()
+    except (OSError, sqlite3.Error) as exc:
+        logger.error("Place catalog could not be loaded: %s", exc)
+        return
+    logger.info("Place catalog loaded: %d places", len(_catalog))
 
 
-def get_rag_agent() -> EnhancedRAGAgent:
-    """Return the singleton RAG agent (raises if not initialised)."""
-    if not _is_initialized or _rag_agent is None:
-        raise RuntimeError(
-            "RAG system not initialized. Call initialize_rag_system() first."
-        )
-    return _rag_agent
-
-
-def get_llm_model():
-    return _llm_model
-
-
-def get_vector_store_manager() -> Optional[VectorStoreManager]:
-    return _vector_store_manager
+def get_catalog() -> list[dict] | None:
+    return _catalog
 
 
 def is_system_ready() -> bool:
-    return _is_initialized and _rag_agent is not None
+    return _catalog is not None
 
 
 def get_system_status() -> dict:
     return {
-        "initialized": _is_initialized,
-        "llm_loaded": _llm_model is not None,
-        "vector_store_loaded": _vector_store_manager is not None,
-        "agent_ready": _rag_agent is not None,
+        "initialized": _catalog is not None,
+        "catalog_places": len(_catalog) if _catalog is not None else 0,
+        "llm_loaded": False,
+        "vector_store_loaded": False,
     }

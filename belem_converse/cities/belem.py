@@ -18,22 +18,34 @@ def get_belem_config() -> CityConfig:
         country="Brazil",
         country_code="BR",
         state="Pará",
+        state_code="PA",
         
         # Languages
         primary_language="pt",
         supported_languages=["pt", "en"],
         
         # Geographic bounds
-        # Belém is roughly at lat -1.4 to -1.5, lng -48.4 to -48.5
+        # Belém is roughly at lat -1.4 to -1.5, lng -48.4 to -48.5; the box
+        # reaches north to -1.0 so the Mosqueiro district (lat ~-1.06) is in.
         center_coordinates=(-1.4558, -48.4902),
         bounds_min=(-1.6, -48.6),  # SW corner
-        bounds_max=(-1.3, -48.3),  # NE corner
-        
+        bounds_max=(-1.0, -48.3),  # NE corner
+
         # Timezone
         timezone="America/Belem",
+
+        # Catalog build: the Belém municipality and its island districts.
+        # Neighbouring municipalities (Ananindeua, Marituba, ...) are excluded.
+        municipalities=["Belém", "Mosqueiro", "Outeiro"],
+        title_case_exceptions=[
+            "a", "à", "as", "ao", "aos", "o", "os", "e", "é",
+            "da", "das", "de", "do", "dos", "em", "na", "nas", "no", "nos",
+            "por", "pra", "com", "sem",
+        ],
         
         # Data paths (relative to LLM/ directory)
         csv_path="data/csvs/combined_all_data.csv",
+        catalog_path="belem/places.sqlite",
         chroma_db_path="data/chroma_db",
         
         # Category mappings - generic category to local search terms

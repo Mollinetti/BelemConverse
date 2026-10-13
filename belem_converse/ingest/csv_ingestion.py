@@ -27,7 +27,8 @@ class PlaceTypeInference:
     TYPE_MAPPINGS = {
         'restaurant': [
             'restaurant', 'restaurante', 'steakhouse', 'pizza', 'pizzaria',
-            'sushi', 'churrascaria', 'buffet', 'cafe', 'café', 'coffee'
+            'sushi', 'churrascaria', 'buffet', 'cafe', 'café', 'coffee',
+            'snack bar',
         ],
         'bar': [
             'bar', 'pub', 'brewery', 'cervejaria', 'boteco'
@@ -48,12 +49,35 @@ class PlaceTypeInference:
         return text.lower().strip()
     
     @classmethod
+    def _tokens(cls, text: str) -> list[str]:
+        return re.findall(r"[a-z0-9]+", cls.normalize_text(text))
+
+    @classmethod
+    def _match(cls, candidate: str) -> str | None:
+        """Place type of the longest keyword phrase found as whole words.
+
+        Longest wins so that "snack bar" (restaurant) beats "bar"; ties go to
+        the earlier type in TYPE_MAPPINGS.
+        """
+        tokens = cls._tokens(candidate)
+        best_type, best_len = None, 0
+        for place_type, keywords in cls.TYPE_MAPPINGS.items():
+            for keyword in keywords:
+                kw = cls._tokens(keyword)
+                n = len(kw)
+                if n > best_len and any(tokens[i:i + n] == kw for i in range(len(tokens) - n + 1)):
+                    best_type, best_len = place_type, n
+        return best_type
+
+    @classmethod
     def infer_place_type(cls, category_name: Optional[str], categories: List[str]) -> str:
         """
         Infer place_type using precedence rules:
         1. Check categoryName first, if matches STOP
         2. Else check categories/0..8 in order, pick first mapping
         3. If none matches, return 'other'
+
+        Keywords match whole words only: "Barber shop" is not a bar.
         """
         # Build candidate list: categoryName first, then categories[]
         candidates = []
@@ -61,17 +85,11 @@ class PlaceTypeInference:
             candidates.append(category_name)
         candidates.extend(categories)
         
-        # Check each candidate against mappings
         for candidate in candidates:
-            normalized = cls.normalize_text(candidate)
-            
-            # Check against each type
-            for place_type, keywords in cls.TYPE_MAPPINGS.items():
-                for keyword in keywords:
-                    normalized_keyword = cls.normalize_text(keyword)
-                    if normalized_keyword in normalized or normalized in normalized_keyword:
-                        return place_type
-        
+            place_type = cls._match(candidate)
+            if place_type:
+                return place_type
+
         return 'other'
 
 
@@ -290,7 +308,11 @@ class CSVIngestionPipeline:
                 'fourStar': self.normalize_int(row.get('reviewsDistribution/fourStar'), 0),
                 'fiveStar': self.normalize_int(row.get('reviewsDistribution/fiveStar'), 0)
             },
-            'isSponsored': self.normalize_bool(row.get('IsSponsored')),
+            # Exports spell the column both ways; either one marks a sponsor.
+            'isSponsored': (
+                self.normalize_bool(row.get('IsSponsored'))
+                or self.normalize_bool(row.get('isSponsored'))
+            ),
             'businessTime': self.normalize_string(row.get('businessTime')),
             'place_type': place_type
         }

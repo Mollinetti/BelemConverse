@@ -177,10 +177,3 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = None
 
 
-class IngestionResponse(BaseModel):
-    """Response for CSV ingestion endpoint."""
-    ingestedCount: int = Field(..., description="Number of places successfully ingested")
-    skippedCount: int = Field(..., description="Number of rows skipped")
-    outputFiles: List[str] = Field(..., description="Paths to output files (canonical_places.jsonl, ingestion_report.json)")
-
-
