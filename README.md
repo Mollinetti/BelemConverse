@@ -304,7 +304,7 @@ The model client is [`belem_converse/llm.py`](belem_converse/llm.py); paths live
 | `LLM_MODEL` | unset | Model name at that endpoint |
 | `LLM_API_KEY` | unset | Bearer token for the endpoint |
 | `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_MODEL`, `LLM_FALLBACK_API_KEY` | unset | Second provider, tried when the first is rate-limited, fails or times out |
-| `LLM_TIMEOUT_S` | `10` | Seconds shared by both providers before the template answer is used |
+| `LLM_TIMEOUT_S` | `10` | Seconds shared by both providers before the template answer is used; each gets an equal share of what is left, so a slow primary cannot starve the fallback |
 | `LLM_MAX_TOKENS` | `250` | Cap on the reply's length |
 | `LLM_DAILY_CAP` | `800` | Model calls per Belém calendar day; past it, answers are templates |
 | `ALLOWED_ORIGINS` | unset | Browser origins allowed by CORS, comma-separated; unset allows only `http://localhost` / `127.0.0.1` |
