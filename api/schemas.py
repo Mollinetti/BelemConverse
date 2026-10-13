@@ -135,6 +135,8 @@ class ChatResponse(BaseModel):
     answer: str = Field(..., description="LLM response text")
     results: List[PlaceResult] = Field(default_factory=list, max_items=5, description="Up to 5 place results")
     turns_left: int = Field(..., ge=0, description="Questions left in this conversation")
+    has_more: bool = Field(default=False, description="More results to see with action 'more'")
+    follow_ups: List[str] = Field(default_factory=list, description="Suggested next questions")
     debug: Optional[dict] = Field(default=None, description="Debug information")
     processing_time_ms: Optional[float] = None
     
