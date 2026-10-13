@@ -7,6 +7,7 @@ Run locally:
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from dotenv import find_dotenv, load_dotenv
@@ -56,14 +57,23 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS for the Flutter web client. Production deploys should narrow this list.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+
+def cors_options() -> dict:
+    """Browser origins allowed to call the API: ALLOWED_ORIGINS (comma-separated),
+    or only http://localhost / 127.0.0.1 on any port when it is unset (local dev)."""
+    options = {
+        "allow_credentials": False,
+        "allow_methods": ["GET", "POST"],
+        "allow_headers": ["content-type"],
+    }
+    origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+    if origins:
+        return {**options, "allow_origins": origins}
+    return {**options, "allow_origin_regex": r"http://(localhost|127\.0\.0\.1)(:\d+)?"}
+
+
+app.add_middleware(CORSMiddleware, **cors_options())
 
 app.include_router(router, prefix="/api", tags=["chat"])
 

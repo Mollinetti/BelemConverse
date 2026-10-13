@@ -14,11 +14,7 @@ DATA_CONFIG = {
     "csv_path": str(DATA_DIR / "csvs" / "combined_all_data.csv")
 }
 
-# Model Selection (can be overridden by environment variable)
-SELECTED_MODEL = os.getenv("BELEM_MODEL", "llama3.1")  # Options: llama3.1, mistral
-
-# City Configuration (for multi-city support)
-SELECTED_CITY = os.getenv("BELEM_CITY", "belem")
+# City Configuration (the city profile is chosen by BELEMCONVERSE_CITY, see cities/)
 CURRENT_CITY_NAME = "Belém"
 
 # City bounds for Belém

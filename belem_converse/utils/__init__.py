@@ -7,8 +7,6 @@ Contains configuration, data tools, and helper utilities.
 from .config import (
     get_config,
     DATA_CONFIG,
-    SELECTED_MODEL,
-    SELECTED_CITY,
     CURRENT_CITY_NAME,
     CITY_CENTER,
     CITY_BOUNDS,
@@ -28,8 +26,6 @@ __all__ = [
     # Config
     'get_config',
     'DATA_CONFIG',
-    'SELECTED_MODEL',
-    'SELECTED_CITY',
     'CURRENT_CITY_NAME',
     'CITY_CENTER',
     'CITY_BOUNDS',
