@@ -3,7 +3,11 @@ Pydantic schemas for API request/response validation.
 """
 
 from typing import Optional, List, Literal
-from pydantic import BaseModel, Field
+from uuid import UUID
+
+from pydantic import BaseModel, Field, model_validator
+
+from belem_converse import gate
 
 
 class LatLng(BaseModel):
@@ -31,7 +35,15 @@ class ChatFilters(BaseModel):
 
 class ChatRequest(BaseModel):
     """Request body for chat endpoint per OpenAPI spec."""
-    message: str = Field(..., min_length=1, max_length=2000, description="User message")
+    session_id: UUID = Field(..., description="Conversation id: a UUID the client makes per conversation")
+    message: Optional[str] = Field(
+        default=None,
+        description="Visitor question: letters, digits, spaces and , . : only; required unless action is 'more'",
+        json_schema_extra={"maxLength": gate.MAX_LEN},
+    )
+    action: Optional[Literal["more"]] = Field(
+        default=None, description="'more': the next results of the last answer, free of charge"
+    )
     language: Optional[Literal["en", "pt-BR"]] = Field(default=None, description="Response language")
     userLocation: Optional[LatLng] = Field(default=None, description="User location")
     nowIso: Optional[str] = Field(default=None, description="Client current time in ISO-8601")
@@ -40,10 +52,21 @@ class ChatRequest(BaseModel):
     # Legacy support
     coordinates: Optional[Coordinates] = Field(default=None, description="User location (legacy)")
     
+    @model_validator(mode="after")
+    def _gate(self):
+        """The input gate; a GateError becomes a 422 in the request's language."""
+        if self.message is None:
+            if self.action != "more":
+                raise gate.GateError("empty", self.language)
+            return self
+        self.message = gate.clean_message(self.message, language=self.language)
+        return self
+
     class Config:
         json_schema_extra = {
             "example": {
-                "message": "Quais são os melhores restaurantes perto de mim?",
+                "session_id": "3f1c2b9e-8d4a-4c6e-9b1a-2e7f5d0c4a11",
+                "message": "Quais são os melhores restaurantes perto de mim",
                 "language": "pt-BR",
                 "userLocation": {"lat": -1.4695, "lng": -48.4665}
             }
