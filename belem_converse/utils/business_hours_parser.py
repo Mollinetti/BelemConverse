@@ -25,12 +25,18 @@ class TimeRange:
     end: time
     
     def contains(self, check_time: time) -> bool:
-        """Check if a time falls within this range."""
-        # Handle overnight ranges (e.g., 10 PM to 2 AM)
+        """Check if a time falls within this range on the range's own day.
+
+        An overnight range (10 PM to 2 AM) covers only 22:00-24:00 here; its
+        after-midnight tail belongs to the next day (see BusinessHours.is_open_at).
+        """
         if self.start <= self.end:
             return self.start <= check_time <= self.end
-        else:
-            return check_time >= self.start or check_time <= self.end
+        return check_time >= self.start
+
+    @property
+    def overnight(self) -> bool:
+        return self.start > self.end
     
     def __str__(self) -> str:
         return f"{self.start.strftime('%I:%M %p')} - {self.end.strftime('%I:%M %p')}"
@@ -73,11 +79,17 @@ class BusinessHours:
     }
     
     def is_open_at(self, day: str, check_time: time) -> bool:
-        """Check if open on a specific day and time."""
-        day_schedule = self.schedules.get(day)
-        if day_schedule is None:
+        """Check if open on a specific day and time, including the previous
+        day's hours that run past midnight (Friday 9 PM to 2 AM covers Saturday 1 AM)."""
+        if day not in self.DAY_NAMES:
             return False
-        return day_schedule.is_open_at(check_time)
+        today = self.schedules.get(day)
+        if today is not None and today.is_open_at(check_time):
+            return True
+        yesterday = self.schedules.get(self.DAY_NAMES[self.DAY_NAMES.index(day) - 1])
+        return yesterday is not None and not yesterday.is_closed and any(
+            tr.overnight and check_time < tr.end for tr in yesterday.time_ranges
+        )
     
     def is_open_now(self) -> bool:
         """Check if currently open."""
@@ -163,8 +175,7 @@ class BusinessHoursParser:
         hours_lower = hours_string.lower().strip()
         
         # Check for "Open 24 hours" / "24 horas"
-        if ('24' in hours_lower and ('hour' in hours_lower or 'hora' in hours_lower)) or \
-           hours_lower in ['open 24 hours', '24 horas', 'aberto 24 horas', '24/7']:
+        if ':' not in hours_lower and self._is_all_day(hours_lower):  # no per-day schedule
             # Always open - set all days to 00:00-23:59
             for day in self.day_order:
                 result.schedules[day] = DaySchedule(
@@ -236,7 +247,10 @@ class BusinessHoursParser:
                             is_closed=True
                         )
                 else:
-                    time_ranges = self._parse_time_ranges(time_part.strip())
+                    if self._is_all_day(time_part.strip().lower()):
+                        time_ranges = [TimeRange(start=time(0, 0), end=time(23, 59))]
+                    else:
+                        time_ranges = self._parse_time_ranges(time_part.strip())
                     for day in days:
                         result.schedules[day] = DaySchedule(
                             day_name=day,
@@ -328,6 +342,11 @@ class BusinessHoursParser:
         
         return abbrev_map.get(day_lower)
     
+    @staticmethod
+    def _is_all_day(text: str) -> bool:
+        """'Open 24 hours', 'Atendimento 24 horas', '24h', '24/7' and the like."""
+        return re.search(r'\b24\s*(h\b|hours?\b|horas?\b)|\b24/7\b', text) is not None
+
     def _parse_time_ranges(self, time_string: str) -> List[TimeRange]:
         """Parse time ranges from string."""
         ranges = []
@@ -359,6 +378,10 @@ class BusinessHoursParser:
             if len(times) < 2:
                 return None
             
+            # "3 to 9 PM": Google omits the start's AM/PM when it matches the end's
+            if not times[0][2] and times[1][2]:
+                times[0] = (*times[0][:2], times[1][2])
+
             # Parse start and end times
             start_time = self._parse_time(times[0])
             end_time = self._parse_time(times[1])

@@ -3,9 +3,7 @@
 Pipeline per `docs/archive/spec/`:
     Chat request -> Query Plan (TF-IDF intent + slots)
                  -> Deterministic retrieval (open-hours -> proximity -> category -> rank)
-                 -> LLM summarization of <=5 results.
-
-Tour-planning intents are routed to ``EnhancedRAGAgent._handle_tour_planning``.
+                 -> hosted LLM summary of the top 5 results, or a template answer.
 """
 
 from __future__ import annotations
@@ -15,11 +13,12 @@ import logging
 import time
 import traceback
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException
+from starlette.concurrency import run_in_threadpool
 
+from belem_converse import llm
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
@@ -28,17 +27,15 @@ from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.query_planner import QueryPlanner
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
-from belem_converse.ingest.csv_ingestion import CSVIngestionPipeline
 
 from . import __version__
-from .dependencies import get_rag_agent, get_system_status, is_system_ready
+from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
 from .schemas import (
     ChatFilters,
     ChatRequest,
     ChatResponse,
     ErrorResponse,
     HealthResponse,
-    IngestionResponse,
     LanguagesResponse,
     LatLng,
     Place,
@@ -48,10 +45,7 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Project root: api/routes.py -> api/ -> repo root.
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
-PLACES_FILE = DATA_DIR / "canonical_places.jsonl"
+MAX_RESULTS = 5  # spec: an answer shows at most five places
 
 
 # ----- module-level singletons (built lazily on first chat) -----------------
@@ -80,20 +74,15 @@ def _get_query_planner() -> QueryPlanner:
 
 
 def _load_places_index() -> List[dict]:
-    if not PLACES_FILE.exists():
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Places index not found at {PLACES_FILE}. "
-                "Run POST /api/ingest/csv first."
-            ),
-        )
-    with PLACES_FILE.open("r", encoding="utf-8") as fh:
-        return [json.loads(line) for line in fh if line.strip()]
+    """The catalog loaded at startup; 503 until it exists."""
+    catalog = get_catalog()
+    if catalog is None:
+        raise HTTPException(status_code=503, detail=f"Place catalog not loaded. {BUILD_HINT}")
+    return catalog
 
 
 def _get_retriever() -> UnifiedRetriever:
-    """Lazily build the unified retriever from the on-disk places index."""
+    """Lazily build the unified retriever over the loaded catalog."""
     global _place_cache, _category_matcher, _ranking_engine, _retriever
     if _retriever is None:
         places_index = _load_places_index()
@@ -108,15 +97,6 @@ def _get_retriever() -> UnifiedRetriever:
             osm_client=None,    # FUTURE: wire OSM realtime fallback
         )
     return _retriever
-
-
-def _reset_retriever_cache() -> None:
-    """Drop the cached retriever so subsequent chats re-read the JSONL."""
-    global _place_cache, _category_matcher, _ranking_engine, _retriever
-    _place_cache = None
-    _category_matcher = None
-    _ranking_engine = None
-    _retriever = None
 
 
 # ----- endpoints ------------------------------------------------------------
@@ -140,28 +120,16 @@ async def get_languages() -> LanguagesResponse:
 
 @router.get("/places/{placeId}", response_model=Place)
 async def get_place(placeId: str) -> Place:
-    if not PLACES_FILE.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="Places index not found. Please run ingestion first.",
-        )
-    try:
-        with PLACES_FILE.open("r", encoding="utf-8") as fh:
-            for line in fh:
-                place = json.loads(line)
-                if place.get("placeId") == placeId:
-                    loc = place.get("location")
-                    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
-                        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
-                    elif isinstance(loc, dict):
-                        place["location"] = None
-                    return Place(**place)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Error retrieving place %s", placeId)
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
+    place = next((p for p in _load_places_index() if p.get("placeId") == placeId), None)
+    if place is None:
+        raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
+    place = dict(place)
+    loc = place.get("location")
+    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
+        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
+    else:
+        place["location"] = None
+    return Place(**place)
 
 
 @router.post(
@@ -176,11 +144,12 @@ async def get_place(placeId: str) -> Place:
 async def chat(request: ChatRequest) -> ChatResponse:
     """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
+    started_at = time.monotonic()  # the model's time budget counts from here
 
     if not is_system_ready():
         raise HTTPException(
             status_code=503,
-            detail="RAG system is still initializing. Please try again in a moment.",
+            detail=f"Place catalog not loaded. {BUILD_HINT}",
         )
 
     # Optional client-supplied "now" timestamp (used by open-hours filtering).
@@ -198,7 +167,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
     filters_dict = request.filters.dict(exclude_none=True) if request.filters else None
 
-    intent_classifier = _get_intent_classifier()
     query_planner = _get_query_planner()
 
     query_plan = query_planner.create_query_plan(
@@ -208,34 +176,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
         filters=filters_dict,
     )
     logger.info("Query Plan: %s", json.dumps(query_planner.plan_to_dict(query_plan), indent=2))
-
-    agent = get_rag_agent()
-    intent_result = intent_classifier.predict(request.message)
-
-    # ----- Tour planning branch --------------------------------------------
-    if _is_tour_planning_query(intent_result, request.message):
-        logger.info("Detected tour planning intent, routing to tour planner")
-        user_coordinates = (
-            (user_location["lat"], user_location["lng"]) if user_location else None
-        )
-        try:
-            answer = agent._handle_tour_planning(
-                question=request.message,
-                intent_result=intent_result,
-                user_coordinates=user_coordinates,
-            )
-            elapsed_ms = (time.time() - start) * 1000
-            logger.info("Tour response generated in %.0fms", elapsed_ms)
-            return ChatResponse(
-                language=query_plan.language,
-                answer=answer,
-                results=[],
-                debug=query_plan.debug,
-                response=answer,
-                processing_time_ms=round(elapsed_ms, 1),
-            )
-        except Exception:
-            logger.exception("Tour planning failed; falling back to regular query flow")
 
     # ----- Regular query flow ----------------------------------------------
     try:
@@ -253,15 +193,17 @@ async def chat(request: ChatRequest) -> ChatResponse:
         "proximity_intent_detected": query_plan.slots.get("proximity_intent_detected", False),
         "language": query_plan.language,
     }
-    retrieval_result = retriever.retrieve(query_plan_dict)
+    # CPU-bound: run it off the event loop so other requests are not stalled.
+    retrieval_result = await run_in_threadpool(retriever.retrieve, query_plan_dict)
     logger.info(
         "Retrieved %d places via %s",
         len(retrieval_result.places),
         retrieval_result.strategy_used,
     )
+    top_places = retrieval_result.places[:MAX_RESULTS]
 
     place_results: List[PlaceResult] = []
-    for place in retrieval_result.places:
+    for place in top_places:
         try:
             place_dict = place.copy()
             loc = place_dict.get("location")
@@ -282,47 +224,45 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 detail=f"Error converting place result: {exc}",
             ) from exc
 
-    answer = _generate_answer(retrieval_result.places, query_plan.language)
+    answer, answer_source = await _answer(
+        request.message, top_places, query_plan.language, started_at
+    )
     elapsed_ms = (time.time() - start) * 1000
-    logger.info("Chat response generated in %.0fms", elapsed_ms)
+    logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
 
     return ChatResponse(
         language=query_plan.language,
         answer=answer,
         results=place_results,
-        debug=query_plan.debug,
+        debug={**(query_plan.debug or {}), "answer_source": answer_source},
         response=answer,
         processing_time_ms=round(elapsed_ms, 1),
     )
 
 
-def _is_tour_planning_query(intent_result: dict, question: str) -> bool:
-    """Mirror of EnhancedRAGAgent's tour detection (see core/tour_planner.py)."""
-    if (
-        intent_result.get("primary_intent") == "tour_planning"
-        and intent_result.get("primary_intent_confidence", 0.0) >= 0.3
-    ):
-        return True
+async def _answer(
+    question: str, places: List[dict], language: str, started_at: float
+) -> tuple[str, str]:
+    """(answer, source): the model's grounded answer, else the template.
 
-    keywords = (
-        "tour", "itinerary", "day trip", "plan my day", "what to do in a day",
-        "roteiro", "passeio pelo", "o que fazer em um dia", "dia em belém",
-        "planejar meu dia", "one day itinerary", "walking tour", "food tour",
-        "create an itinerary", "plan a trip",
-    )
-    q = question.lower()
-    return any(k in q for k in keywords)
+    The model is called at most once, and not at all when nothing was found.
+    """
+    if places:
+        try:
+            text = await llm.summarize(question, places, language, started_at=started_at)
+        except Exception:  # the visitor always gets an answer, whatever the model client does
+            logger.exception("Model call failed unexpectedly; using the template")
+            text = None
+        if text is not None:
+            catalog_titles = [p.get("title") or "" for p in get_catalog() or []]
+            if llm.is_grounded(text, places, catalog_titles, question=question):
+                return llm.strip_markers(text), "llm"
+            logger.warning("Model answer named places outside the results; using the template")
+    return _generate_answer(places, language), "template"
 
 
 def _generate_answer(places: List[dict], language: str) -> str:
-    """Template-based summarization placeholder.
-
-    The real LLM summarisation lives in ``EnhancedRAGAgent`` (see
-    ``utils/config.py`` for the prompt templates). This template path keeps
-    the API responsive even when the GGUF weights are not available.
-    FUTURE: wire this back through ``agent.query`` for fully grounded
-    natural-language summaries per ``docs/archive/spec/06-llm-contract.md``.
-    """
+    """Template answer: used when the model is unconfigured, fails, or strays."""
     if not places:
         if language == "pt-BR":
             return (
@@ -369,44 +309,3 @@ def _generate_answer(places: List[dict], language: str) -> str:
         return f"Aqui estão os lugares encontrados:\n\n{body}\n\nEstes são os lugares que correspondem à sua busca."
     return f"Here are the places found:\n\n{body}\n\nThese are the places matching your search."
 
-
-@router.post("/ingest/csv", response_model=IngestionResponse)
-async def ingest_csv(file: UploadFile = File(...)) -> IngestionResponse:
-    """Ingest a places CSV and rebuild ``data/canonical_places.jsonl``."""
-    temp_dir = DATA_DIR / "temp"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-    temp_file = temp_dir / file.filename
-
-    try:
-        content = await file.read()
-        temp_file.write_bytes(content)
-        logger.info("Received CSV file: %s, size: %d bytes", file.filename, len(content))
-
-        pipeline = CSVIngestionPipeline()
-        report = pipeline.ingest_csv(temp_file)
-    except Exception as exc:
-        logger.exception("CSV ingestion failed")
-        raise HTTPException(status_code=500, detail=f"CSV ingestion failed: {exc}") from exc
-    finally:
-        if temp_file.exists():
-            temp_file.unlink()
-
-    _reset_retriever_cache()  # next /chat will re-read the new index
-
-    return IngestionResponse(
-        ingestedCount=report["ingestedCount"],
-        skippedCount=report["skippedCount"],
-        outputFiles=report["outputFiles"],
-    )
-
-
-@router.post("/clear-history")
-async def clear_history() -> dict:
-    try:
-        agent = get_rag_agent()
-        if hasattr(agent, "clear_conversation_history"):
-            agent.clear_conversation_history()
-        return {"status": "success", "message": "Conversation history cleared"}
-    except Exception as exc:
-        logger.exception("Error clearing history")
-        raise HTTPException(status_code=500, detail=str(exc)) from exc

@@ -21,10 +21,6 @@ Ask where to go in Portuguese or English — get answers built only from places 
 [![Pydantic v2](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev/)
 [![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev/)
-[![Llama 3.1 8B](https://img.shields.io/badge/Llama%203.1-8B%20Instruct%20GGUF-0467DF?style=flat-square&logo=meta&logoColor=white)](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct)
-[![llama.cpp](https://img.shields.io/badge/llama.cpp-local%20inference-555555?style=flat-square)](https://github.com/abetlen/llama-cpp-python)
-[![Sentence Transformers](https://img.shields.io/badge/sentence--transformers-all--mpnet--base--v2-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://www.sbert.net/)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-vector%20store-FF6446?style=flat-square)](https://www.trychroma.com/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-TF--IDF%20intents-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
 [![OpenStreetMap](https://img.shields.io/badge/maps-OpenStreetMap-7EBC6F?style=flat-square&logo=openstreetmap&logoColor=white)](https://www.openstreetmap.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white)](Dockerfile)
@@ -87,14 +83,14 @@ only describes what deterministic retrieval hands it.
 - **Filters before it ranks.** Opening hours, then proximity with a radius that
   escalates 500 m → 1 km → 2 km, then category. Rating and popularity only
   reorder what survives.
-- **Cannot invent a place.** At most five retrieved candidates reach the model,
-  which is contractually limited to summarising them.
+- **Cannot invent a place.** At most five retrieved places reach the model, and
+  its reply is checked: if it names anything else, the visitor gets a plain
+  template answer instead.
 - **Says so when nothing matches.** Zero results after full escalation produces
   a clarifying question, not a plausible substitute.
-- **Plans short itineraries.** Tour-planning requests (*"plan a tour"*,
-  *"roteiro"*) build an itinerary from the same index.
-- **Runs entirely locally.** GGUF Llama via `llama.cpp`, local embeddings,
-  local vector store. No API keys, no cloud inference.
+- **Runs on free hardware.** No model weights, GPU or vector store: a small
+  hosted model writes the reply, and without one (or when it fails) the API
+  still answers with a template.
 
 ## How it works
 
@@ -103,17 +99,17 @@ flowchart LR
     U["Flutter client<br/>(web · Android · iOS)"] -->|"POST /api/chat"| P
     P["QueryPlanner<br/>TF-IDF intent + slots"] --> R
     R["UnifiedRetriever<br/>hours → distance → category → rank"] -->|"≤ 5 places"| L
-    L["EnhancedRAGAgent<br/>Llama 3.1 8B · GGUF"] --> C["ChatResponse<br/>answer + result cards"]
-    L -.->|"tour intent"| T["TourPlanner"]
-    T -.-> L
+    L["llm.summarize<br/>hosted model · 1 call"] --> G{"is_grounded?"}
+    G -->|yes| C["ChatResponse<br/>answer + result cards"]
+    G -->|"no / no model"| T["template answer"] --> C
     C --> U
 ```
 
 | Stage | Component | Responsibility |
 | --- | --- | --- |
 | **Plan** | `QueryPlanner` | Turns the message into a structured plan: intent, category, open-now, sort mode, language. Falls back to keyword matching if the classifier is unavailable. |
-| **Retrieve** | `UnifiedRetriever` | Applies filters in fixed precedence, escalates the radius until five results exist, then ranks. Vector search exists only as a gated fallback and never overrides geography or hours. |
-| **Answer** | `EnhancedRAGAgent` | Summarises the retrieved places in EN or pt-BR, explaining why each matched. Labels unknown opening hours as unknown. |
+| **Retrieve** | `UnifiedRetriever` | Applies filters in fixed precedence, escalates the radius until five results exist, then ranks. No vector search. |
+| **Answer** | `llm.summarize` + `is_grounded` | One call to a hosted, OpenAI-compatible model writes the reply in EN or pt-BR from the top five places. A reply that names a place outside them is replaced by the template answer. |
 
 The full retrieval and ranking rules live in
 [`docs/archive/spec/03-query-planner.md`](docs/archive/spec/03-query-planner.md) and
@@ -129,7 +125,6 @@ constraints in [`docs/archive/spec/06-llm-contract.md`](docs/archive/spec/06-llm
 | *Is Mercado Ver-o-Peso still open?* | EN | verification · named place · business hours |
 | *tem um boteco massa por aqui pra tomar uma gelada?* | pt-BR | bar · open now · sort by distance |
 | *Onde posso encontrar açaí por aqui?* | pt-BR | açaí · sort by distance |
-| *Planeje um passeio para mim em Belém* | pt-BR | tour planning · itinerary |
 
 Worked examples with full answers are on the
 [project site](https://mollinetti.github.io/BelemConverse/);
@@ -140,9 +135,9 @@ the evaluation set is [`docs/archive/spec/09-eval-golden-queries.md`](docs/archi
 ### Prerequisites
 
 - Python **3.10+**
-- ~6 GB free for the GGUF model
 - [Flutter](https://docs.flutter.dev/get-started/install) with Dart SDK **^3.10**, only if you want the client
-- A places CSV — expected columns are documented in [`docs/archive/spec/02-csv-mapping.md`](docs/archive/spec/02-csv-mapping.md)
+- The raw Google Places export (`data/csvs/combined_all_data.csv`) — columns are documented in [`docs/archive/spec/02-csv-mapping.md`](docs/archive/spec/02-csv-mapping.md)
+- Optionally, an API key for a free hosted model (see [Configuration](#configuration))
 
 ### 1. Install the backend
 
@@ -152,18 +147,28 @@ cd BelemConverse
 
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"              # or: pip install -r requirements.txt
+pip install -e ".[dev,tools]"        # tools = pandas, for the catalog build
 ```
 
-### 2. Add the model
+### 2. Build the place catalog
 
-Place the GGUF file at the default path, or point `MODEL_GGUF_PATH` at it (see [Configuration](#configuration)):
-
+```bash
+python -m belem_converse.tools.build_catalog      # → data/belem/places.sqlite + cleaning_report.json
+python -m belem_converse.tools.validate_osm       # optional: flag places OpenStreetMap confirms
 ```
-models/llm/Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf
+
+The build deduplicates, repairs broken accents, parses opening hours and keeps
+only places in the Belém municipality; `cleaning_report.json` counts every fix.
+
+### 3. Configure a model (optional)
+
+```bash
+cp .env.example .env    # then set LLM_BASE_URL, LLM_MODEL, LLM_API_KEY
 ```
 
-### 3. Start the API
+Without a model every answer is the template answer.
+
+### 4. Start the API
 
 ```bash
 uvicorn api.main:app --reload --port 8000
@@ -171,14 +176,6 @@ curl -s http://localhost:8000/api/health | jq
 ```
 
 Interactive docs: <http://localhost:8000/docs> · ReDoc: <http://localhost:8000/redoc>
-
-### 4. Build the place index
-
-With the server running, ingest your CSV once. This writes `data/canonical_places.jsonl`:
-
-```bash
-curl -F "file=@path/to/places.csv" http://localhost:8000/api/ingest/csv
-```
 
 ### 5. Ask something
 
@@ -212,16 +209,14 @@ docker compose up --build              # API on http://localhost:8000
 docker compose --profile web up        # API + Flutter web on http://localhost:8080
 ```
 
-Both `./models` and `./data` are bind-mounted, so the GGUF model and
-`canonical_places.jsonl` must exist on the host first. The model is
-intentionally not baked into the image.
+`./data` is bind-mounted, so build the catalog on the host first
+(`data/belem/places.sqlite`). Model settings come from `.env`.
 
 To run the API image on its own:
 
 ```bash
 docker build -t belem-converse-api .
-docker run --rm -p 8000:8000 \
-  -v "$PWD/models:/app/models" \
+docker run --rm -p 8000:8000 --env-file .env \
   -v "$PWD/data:/app/data" \
   belem-converse-api
 ```
@@ -229,17 +224,19 @@ docker run --rm -p 8000:8000 \
 ## Configuration
 
 Copy [`.env.example`](.env.example) to `.env` and uncomment what you need.
-Defaults live in [`belem_converse/utils/config.py`](belem_converse/utils/config.py).
+The model client is [`belem_converse/llm.py`](belem_converse/llm.py); paths live in
+[`belem_converse/utils/config.py`](belem_converse/utils/config.py).
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `MODEL_GGUF_PATH` | `models/llm/Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf` | Path to the GGUF summariser |
-| `LLM_N_GPU_LAYERS` | `35` | Layers offloaded to GPU; `0` for CPU only. `35` suits Apple Silicon |
-| `BELEM_DATA_DIR` | `data/` | Runtime data directory |
-| `CHROMA_PERSIST_DIR` | `data/chroma_db/` | Vector store location |
-| `BELEM_MODELS_DIR` | `models/` | Model weights and embedding cache |
-| `BELEM_MODEL` | `llama3.1` | Model variant: `llama3.1` or `mistral` |
-| `BELEM_CITY` | `belem` | City profile |
+| `LLM_BASE_URL` | unset | OpenAI-compatible endpoint; unset means template answers only |
+| `LLM_MODEL` | unset | Model name at that endpoint |
+| `LLM_API_KEY` | unset | Bearer token for the endpoint |
+| `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_MODEL`, `LLM_FALLBACK_API_KEY` | unset | Second provider, tried when the first is rate-limited, fails or times out |
+| `LLM_TIMEOUT_S` | `10` | Seconds shared by both providers before the template answer is used |
+| `LLM_MAX_TOKENS` | `250` | Cap on the reply's length |
+| `BELEM_DATA_DIR` | `data/` | Runtime data; the catalog is `belem/places.sqlite` inside it |
+| `BELEMCONVERSE_CITY` | `belem` | City profile |
 
 ## API
 
@@ -249,12 +246,10 @@ All routes are mounted under `/api`. The contract is frozen in
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/health` | Liveness and component readiness (LLM, vector store) |
+| `GET` | `/api/health` | Liveness; ready once the place catalog is loaded |
 | `GET` | `/api/languages` | Supported response languages |
 | `GET` | `/api/places/{placeId}` | Look up one canonical place |
 | `POST` | `/api/chat` | Plan → retrieve → summarise; returns an answer and up to 5 results |
-| `POST` | `/api/ingest/csv` | Ingest a places CSV into `data/canonical_places.jsonl` |
-| `POST` | `/api/clear-history` | Clear the in-memory conversation history |
 
 ## Project structure
 
@@ -264,25 +259,27 @@ All routes are mounted under `/api`. The contract is frozen in
 ├── belem_converse/       Backend package (pip install -e .)
 │   ├── cities/           City profiles (Belém by default)
 │   ├── classifiers/      TF-IDF intent classifier + trained artefacts
-│   ├── core/             Query planner, retrievers, ranking, tour planner, RAG agent
-│   ├── ingest/           CSV → canonical places, vector store, OSM helpers
-│   ├── tools/            Operational CLIs (data refresh)
-│   └── utils/            Config, models, exceptions, helpers
+│   ├── core/             Query planner, retriever, ranking
+│   ├── ingest/           CSV field mapping, OSM fetcher and matcher
+│   ├── tools/            build_catalog, validate_osm, bench_llm
+│   ├── utils/            Config, hours parser, helpers
+│   ├── catalog.py        Reads the SQLite place catalog
+│   └── llm.py            Hosted-model client and grounding check
 ├── frontend/             Flutter client
+├── specs/mvp/            Current specs (mvp-1, mvp-2)
 ├── docs/
-│   ├── spec/             Authoritative behaviour specs + ADRs
+│   ├── archive/spec/     Proof-of-concept specs + ADRs (reference)
 │   └── index.html …      Project site (GitHub Pages)
 ├── docker/               Compose helpers
 ├── notebooks/            Exploratory notebooks (read-only history)
 ├── tests/                pytest suite + diagnostics/ eval harnesses
-├── data/                 Runtime data — gitignored
-└── models/               GGUF weights + embedding cache — gitignored
+└── data/                 Runtime data and the built catalog — gitignored
 ```
 
 ## Testing
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,tools]"
 pytest                                               # full suite
 pytest tests/test_query_planner_refactoring.py -v    # one file
 ruff check .                                         # lint
@@ -347,8 +344,6 @@ More on both on the [project site](https://mollinetti.github.io/BelemConverse/au
 ## Acknowledgements
 
 - [COP30](https://cop30.br/pt-br), for putting Belém in front of the world and giving this project its reason to exist
-- [Meta Llama](https://www.llama.com/) and [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local inference
-- [Sentence Transformers](https://www.sbert.net/) and [ChromaDB](https://www.trychroma.com/) for embeddings and vector storage
 - [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, whose map data the client renders
 
 ## License

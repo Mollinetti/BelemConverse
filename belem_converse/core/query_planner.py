@@ -35,7 +35,7 @@ _IMPLICIT_LEXICON_PATH = (
 class QueryPlan:
     """Query Plan structure per spec"""
     language: str  # "en" | "pt-BR"
-    intent: str  # "find_places" | "place_details" | "compare_places" | "smalltalk" | "help" | "tour_planning"
+    intent: str  # "find_places" | "place_details" | "compare_places" | "smalltalk" | "help"
     slots: Dict[str, Any]
     retrieval_strategy: str  # "structured_only" | "structured_then_lexical" | "structured_then_vector_fallback"
     debug: Dict[str, Any]
@@ -249,27 +249,9 @@ class QueryPlanner:
         intents (location, popularity, price, etc.), use Intent_Classifier directly.
         
         Returns:
-            "find_places" | "place_details" | "compare_places" | "smalltalk" | "help" | "tour_planning"
+            "find_places" | "place_details" | "compare_places" | "smalltalk" | "help"
         """
         message_lower = self.normalize_text(message)
-        
-        # Check for tour planning intent using Intent_Classifier
-        if self.intent_classifier:
-            try:
-                intent_result = self.intent_classifier.predict_intent(message)
-                if intent_result.get('primary_intent') == 'tour_planning' and intent_result.get('primary_intent_confidence', 0) >= 0.3:
-                    return 'tour_planning'
-            except Exception as e:
-                logger.warning(f"Intent_Classifier failed for tour_planning detection: {e}")
-                # Fall through to keyword-based fallback below
-        
-        # Fallback: Check for tour planning keywords if classifier unavailable
-        tour_keywords_en = ['plan', 'itinerary', 'tour', 'day trip', 'trip plan', 'schedule', 'route']
-        tour_keywords_pt = ['roteiro', 'passeio', 'planejar', 'itinerario', 'viagem', 'programar', 'programacao', 'rota']
-        
-        if any(word in message_lower for word in tour_keywords_en + tour_keywords_pt):
-            logger.info("Tour planning detected via fallback keywords")
-            return 'tour_planning'
         
         # Check for other application-level intents (not handled by Intent_Classifier)
         if any(word in message_lower for word in ['compare', 'comparar', 'diferença', 'difference']):
@@ -633,6 +615,18 @@ class QueryPlanner:
     # Single-word presence checks used by Strategy 2 once the classifier has
     # confirmed business_hours intent (kept here so the helper is testable in isolation).
     _OPEN_NOW_KEYWORDS = ['open', 'aberto', 'aberta', 'abertos', 'abertas', 'funcionando']
+    # "restaurantes abertos perto da ..." asks for places open now even without
+    # "agora" (Portuguese only: English "open" also means "open bar", "open air").
+    _OPEN_ADJECTIVE = re.compile(r'\babert[oa]s?\b')
+    # A named moment other than now. The hours filter can only judge the
+    # present, so these cancel open_now unless "agora"/"now" is also said.
+    _OTHER_TIME = re.compile(
+        r'\b(hoje|today|amanha|tomorrow|tonight|noite|feriado|fim de semana|weekend|'
+        r'domingo|segunda|terca|quarta|quinta|sexta|sabado|'
+        r'sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b'
+        r'|\b(?:as|at) \d|\b(?!24)\d{1,2}\s*h\b'
+    )
+    _NOW_WORDS = re.compile(r'\b(agora|now|neste momento|no momento|currently)\b')
     _CLOSED_NOW_KEYWORDS = ['closed', 'fechado', 'fechada', 'fechados', 'fechadas']
 
     def _detect_open_now_strategy1(self, message_norm: str) -> Tuple[bool, Optional[str]]:
@@ -739,7 +733,11 @@ class QueryPlanner:
         strategy1_hit, strategy1_signal = self._detect_open_now_strategy1(message_norm)
         strategy2_hit = self._detect_open_now_strategy2(message, message_norm)
 
-        final = True if (strategy1_hit or strategy2_hit) else None
+        adjective_hit = self._OPEN_ADJECTIVE.search(message_norm) is not None
+
+        final = True if (strategy1_hit or strategy2_hit or adjective_hit) else None
+        if final and self._OTHER_TIME.search(message_norm) and not self._NOW_WORDS.search(message_norm):
+            final = None  # "aberta hoje", "aberto domingo": not a question about now
 
         logger.info(
             "open_now_detection",
@@ -749,6 +747,7 @@ class QueryPlanner:
                 "strategy1_hit": strategy1_hit,
                 "strategy1_signal": strategy1_signal,
                 "strategy2_hit": strategy2_hit,
+                "adjective_hit": adjective_hit,
                 "agree": strategy1_hit == strategy2_hit,
                 "result": final,
             },
@@ -1029,6 +1028,18 @@ class QueryPlanner:
             # Check for popularity intent
             if primary_intent == 'popularity' and confidence >= 0.3:
                 logger.debug(f"Sort preference: popularity (confidence: {confidence:.3f})")
+                return 'popularity'
+
+            # "Open now" is a filter (the open_now slot), not an ordering, so a
+            # popularity signal behind a business_hours primary still decides
+            # the sort: "best restaurants open now" ranks by popularity.
+            popularity_confidence = max(
+                (i.get('confidence', 0) for i in intent_result.get('intents', [])
+                 if i.get('intent') == 'popularity'),
+                default=0,
+            )
+            if primary_intent == 'business_hours' and popularity_confidence >= 0.3:
+                logger.debug(f"Sort preference: popularity (behind business_hours, {popularity_confidence:.3f})")
                 return 'popularity'
             
             # Check for rating intent (best/top rated)
