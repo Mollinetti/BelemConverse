@@ -1,0 +1,107 @@
+{
+  "catalog_rows": 2901,
+  "osm_features": 1373,
+  "verified": 142,
+  "unverified": 2759,
+  "match_rate": 0.049,
+  "coordinate_mismatch": [
+    {
+      "placeId": "ChIJD34eliqLpJIR6ninMTj7t_8",
+      "title": "Fran's café",
+      "osm_name": "Fran's Café",
+      "osm_id": "node/12406857648",
+      "distance_m": 885.5
+    },
+    {
+      "placeId": "ChIJtymRYkuLpJIRbKy9cZbsSdA",
+      "title": "Restaurante Panela Paraense",
+      "osm_name": "Panela Paraense",
+      "osm_id": "node/12406662097",
+      "distance_m": 825.1
+    },
+    {
+      "placeId": "ChIJu6YEMNuPpJIR-fqCEqb6_sk",
+      "title": "Cacau Show",
+      "osm_name": "Cacau Show",
+      "osm_id": "node/12386640252",
+      "distance_m": 346.6
+    },
+    {
+      "placeId": "ChIJY-mAu5OOpJIRLsY2nBfL8JI",
+      "title": "Belém Hostel",
+      "osm_name": "Itaóca Belém Hotel",
+      "osm_id": "node/2713494372",
+      "distance_m": 308.0
+    },
+    {
+      "placeId": "ChIJueDiLb2OpJIRecjogoY_9d4",
+      "title": "Cia. Paulista de Pizza",
+      "osm_name": "Cia. Paulista de Pizza",
+      "osm_id": "node/505204842",
+      "distance_m": 269.2
+    },
+    {
+      "placeId": "ChIJKekmNbEUpJIRoDwUzBfVPKw",
+      "title": "Praia do Farol",
+      "osm_name": "Praia do Farol",
+      "osm_id": "way/364392521",
+      "distance_m": 240.7
+    },
+    {
+      "placeId": "ChIJH26nALyOpJIRwAlp2znqsYY",
+      "title": "Batistão Sucos",
+      "osm_name": "Batistão Sucos",
+      "osm_id": "node/505204863",
+      "distance_m": 223.4
+    },
+    {
+      "placeId": "ChIJ-yEBfeEUpJIReb0ExEzWj8E",
+      "title": "Praia do Murubira",
+      "osm_name": "Praia do Murubira",
+      "osm_id": "way/361487675",
+      "distance_m": 212.0
+    },
+    {
+      "placeId": "ChIJ2ycRkG5hpJIRoRnikN2RTXI",
+      "title": "Açaí da neth",
+      "osm_name": "AÇAI DA NETY",
+      "osm_id": "node/14228409118",
+      "distance_m": 185.4
+    },
+    {
+      "placeId": "ChIJQfB3YoCPpJIRDkyDwgeriw0",
+      "title": "Portal da Amazônia Beer",
+      "osm_name": "Portal da Amazônia",
+      "osm_id": "way/173340783",
+      "distance_m": 183.1
+    },
+    {
+      "placeId": "ChIJG2pJmes9pJIRJnOatHU2ZkM",
+      "title": "Praia do Paraíso",
+      "osm_name": "Praia do Paraíso",
+      "osm_id": "way/399157647",
+      "distance_m": 172.3
+    },
+    {
+      "placeId": "ChIJ_____1iOpJIRSToJQ_hIZo8",
+      "title": "Mangal das Garças",
+      "osm_name": "Mangal das Garças",
+      "osm_id": "way/173340782",
+      "distance_m": 161.9
+    },
+    {
+      "placeId": "ChIJK7may5WPpJIRAEzABSq_fGQ",
+      "title": "Radisson Hotel Maiorana Belém",
+      "osm_name": "Radisson Hotel Maiorana Belém",
+      "osm_id": "node/6301265024",
+      "distance_m": 154.4
+    },
+    {
+      "placeId": "ChIJIYLYiMgUpJIRerPhOMhxj8Q",
+      "title": "Prai do Chapeu Virado",
+      "osm_name": "Praia do Chapéu Virado",
+      "osm_id": "way/364392523",
+      "distance_m": 153.1
+    }
+  ]
+}

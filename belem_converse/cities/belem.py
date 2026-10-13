@@ -45,7 +45,7 @@ def get_belem_config() -> CityConfig:
         
         # Data paths (relative to LLM/ directory)
         csv_path="data/csvs/combined_all_data.csv",
-        catalog_path="belem/places.sqlite",
+        catalog_path="catalog/belem.sqlite",
         chroma_db_path="data/chroma_db",
         
         # Category mappings - generic category to local search terms

@@ -8,7 +8,7 @@
 Ask where to go in Portuguese or English — get answers built only from places that actually exist.
 
 <!-- Project -->
-[![Status: proof of concept](https://img.shields.io/badge/status-proof%20of%20concept-F2A03D?style=flat-square)](docs/archive/spec/00-poc-charter.md)
+[![Status: public MVP](https://img.shields.io/badge/status-public%20MVP-F2A03D?style=flat-square)](specs/mvp/spec.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-4FBFA3?style=flat-square)](LICENSE)
 [![Python 3.10–3.13](https://img.shields.io/badge/python-3.10%20%E2%80%93%203.13-3776AB?style=flat-square&logo=python&logoColor=white)](pyproject.toml)
 [![Project site](https://img.shields.io/badge/site-mollinetti.github.io-0D1E1B?style=flat-square&logo=githubpages&logoColor=white)](https://mollinetti.github.io/BelemConverse/)
@@ -27,6 +27,7 @@ Ask where to go in Portuguese or English — get answers built only from places 
 [![pytest](https://img.shields.io/badge/tested%20with-pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)](tests/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=flat-square)](https://github.com/astral-sh/ruff)
 
+[**Try it**](https://mollinetti.github.io/BelemConverse/app/) ·
 [**Project site**](https://mollinetti.github.io/BelemConverse/) ·
 [**Specs**](docs/archive/spec/) ·
 [**API contract**](docs/archive/spec/05-openapi.yaml) ·
@@ -52,6 +53,9 @@ Ask where to go in Portuguese or English — get answers built only from places 
 - [Example queries](#example-queries)
 - [Getting started](#getting-started)
 - [Running with Docker](#running-with-docker)
+- [Deploy (free tier)](#deploy-free-tier)
+- [Cost](#cost)
+- [Use it for another town](#use-it-for-another-town)
 - [Configuration](#configuration)
 - [API](#api)
 - [Project structure](#project-structure)
@@ -152,8 +156,11 @@ pip install -e ".[dev,tools]"        # tools = pandas, for the catalog build
 
 ### 2. Build the place catalog
 
+The Belém catalog is committed as [`catalog/belem.sqlite`](catalog/), so this
+step is only needed to rebuild it from the raw export:
+
 ```bash
-python -m belem_converse.tools.build_catalog      # → data/belem/places.sqlite + cleaning_report.json
+python -m belem_converse.tools.build_catalog      # → catalog/belem.sqlite + cleaning_report.json
 python -m belem_converse.tools.validate_osm       # optional: flag places OpenStreetMap confirms
 ```
 
@@ -183,11 +190,17 @@ Interactive docs: <http://localhost:8000/docs> · ReDoc: <http://localhost:8000/
 curl -s http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
+        "session_id": "'"$(uuidgen)"'",
         "message": "Closest restaurants open now",
         "language": "en",
         "userLocation": { "lat": -1.4500, "lng": -48.4900 }
       }' | jq
 ```
+
+A conversation is up to 4 questions on one `session_id`; send
+`"action": "more"` (no message) for the next 5 results of the last answer.
+Messages may contain letters, digits, spaces and `, . : ? !` only, up to 400
+characters.
 
 ### 6. Run the client (optional)
 
@@ -197,29 +210,87 @@ flutter pub get
 flutter run -d chrome
 ```
 
-The client expects the API at `http://localhost:8000/api`. To reach it from a
-physical device, change `apiBaseUrl` in
-[`frontend/lib/config/constants.dart`](frontend/lib/config/constants.dart) to
-your machine's LAN address.
+The client expects the API at `http://localhost:8000/api`. To point it
+elsewhere, pass `--dart-define=API_BASE_URL=http://<host>:8000/api`.
 
 ## Running with Docker
 
 ```bash
 docker compose up --build              # API on http://localhost:8000
-docker compose --profile web up        # API + Flutter web on http://localhost:8080
 ```
 
-`./data` is bind-mounted, so build the catalog on the host first
-(`data/belem/places.sqlite`). Model settings come from `.env`.
-
-To run the API image on its own:
+The image holds the API and the committed catalog only; model settings come
+from `.env`. To run it on its own:
 
 ```bash
-docker build -t belem-converse-api .
-docker run --rm -p 8000:8000 --env-file .env \
-  -v "$PWD/data:/app/data" \
-  belem-converse-api
+docker build -t belemconverse .
+docker run --rm -p 8000:8000 --env-file .env belemconverse
 ```
+
+## Deploy (free tier)
+
+The public showcase is a static Flutter web build on GitHub Pages talking to
+one free Docker web service on [Render](https://render.com). Nothing else is
+hosted: the catalog is in the image and the model is a hosted free tier.
+
+**Backend (Render).** In the Render dashboard choose *New → Blueprint* and
+point it at this repository; [`render.yaml`](render.yaml) creates the
+`belemconverse` web service (Docker, free plan, health check `/api/health`).
+Enter the two secrets it marks `sync: false`, `LLM_API_KEY` and
+`LLM_FALLBACK_API_KEY`, in the service's *Environment* tab. Then:
+
+```bash
+curl -s https://<service>.onrender.com/api/health     # {"status": "healthy", ...}
+```
+
+A free service sleeps after 15 idle minutes and takes about a minute to wake;
+the client shows a waking-up banner meanwhile.
+
+**Frontend (GitHub Pages).** Build the client against the backend and copy it
+under `docs/app/`, which Pages serves from `main:/docs`:
+
+```bash
+cd frontend
+flutter build web --release --base-href /BelemConverse/app/ \
+  --dart-define=API_BASE_URL=https://<service>.onrender.com/api
+cd .. && rm -rf docs/app && cp -r frontend/build/web docs/app
+```
+
+Commit `docs/app/` and push to `main`. In the repository settings, *Pages*
+must serve the `main` branch from `/docs`. The backend only accepts browser
+calls from `ALLOWED_ORIGINS` (`https://mollinetti.github.io` in `render.yaml`),
+so set it to your own Pages origin if you fork.
+
+## Cost
+
+$0 a month. Render's free web service, GitHub Pages and the model providers'
+free tiers ([Google AI Studio](https://aistudio.google.com) primary,
+[Groq](https://console.groq.com) fallback) cover it. Two limits keep it there:
+
+- **Per visitor:** 20 messages in 10 minutes (then `429`), and 4 questions per
+  conversation; "see more" never calls the model.
+- **Per day:** `LLM_DAILY_CAP` model calls (default 800). Past the cap every
+  answer is the template answer, so the app keeps working.
+
+## Use it for another town
+
+1. **City profile.** Copy [`belem_converse/cities/belem.py`](belem_converse/cities/belem.py)
+   to `<town>.py` and change the name, bounds, time zone, municipalities,
+   `catalog_path` (`catalog/<town>.sqlite`) and the follow-up `category_labels`.
+   Register it in `_load_builtin_cities()` in
+   [`city_loader.py`](belem_converse/cities/city_loader.py).
+2. **Catalog.** Export places for the town (Google Places columns, see
+   [`02-csv-mapping`](docs/archive/spec/02-csv-mapping.md)) and build it:
+
+   ```bash
+   BELEMCONVERSE_CITY=<town> python -m belem_converse.tools.build_catalog --csv path/to/export.csv
+   ```
+
+   This writes `catalog/<town>.sqlite` and `catalog/cleaning_report.json`;
+   commit both.
+3. **Deploy.** Set `BELEMCONVERSE_CITY=<town>` on the Render service, then
+   follow [Deploy](#deploy-free-tier). The model prompt names Belém in
+   [`llm.py`](belem_converse/llm.py); change it too.
 
 ## Configuration
 
@@ -235,8 +306,10 @@ The model client is [`belem_converse/llm.py`](belem_converse/llm.py); paths live
 | `LLM_FALLBACK_BASE_URL`, `LLM_FALLBACK_MODEL`, `LLM_FALLBACK_API_KEY` | unset | Second provider, tried when the first is rate-limited, fails or times out |
 | `LLM_TIMEOUT_S` | `10` | Seconds shared by both providers before the template answer is used |
 | `LLM_MAX_TOKENS` | `250` | Cap on the reply's length |
-| `BELEM_DATA_DIR` | `data/` | Runtime data; the catalog is `belem/places.sqlite` inside it |
-| `BELEMCONVERSE_CITY` | `belem` | City profile |
+| `LLM_DAILY_CAP` | `800` | Model calls per Belém calendar day; past it, answers are templates |
+| `ALLOWED_ORIGINS` | unset | Browser origins allowed by CORS, comma-separated; unset allows only `http://localhost` / `127.0.0.1` |
+| `BELEM_DATA_DIR` | `data/` | Raw exports read by the catalog build (the API reads `catalog/`) |
+| `BELEMCONVERSE_CITY` | `belem` | City profile (see [Use it for another town](#use-it-for-another-town)) |
 
 ## API
 
@@ -249,7 +322,12 @@ All routes are mounted under `/api`. The contract is frozen in
 | `GET` | `/api/health` | Liveness; ready once the place catalog is loaded |
 | `GET` | `/api/languages` | Supported response languages |
 | `GET` | `/api/places/{placeId}` | Look up one canonical place |
-| `POST` | `/api/chat` | Plan → retrieve → summarise; returns an answer and up to 5 results |
+| `POST` | `/api/chat` | Plan → retrieve → summarise; returns an answer, up to 5 results, follow-up suggestions, `has_more` and `turns_left` |
+
+`/api/chat` answers `422` for a message outside the input rule (localized),
+`409` when the conversation's 4 questions are used (`conversation_finished`)
+or there is nothing to see more of (`no_previous_results`), and `429` after 20
+messages from one visitor in 10 minutes (`rate_limited`).
 
 ## Project structure
 
@@ -265,15 +343,15 @@ All routes are mounted under `/api`. The contract is frozen in
 │   ├── utils/            Config, hours parser, helpers
 │   ├── catalog.py        Reads the SQLite place catalog
 │   └── llm.py            Hosted-model client and grounding check
+├── catalog/              The committed Belém place catalog + build reports
 ├── frontend/             Flutter client
 ├── specs/mvp/            Current specs (mvp-1, mvp-2)
 ├── docs/
 │   ├── archive/spec/     Proof-of-concept specs + ADRs (reference)
 │   └── index.html …      Project site (GitHub Pages)
-├── docker/               Compose helpers
 ├── notebooks/            Exploratory notebooks (read-only history)
 ├── tests/                pytest suite + diagnostics/ eval harnesses
-└── data/                 Runtime data and the built catalog — gitignored
+└── data/                 Raw exports for the catalog build — gitignored
 ```
 
 ## Testing

@@ -48,7 +48,7 @@ class CityConfig:
     
     # Data paths (relative to project root)
     csv_path: str = ""
-    # Built place catalog, relative to DATA_DIR (BELEM_DATA_DIR overrides it).
+    # Built place catalog, relative to the project root (committed to git).
     catalog_path: str = ""
     chroma_db_path: str = ""
     

@@ -3,7 +3,7 @@
     python -m belem_converse.tools.build_catalog [--csv PATH] [--raw-dir DIR] [--out DIR]
 
 Pipeline: normalize → dedupe → filter municipality → repair titles → parse
-hours. Writes ``<out>/places.sqlite`` (table ``places`` plus the FTS5 index
+hours. Writes ``<out>/<city>.sqlite`` (table ``places`` plus the FTS5 index
 ``places_fts``) and ``<out>/cleaning_report.json``, which counts every fix and
 reconciles ``input_rows == kept + merged_duplicates + dropped``.
 
@@ -26,13 +26,13 @@ import pandas as pd
 from belem_converse.cities import CityConfig, get_city_config
 from belem_converse.ingest.csv_ingestion import CSVIngestionPipeline, PlaceTypeInference
 from belem_converse.utils.business_hours_parser import BusinessHoursParser
-from belem_converse.utils.config import DATA_DIR
+from belem_converse.utils.config import BASE_DIR, DATA_DIR
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_CSV = DATA_DIR / "csvs" / "combined_all_data.csv"
 DEFAULT_RAW_DIR = DATA_DIR / "Raw"
-DEFAULT_OUT = DATA_DIR / "belem"
+DEFAULT_OUT = BASE_DIR / "catalog"
 
 ADDRESS_COLUMNS = ("address", "addressFormatted", "adressFormatted", "formattedAddress")
 # A pandas Series pasted into the CSV instead of its value.
@@ -198,7 +198,7 @@ def build(
     out_dir: Path = DEFAULT_OUT,
     city: CityConfig | None = None,
 ) -> dict:
-    """Build ``places.sqlite`` and ``cleaning_report.json`` in ``out_dir``; return the report."""
+    """Build ``<city slug>.sqlite`` and ``cleaning_report.json`` in ``out_dir``; return the report."""
     city = city or get_city_config()
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -275,8 +275,8 @@ def build(
             )
         )
 
-    db_path = out_dir / "places.sqlite"
-    tmp_path = out_dir / "places.sqlite.tmp"
+    db_path = out_dir / f"{city.slug}.sqlite"
+    tmp_path = out_dir / f"{city.slug}.sqlite.tmp"
     tmp_path.unlink(missing_ok=True)
     conn = sqlite3.connect(tmp_path)
     try:
@@ -298,7 +298,8 @@ def build(
         "merged_duplicates": fixes["duplicates_merged"],
         "dropped": dropped,
         "fixes": fixes,
-        "sources": {"csv": str(csv_path), "raw_dir": str(raw_dir)},
+        # Names only: the report is committed, and full paths would leak the builder's machine.
+        "sources": {"csv": Path(csv_path).name, "raw_dir": Path(raw_dir).name},
     }
     (out_dir / "cleaning_report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -321,7 +322,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     for key, count in report["fixes"].items():
         print(f"  {key}: {count}")
-    print(f"Catalog: {args.out / 'places.sqlite'}")
+    print(f"Catalog: {args.out / (get_city_config().slug + '.sqlite')}")
     return 0
 
 
