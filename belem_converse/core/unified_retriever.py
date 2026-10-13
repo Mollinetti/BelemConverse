@@ -150,7 +150,10 @@ class UnifiedRetriever:
             mode=ranking_mode,
             user_location=user_location
         )
-        
+        # Open places before places with unknown hours; sort is stable, so each
+        # group keeps its ranked order.
+        ranked_results.sort(key=lambda p: p.get('openNowStatus') == 'unknown')
+
         logger.info(
             f"Retrieval complete: {len(ranked_results)} results, "
             f"strategy={strategy_used}, osm_triggered={osm_triggered}"
@@ -261,58 +264,42 @@ class UnifiedRetriever:
     
     def _filter_by_open_now(self, places: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Filter places by open_now status.
-        
-        Args:
-            places: List of places to filter
-            
-        Returns:
-            List of places that are currently open or have unknown status
+        Judge each place's businessTime against the current time in the city.
+
+        Returns copies labelled ``openNowStatus``: "open" places first, then
+        "unknown" (no or unparseable hours, given the benefit of the doubt).
+        Closed places are dropped. Cached places are never modified.
         """
-        from belem_converse.utils.business_hours_parser import BusinessHoursParser
+        from belem_converse.utils.business_hours_parser import BusinessHours, BusinessHoursParser
 
         parser = BusinessHoursParser()
         now = datetime.now(self.timezone)
-        
+        day_name = BusinessHours.DAY_NAMES[now.weekday()]  # not strftime: locale-proof
+        current_time = now.time()
+
         open_places = []
         unknown_places = []
-        
+
         for place in places:
             business_time_str = place.get('businessTime')
             if not business_time_str:
-                unknown_places.append(place)
+                unknown_places.append({**place, 'openNowStatus': 'unknown'})
                 continue
-            
+
             try:
                 business_hours = parser.parse(business_time_str)
-                
                 if business_hours.parse_error:
-                    unknown_places.append(place)
-                    continue
-                
-                # Check for "Open 24 hours"
-                time_str_lower = business_time_str.lower()
-                if '24' in time_str_lower and ('hour' in time_str_lower or 'hora' in time_str_lower):
-                    open_places.append(place)
-                    continue
-                
-                # Check if open now
-                day_name = now.strftime('%A')
-                current_time = now.time()
-                
-                if business_hours.is_open_at(day_name, current_time):
-                    open_places.append(place)
+                    unknown_places.append({**place, 'openNowStatus': 'unknown'})
+                elif business_hours.is_open_at(day_name, current_time):
+                    open_places.append({**place, 'openNowStatus': 'open'})
                 # Closed places are excluded
-                
             except Exception as e:
                 logger.debug(f"Error checking open_now for place {place.get('placeId')}: {e}")
-                unknown_places.append(place)
-        
-        # Return open places first, then unknown (to give benefit of doubt)
-        result = open_places + unknown_places
+                unknown_places.append({**place, 'openNowStatus': 'unknown'})
+
         logger.debug(f"Open filter: {len(open_places)} open, {len(unknown_places)} unknown")
-        return result
-    
+        return open_places + unknown_places
+
     def _filter_by_proximity_with_escalation(
         self,
         places: List[Dict[str, Any]],

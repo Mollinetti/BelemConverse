@@ -50,6 +50,14 @@ def test_landmark_from_the_question_is_not_a_stray_mention():
     assert is_grounded(answer, results, catalog, question="cafés perto do Theatro da Paz") is True
 
 
+def test_bolded_landmark_from_the_question_is_grounded():
+    results = [{"title": "Café Santo"}]
+    catalog = ["Café Santo", "Estação das Docas"]
+    answer = "Perto da **Estação das Docas**, recomendo o **Café Santo**."
+    question = "Restaurantes abertos perto da Estação das Docas"
+    assert is_grounded(answer, results, catalog, question=question) is True
+
+
 def test_single_word_catalog_titles_read_as_ordinary_words():
     # "Botequim" and "Outeiro" are also place names in the catalog.
     catalog = CATALOG + ["Botequim", "Outeiro"]

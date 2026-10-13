@@ -37,6 +37,7 @@ Regras:
 - Escreva o nome de cada lugar que mencionar exatamente como aparece na lista, entre **asteriscos duplos**. Use asteriscos duplos somente em nomes de lugares.
 - Nunca mencione um lugar que não esteja na lista. Se nenhum servir, diga isso e sugira refazer a busca.
 - Quando a lista trouxer essa informação, diga por que cada lugar combina com a pergunta: distância, avaliação, se está aberto.
+- Um lugar marcado como "horário desconhecido" pode ser recomendado, mas diga que o horário dele não foi confirmado. Nunca afirme que ele está aberto.
 - Não invente endereços, horários, preços ou telefones, e não use links."""
 
 PROMPT_EN = """You are a local guide to Belém do Pará. Answer in English, in at most four short, natural sentences.
@@ -46,6 +47,7 @@ Rules:
 - Write the name of every place you mention exactly as it appears in the list, between **double asterisks**. Use double asterisks only around place names.
 - Never mention a place that is not in the list. If none fits, say so and suggest searching again.
 - When the list gives the information, say why each place fits the question: distance, rating, whether it is open.
+- A place marked "hours unknown" may be recommended, but say its hours are not confirmed. Never claim it is open.
 - Do not invent addresses, hours, prices or phone numbers, and do not include links."""
 
 BOLD = re.compile(r"\*\*(.+?)\*\*")
@@ -53,9 +55,9 @@ FUZZY_MATCH = 85  # rapidfuzz ratio a bold name needs against a result title
 MIN_STRAY_TITLE = 6  # shorter catalog titles are too often ordinary words
 
 _LABELS = {
-    "pt-BR": {"question": "Pergunta do visitante", "open": "aberto agora", "closed": "fechado agora",
+    "pt-BR": {"question": "Pergunta do visitante", "open": "aberto agora", "closed": "fechado agora", "unknown": "horário desconhecido",
               "rating": "avaliação", "reviews": "avaliações"},
-    "en": {"question": "Visitor question", "open": "open now", "closed": "closed now",
+    "en": {"question": "Visitor question", "open": "open now", "closed": "closed now", "unknown": "hours unknown",
            "rating": "rating", "reviews": "reviews"},
 }
 
@@ -106,7 +108,7 @@ def _place_line(index: int, place: dict, labels: dict) -> str:
             rating += f" ({place['reviewsCount']} {labels['reviews']})"
         parts.append(rating)
     status = place.get("openNowStatus")
-    if status in ("open", "closed"):
+    if status in ("open", "closed", "unknown"):
         parts.append(labels[status])
     return f"{index}. " + " — ".join(parts)
 
@@ -184,7 +186,7 @@ def is_grounded(
 ) -> bool:
     """True when the answer names only places among ``places``.
 
-    Every **bold** name must fuzzy-match a result title, and no other catalog
+    Every **bold** name must fuzzy-match a result title or appear in ``question``, and no other catalog
     title of two or more words may appear in the text — unless the visitor
     named it in ``question`` (a landmark such as "perto do Theatro da Paz").
     Single-word titles ("Outeiro", "Botequim") read as ordinary words.
@@ -192,13 +194,15 @@ def is_grounded(
     # ponytail: an unbolded, misspelled stray name slips through; numbered
     # references [1]-[5] in the prompt are the upgrade path.
     results = {_fold(p.get("title") or "") for p in places} - {""}
+    asked = _fold(question)
     for name in BOLD.findall(answer):
         folded = _fold(name)
+        if folded in asked:
+            continue  # the visitor named it (a landmark), so it is not invented
         if not any(fuzz.ratio(folded, title) >= FUZZY_MATCH for title in results):
             return False
 
     text = _fold(strip_markers(answer))
-    asked = _fold(question)
     for title in sorted(results, key=len, reverse=True):
         text = text.replace(title, " ")  # naming a result is never a stray mention
     for title in catalog_titles:
