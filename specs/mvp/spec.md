@@ -104,15 +104,16 @@ Rejected:
 - **Chosen (mvp-1 benchmark, 2026-10-13; evidence in
   `mvp-1-lean-core/validation.md`):**
   - **Primary:** Google AI Studio `gemini-3.5-flash-lite`. Grounded 20/21,
-    pt-BR 10/11, 1.06 s p50.
+    pt-BR 10/11, 1.06 s p50; 1,500 requests/day, 5 requests/min and 250K
+    tokens/min.
   - **Fallback:** Groq `qwen/qwen3.8-27b`. Grounded 21/21, pt-BR 9/11, 0.57 s
     p50; 1,000 requests/day and 8,000 tokens/min.
 - **Free tiers have shifted since drafting.** Groq dropped
   `llama-3.1-8b-instant` for new accounts and cut its chat models to 1,000
   requests/day. Gemma on AI Studio returns its reasoning text, and Gemini 2.5
-  Flash-Lite answers 404 for a new key. The 1,000/day floor holds only for
-  primary plus fallback combined, and only if AI Studio shows at least about
-  800/day for the primary.
+  Flash-Lite answers 404 for a new key. The 1,000/day floor is met. The binding
+  limit is per minute: about 11–14 model answers/min across both providers,
+  after which visitors get the template answer.
 - Local alternative (not benchmarked): Ollama `gemma4:e4b` through the same
   OpenAI-compatible endpoint.
 - Budget: exactly **1 LLM call per answered turn**, ≤250 output tokens, and a

@@ -615,6 +615,18 @@ class QueryPlanner:
     # Single-word presence checks used by Strategy 2 once the classifier has
     # confirmed business_hours intent (kept here so the helper is testable in isolation).
     _OPEN_NOW_KEYWORDS = ['open', 'aberto', 'aberta', 'abertos', 'abertas', 'funcionando']
+    # "restaurantes abertos perto da ..." asks for places open now even without
+    # "agora" (Portuguese only: English "open" also means "open bar", "open air").
+    _OPEN_ADJECTIVE = re.compile(r'\babert[oa]s?\b')
+    # A named moment other than now. The hours filter can only judge the
+    # present, so these cancel open_now unless "agora"/"now" is also said.
+    _OTHER_TIME = re.compile(
+        r'\b(hoje|today|amanha|tomorrow|tonight|noite|feriado|fim de semana|weekend|'
+        r'domingo|segunda|terca|quarta|quinta|sexta|sabado|'
+        r'sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b'
+        r'|\b(?:as|at) \d|\b(?!24)\d{1,2}\s*h\b'
+    )
+    _NOW_WORDS = re.compile(r'\b(agora|now|neste momento|no momento|currently)\b')
     _CLOSED_NOW_KEYWORDS = ['closed', 'fechado', 'fechada', 'fechados', 'fechadas']
 
     def _detect_open_now_strategy1(self, message_norm: str) -> Tuple[bool, Optional[str]]:
@@ -721,7 +733,11 @@ class QueryPlanner:
         strategy1_hit, strategy1_signal = self._detect_open_now_strategy1(message_norm)
         strategy2_hit = self._detect_open_now_strategy2(message, message_norm)
 
-        final = True if (strategy1_hit or strategy2_hit) else None
+        adjective_hit = self._OPEN_ADJECTIVE.search(message_norm) is not None
+
+        final = True if (strategy1_hit or strategy2_hit or adjective_hit) else None
+        if final and self._OTHER_TIME.search(message_norm) and not self._NOW_WORDS.search(message_norm):
+            final = None  # "aberta hoje", "aberto domingo": not a question about now
 
         logger.info(
             "open_now_detection",
@@ -731,6 +747,7 @@ class QueryPlanner:
                 "strategy1_hit": strategy1_hit,
                 "strategy1_signal": strategy1_signal,
                 "strategy2_hit": strategy2_hit,
+                "adjective_hit": adjective_hit,
                 "agree": strategy1_hit == strategy2_hit,
                 "result": final,
             },
