@@ -7,48 +7,26 @@ point of the test.
 
 import asyncio
 import time
-from unittest.mock import AsyncMock
+import uuid
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
 
 import api.dependencies as deps
 import api.routes as routes
 from api.main import app
-from belem_converse import llm
 from belem_converse.catalog import load_places
 from belem_converse.core.unified_retriever import UnifiedRetriever
+from tests.conftest import fake_model
 
-LLM_VARS = [
-    "LLM_BASE_URL", "LLM_MODEL", "LLM_API_KEY",
-    "LLM_FALLBACK_BASE_URL", "LLM_FALLBACK_MODEL", "LLM_FALLBACK_API_KEY",
-]
 TEMPLATE_PREFIX = "Aqui estão os lugares encontrados"
 NO_RESULTS_PREFIX = "Não encontrei lugares"
 
 
-@pytest.fixture
-def client(built_catalog, monkeypatch):
-    for name in LLM_VARS:
-        monkeypatch.delenv(name, raising=False)
-    # Startup state and the lazily built retriever are module-level singletons.
-    monkeypatch.setattr(deps, "_catalog", None)
-    monkeypatch.setattr(deps, "_load_catalog", lambda: load_places(built_catalog))
-    for attr in ("_place_cache", "_category_matcher", "_ranking_engine", "_retriever"):
-        monkeypatch.setattr(routes, attr, None)
-    with TestClient(app) as test_client:
-        yield test_client
-
-
-def fake_model(monkeypatch, **behaviour):
-    mock = AsyncMock(**behaviour)
-    monkeypatch.setattr(llm, "summarize", mock)
-    return mock
-
-
 def ask(client, message):
-    response = client.post("/api/chat", json={"message": message, "language": "pt-BR"})
+    response = client.post(
+        "/api/chat", json={"session_id": str(uuid.uuid4()), "message": message, "language": "pt-BR"}
+    )
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -123,7 +101,7 @@ def test_tour_query_returns_places(client, monkeypatch):
 
 @pytest.mark.parametrize(
     "message",
-    ["me indica lugares bons em Belém", "o que tem para fazer aqui?", "me mostra tudo"],
+    ["me indica lugares bons em Belém", "o que tem para fazer aqui", "me mostra tudo"],
 )
 def test_questions_without_categories_are_answered(client, monkeypatch, message):
     # The planner gives these a place_type list and no categories.
@@ -149,7 +127,8 @@ def test_distances_do_not_leak_between_visitors(client, monkeypatch):
     fake_model(monkeypatch, return_value=None)
     located = client.post(
         "/api/chat",
-        json={"message": "lugares bem avaliados perto de mim", "language": "pt-BR",
+        json={"session_id": str(uuid.uuid4()),
+              "message": "lugares bem avaliados perto de mim", "language": "pt-BR",
               "userLocation": {"lat": -1.4527, "lng": -48.4914}},
     ).json()
     assert any(r["distanceKm"] is not None for r in located["results"])
@@ -190,7 +169,8 @@ def test_slow_retrieval_does_not_block_other_requests(built_catalog, monkeypatch
         transport = httpx.ASGITransport(app=app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
             chat = asyncio.create_task(
-                http.post("/api/chat", json={"message": "lugares bem avaliados", "language": "pt-BR"})
+                http.post("/api/chat", json={"session_id": str(uuid.uuid4()),
+                                       "message": "lugares bem avaliados", "language": "pt-BR"})
             )
             while "at" not in entered:  # wait until the chat request is inside retrieval
                 await asyncio.sleep(0.01)
