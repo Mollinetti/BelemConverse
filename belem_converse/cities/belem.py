@@ -104,6 +104,13 @@ def get_belem_config() -> CityConfig:
             'beach': 'tourist_attraction'
         },
         
+        # Follow-up chips suggesting another kind of place.
+        category_labels={
+            'restaurant': {'pt-BR': 'Restaurantes', 'en': 'Restaurants'},
+            'cafe': {'pt-BR': 'Cafés', 'en': 'Cafés'},
+            'bar': {'pt-BR': 'Bares', 'en': 'Bars'},
+        },
+
         # Special local categories unique to Belém
         local_categories=[
             'açaí',  # Açaí is especially important in Belém
