@@ -14,16 +14,16 @@ Validates: Requirements 4.1, 4.2, 4.3, 2.2, 2.3, 2.4
 """
 
 import logging
-from datetime import datetime
-from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from belem_converse.cities import get_city_config
 
-from .place_cache import PlaceCache
 from .category_matcher import CategoryMatcher
-from .ranking_engine import RankingEngine, RankingMode, Location
+from .place_cache import PlaceCache
+from .ranking_engine import Location, RankingEngine, RankingMode
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +35,10 @@ class RetrievalResult:
     
     Contains ranked places and metadata about the retrieval process.
     """
-    places: List[Dict[str, Any]]
+    places: list[dict[str, Any]]
     strategy_used: str  # 'filter_first', 'semantic_search', 'osm_fallback'
     osm_triggered: bool
-    filters_applied: List[str]
+    filters_applied: list[str]
     ranking_mode: str
     total_candidates: int
 
@@ -63,8 +63,8 @@ class UnifiedRetriever:
         place_cache: PlaceCache,
         category_matcher: CategoryMatcher,
         ranking_engine: RankingEngine,
-        vector_store: Optional[Any] = None,
-        osm_client: Optional[Any] = None
+        vector_store: Any | None = None,
+        osm_client: Any | None = None
     ):
         """
         Initialize UnifiedRetriever with dependencies.
@@ -90,7 +90,7 @@ class UnifiedRetriever:
             f"osm_client={'enabled' if osm_client else 'disabled'}"
         )
     
-    def retrieve(self, query_plan: Dict[str, Any]) -> RetrievalResult:
+    def retrieve(self, query_plan: dict[str, Any]) -> RetrievalResult:
         """
         Retrieve and rank places based on query plan.
         
@@ -168,7 +168,7 @@ class UnifiedRetriever:
             total_candidates=len(db_results)
         )
     
-    def _filter_first(self, query_plan: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _filter_first(self, query_plan: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Apply deterministic filters to database.
         
@@ -262,7 +262,7 @@ class UnifiedRetriever:
         logger.info(f"Filter-first complete: {len(candidates)} candidates")
         return candidates
     
-    def _filter_by_open_now(self, places: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _filter_by_open_now(self, places: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Judge each place's businessTime against the current time in the city.
 
@@ -302,10 +302,10 @@ class UnifiedRetriever:
 
     def _filter_by_proximity_with_escalation(
         self,
-        places: List[Dict[str, Any]],
+        places: list[dict[str, Any]],
         user_location: Location,
         min_results: int = 5
-    ) -> tuple[List[Dict[str, Any]], float]:
+    ) -> tuple[list[dict[str, Any]], float]:
         """
         Filter places by proximity with radius escalation.
         
@@ -352,9 +352,9 @@ class UnifiedRetriever:
     
     def _filter_by_category(
         self,
-        places: List[Dict[str, Any]],
-        categories: List[str]
-    ) -> List[Dict[str, Any]]:
+        places: list[dict[str, Any]],
+        categories: list[str]
+    ) -> list[dict[str, Any]]:
         """
         Filter places by category using CategoryMatcher.
         
@@ -375,10 +375,10 @@ class UnifiedRetriever:
     
     def _filter_by_price(
         self,
-        places: List[Dict[str, Any]],
-        price_range: Optional[str],
-        price_max: Optional[int]
-    ) -> List[Dict[str, Any]]:
+        places: list[dict[str, Any]],
+        price_range: str | None,
+        price_max: int | None
+    ) -> list[dict[str, Any]]:
         """
         Filter places by price range or maximum price.
         
@@ -420,9 +420,9 @@ class UnifiedRetriever:
     
     def _filter_by_rating(
         self,
-        places: List[Dict[str, Any]],
+        places: list[dict[str, Any]],
         min_rating: float
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Filter places by minimum rating.
         
@@ -446,9 +446,9 @@ class UnifiedRetriever:
     
     def _add_distances(
         self,
-        places: List[Dict[str, Any]],
+        places: list[dict[str, Any]],
         user_location: Location
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Add distance field to all places for display purposes.
         
@@ -509,7 +509,7 @@ class UnifiedRetriever:
         
         return R * c
     
-    def _semantic_search(self, query_plan: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _semantic_search(self, query_plan: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Perform vector similarity search (fallback only).
         
@@ -661,9 +661,9 @@ class UnifiedRetriever:
     
     def _osm_fallback(
         self,
-        query_plan: Dict[str, Any],
-        db_results: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        query_plan: dict[str, Any],
+        db_results: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Supplement with OSM results if needed.
         
@@ -748,8 +748,8 @@ class UnifiedRetriever:
     
     def _should_trigger_osm(
         self,
-        db_results: List[Dict[str, Any]],
-        query_plan: Dict[str, Any]
+        db_results: list[dict[str, Any]],
+        query_plan: dict[str, Any]
     ) -> bool:
         """
         Determine if OSM fallback should be triggered.
@@ -838,7 +838,7 @@ class UnifiedRetriever:
         logger.debug("OSM not triggered: database results are satisfactory")
         return False
     
-    def _determine_ranking_mode(self, query_plan: Dict[str, Any]) -> str:
+    def _determine_ranking_mode(self, query_plan: dict[str, Any]) -> str:
         """
         Determine ranking mode based on query plan intents and slots.
         
@@ -879,7 +879,7 @@ class UnifiedRetriever:
         # Default to best_match for balanced results
         return RankingMode.BEST_MATCH
     
-    def _extract_user_location(self, slots: Dict[str, Any]) -> Optional[Location]:
+    def _extract_user_location(self, slots: dict[str, Any]) -> Location | None:
         """
         Extract user location from query plan slots.
         
@@ -904,7 +904,7 @@ class UnifiedRetriever:
         
         return None
     
-    def _get_filters_applied(self, slots: Dict[str, Any]) -> List[str]:
+    def _get_filters_applied(self, slots: dict[str, Any]) -> list[str]:
         """
         Get list of filters that were applied based on slots.
         
@@ -933,7 +933,7 @@ class UnifiedRetriever:
         
         return filters
     
-    def _document_to_place_dict(self, doc) -> Optional[Dict[str, Any]]:
+    def _document_to_place_dict(self, doc) -> dict[str, Any] | None:
         """
         Convert a LangChain Document (from OSM) to a place dictionary.
         
@@ -981,9 +981,9 @@ class UnifiedRetriever:
     
     def _deduplicate_osm_results(
         self,
-        db_results: List[Dict[str, Any]],
-        osm_results: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        db_results: list[dict[str, Any]],
+        osm_results: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """
         Remove OSM results that are duplicates of database results.
         
@@ -1053,7 +1053,7 @@ class UnifiedRetriever:
         
         return unique_osm
     
-    def _extract_place_name_from_query(self, query: str) -> Optional[str]:
+    def _extract_place_name_from_query(self, query: str) -> str | None:
         """
         Extract a specific place name from the query if present.
         

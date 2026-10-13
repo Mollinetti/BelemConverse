@@ -7,9 +7,9 @@ using Intent_Classifier as the authoritative source for category keywords.
 Validates: Requirements 3.1, 3.2, 3.3, 7.1, 7.3
 """
 
-from typing import List, Dict, Optional, Any
-from difflib import SequenceMatcher
 import unicodedata
+from difflib import SequenceMatcher
+from typing import Any
 
 
 class CategoryMatcher:
@@ -39,7 +39,7 @@ class CategoryMatcher:
         # ponytail: unbounded, sized by the category vocabulary; LRU if it grows.
         self._match_cache: dict[tuple, bool] = {}
     
-    def _load_special_cases(self) -> Dict[str, List[str]]:
+    def _load_special_cases(self) -> dict[str, list[str]]:
         """
         Load special case mappings for category matching.
         
@@ -90,7 +90,7 @@ class CategoryMatcher:
         # Lowercase and strip
         return text.lower().strip()
     
-    def _get_category_keywords(self) -> Dict[str, List[str]]:
+    def _get_category_keywords(self) -> dict[str, list[str]]:
         """
         Get category keywords from Intent_Classifier.
         
@@ -103,7 +103,7 @@ class CategoryMatcher:
         
         return self._category_keywords_cache
     
-    def _expand_with_special_cases(self, category: str) -> List[str]:
+    def _expand_with_special_cases(self, category: str) -> list[str]:
         """
         Expand a category with its special case equivalents.
         
@@ -221,7 +221,7 @@ class CategoryMatcher:
     def matches(
         self, 
         place: Any, 
-        query_categories: List[str],
+        query_categories: list[str],
         fuzzy_threshold: float = 0.8
     ) -> bool:
         """
@@ -281,7 +281,7 @@ class CategoryMatcher:
     def get_match_score(
         self, 
         place: Any, 
-        query_categories: List[str],
+        query_categories: list[str],
         fuzzy_threshold: float = 0.8
     ) -> float:
         """

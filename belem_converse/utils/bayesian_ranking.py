@@ -7,11 +7,9 @@ Based on research by Evan Miller:
 - https://www.evanmiller.org/ranking-items-with-star-ratings.html
 """
 
-import math
 import logging
-from typing import Dict, Any, List, Optional
-from scipy import stats
-import numpy as np
+import math
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +41,8 @@ class BayesianRankingSystem:
         self, 
         rating: float, 
         review_count: int,
-        prior_mean: Optional[float] = None,
-        prior_weight: Optional[int] = None
+        prior_mean: float | None = None,
+        prior_weight: int | None = None
     ) -> float:
         """
         Calculate Bayesian average rating that accounts for review count.
@@ -197,9 +195,9 @@ class BayesianRankingSystem:
     
     def rank_places_by_popularity(
         self, 
-        places: List[Dict[str, Any]],
+        places: list[dict[str, Any]],
         method: str = "bayesian_lower_bound"
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Rank places by popularity using Bayesian methods.
         

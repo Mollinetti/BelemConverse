@@ -15,7 +15,7 @@ Usage:
 """
 
 from .base_city import CityConfig
-from .city_loader import get_city_config, load_city, list_available_cities
+from .city_loader import get_city_config, list_available_cities, load_city
 
 __all__ = [
     'CityConfig',

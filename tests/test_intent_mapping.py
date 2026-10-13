@@ -11,19 +11,19 @@ This module tests how detected intents translate to retrieval behavior:
 Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.7
 """
 
-import sys
-from pathlib import Path
 
 # Add project root to path
 
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
+from belem_converse.core.ranking_engine import RankingEngine, RankingMode
 
 # Import modules directly
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.category_matcher import CategoryMatcher
-from belem_converse.core.ranking_engine import RankingEngine, RankingMode, Location
+from belem_converse.core.unified_retriever import UnifiedRetriever
 
 
 @pytest.fixture
@@ -258,7 +258,7 @@ class TestPopularityIntentMapping:
             'debug': {'detected_intents': ['popularity']},
         }
         
-        result = unified_retriever.retrieve(query_plan)
+        unified_retriever.retrieve(query_plan)
         
         # Verify ranking engine was called with POPULARITY mode
         mock_ranking_engine.rank.assert_called()

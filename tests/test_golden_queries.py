@@ -9,21 +9,20 @@ Tests:
 - LLM only references returned places
 """
 
-import sys
 import json
 import logging
+import sys
 from pathlib import Path
-from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Any
+
+from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
 
 # Add src to path
-
 from belem_converse.core.query_planner import QueryPlanner
-from belem_converse.core.unified_retriever import UnifiedRetriever
-from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.category_matcher import CategoryMatcher
 from belem_converse.core.ranking_engine import RankingEngine
-from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
+from belem_converse.core.unified_retriever import UnifiedRetriever
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -134,7 +133,7 @@ GOLDEN_QUERIES_PT = [
 class GoldenQueriesTestRunner:
     """Test runner for golden queries"""
     
-    def __init__(self, places_index_path: Optional[Path] = None):
+    def __init__(self, places_index_path: Path | None = None):
         """
         Initialize test runner.
         
@@ -166,7 +165,7 @@ class GoldenQueriesTestRunner:
             osm_client=None
         )
     
-    def _load_places_index(self) -> List[Dict[str, Any]]:
+    def _load_places_index(self) -> list[dict[str, Any]]:
         """Load places index from JSONL file"""
         if not self.places_index_path.exists():
             raise FileNotFoundError(
@@ -175,14 +174,14 @@ class GoldenQueriesTestRunner:
             )
         
         places = []
-        with open(self.places_index_path, 'r', encoding='utf-8') as f:
+        with open(self.places_index_path, encoding='utf-8') as f:
             for line in f:
                 places.append(json.loads(line))
         
         logger.info(f"Loaded {len(places)} places from index")
         return places
     
-    def test_query_plan(self, query: str, location: Optional[Dict], expected_plan: Dict) -> Dict[str, Any]:
+    def test_query_plan(self, query: str, location: dict | None, expected_plan: dict) -> dict[str, Any]:
         """Test that Query Plan matches expected structure"""
         plan = self.query_planner.create_query_plan(
             message=query,
@@ -221,7 +220,7 @@ class GoldenQueriesTestRunner:
             "plan": plan_dict
         }
     
-    def test_radius_escalation(self, slots: Dict, location: Dict) -> Dict[str, Any]:
+    def test_radius_escalation(self, slots: dict, location: dict) -> dict[str, Any]:
         """Test that radius escalation works (0.5km → 1km → 2km)"""
         # This is tested implicitly by checking results count
         # The unified retriever logs radius used
@@ -241,7 +240,7 @@ class GoldenQueriesTestRunner:
             "message": f"Got {len(results)} results after radius escalation"
         }
     
-    def test_results_count(self, results: List, expected_range: tuple) -> Dict[str, Any]:
+    def test_results_count(self, results: list, expected_range: tuple) -> dict[str, Any]:
         """Test that results count is within expected range"""
         min_count, max_count = expected_range
         actual_count = len(results)
@@ -255,7 +254,7 @@ class GoldenQueriesTestRunner:
             "message": f"Expected {min_count}-{max_count} results, got {actual_count}"
         }
     
-    def test_ranking(self, results: List, sort_preference: str) -> Dict[str, Any]:
+    def test_ranking(self, results: list, sort_preference: str) -> dict[str, Any]:
         """Test that ranking follows sort mode"""
         if len(results) < 2:
             return {"passed": True, "message": "Not enough results to test ranking"}
@@ -285,7 +284,7 @@ class GoldenQueriesTestRunner:
             "errors": errors
         }
     
-    def test_open_now_filtering(self, results: List, strict: bool = False) -> Dict[str, Any]:
+    def test_open_now_filtering(self, results: list, strict: bool = False) -> dict[str, Any]:
         """Test that openNow filtering works correctly"""
         if not results:
             return {"passed": True, "message": "No results to test"}
@@ -305,7 +304,7 @@ class GoldenQueriesTestRunner:
             "unknown_count": sum(1 for r in results if r.openNowStatus == 'unknown')
         }
     
-    def run_test(self, test_case: Dict) -> Dict[str, Any]:
+    def run_test(self, test_case: dict) -> dict[str, Any]:
         """Run a single golden query test"""
         query = test_case["query"]
         location = test_case.get("location")
@@ -394,7 +393,7 @@ class GoldenQueriesTestRunner:
             "query_plan": self.query_planner.plan_to_dict(query_plan)
         }
     
-    def run_all_tests(self) -> Dict[str, Any]:
+    def run_all_tests(self) -> dict[str, Any]:
         """Run all golden query tests"""
         logger.info("Starting Golden Queries Test Suite")
         logger.info(f"Places index: {self.places_index_path}")

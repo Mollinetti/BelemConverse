@@ -9,14 +9,12 @@ This test verifies Task 5.3 requirements:
 - No vibe keyword detection
 """
 
-import sys
-from pathlib import Path
 import pytest
 
-# Add src to path
-
-from belem_converse.core.query_planner import QueryPlanner
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
+
+# Add src to path
+from belem_converse.core.query_planner import QueryPlanner
 
 
 class TestRetrievalStrategySelection:
@@ -129,8 +127,9 @@ class TestRetrievalStrategySelection:
         # This test verifies the design intent is documented
         # The actual fallback logic is in UnifiedRetriever.retrieve()
         
-        from belem_converse.core.unified_retriever import UnifiedRetriever
         import inspect
+
+        from belem_converse.core.unified_retriever import UnifiedRetriever
         
         # Verify the retrieve method has semantic search fallback logic
         source = inspect.getsource(UnifiedRetriever.retrieve)
@@ -147,8 +146,9 @@ class TestRetrievalStrategySelection:
         Requirement 9.3: OSM should be enabled when user location is available.
         Note: This is handled by UnifiedRetriever._should_trigger_osm().
         """
-        from belem_converse.core.unified_retriever import UnifiedRetriever
         import inspect
+
+        from belem_converse.core.unified_retriever import UnifiedRetriever
         
         # Verify the _should_trigger_osm method checks for user location
         source = inspect.getsource(UnifiedRetriever._should_trigger_osm)
@@ -197,8 +197,10 @@ def test_integration_filter_first_strategy():
     2. The strategy is correctly passed to UnifiedRetriever
     3. UnifiedRetriever uses filter-first as the primary retrieval method
     """
+    from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
+        SimpleTFIDFIntentClassifier,
+    )
     from belem_converse.core.query_planner import QueryPlanner
-    from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
     
     # Setup
     intent_classifier = SimpleTFIDFIntentClassifier()

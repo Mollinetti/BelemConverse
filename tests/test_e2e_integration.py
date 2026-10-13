@@ -9,21 +9,19 @@ retrieval, and ranking for all major user scenarios:
 - OSM fallback integration
 """
 
-import sys
-from pathlib import Path
 
 # Add project root to path
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
+from unittest.mock import Mock
 
-from belem_converse.core.query_planner import QueryPlanner
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.category_matcher import CategoryMatcher
-from belem_converse.core.ranking_engine import RankingEngine
+import pytest
+
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
+from belem_converse.core.query_planner import QueryPlanner
+from belem_converse.core.ranking_engine import RankingEngine
+from belem_converse.core.unified_retriever import RetrievalResult, UnifiedRetriever
 
 
 @pytest.fixture
@@ -325,7 +323,7 @@ class TestVerificationFlow:
             assert len(result.places) > 0
             
             # Should find the specific place (if categories don't interfere)
-            place_titles = [p['title'] for p in result.places]
+            assert isinstance(result.places, list)
             # The place might be in results if category matching works
         except Exception as e:
             # If there's a category matching issue, that's a known bug
