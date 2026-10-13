@@ -36,7 +36,6 @@ forcing the classifier into a brittle 1-of-N choice.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Set
 
 
 @dataclass(frozen=True)
@@ -44,10 +43,10 @@ class DiagnosticQuery:
     id: str
     query: str
     language: str  # "pt-BR" | "en"
-    expected_intents: Set[str]
-    expected_category: Optional[str]
+    expected_intents: set[str]
+    expected_category: str | None
     expected_proximity: bool
-    expected_open_now: Optional[bool]  # True or None (legacy contract: never False)
+    expected_open_now: bool | None  # True or None (legacy contract: never False)
     failure_class: str  # canonical | colloquial | typo | accent_omission | multi_intent | ambiguous
     notes: str = ""
 

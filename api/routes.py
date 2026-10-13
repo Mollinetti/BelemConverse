@@ -13,7 +13,6 @@ import logging
 import time
 import traceback
 from datetime import datetime
-from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -34,7 +33,6 @@ from belem_converse.sessions import SessionStore
 from . import __version__
 from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
 from .schemas import (
-    ChatFilters,
     ChatRequest,
     ChatResponse,
     ErrorResponse,
@@ -62,12 +60,12 @@ rate_limiter = RateLimiter()
 daily_cap = DailyCap()
 
 # ----- module-level singletons (built lazily on first chat) -----------------
-_intent_classifier: Optional[SimpleTFIDFIntentClassifier] = None
-_query_planner: Optional[QueryPlanner] = None
-_place_cache: Optional[PlaceCache] = None
-_category_matcher: Optional[CategoryMatcher] = None
-_ranking_engine: Optional[RankingEngine] = None
-_retriever: Optional[UnifiedRetriever] = None
+_intent_classifier: SimpleTFIDFIntentClassifier | None = None
+_query_planner: QueryPlanner | None = None
+_place_cache: PlaceCache | None = None
+_category_matcher: CategoryMatcher | None = None
+_ranking_engine: RankingEngine | None = None
+_retriever: UnifiedRetriever | None = None
 
 
 def _get_intent_classifier() -> SimpleTFIDFIntentClassifier:
@@ -86,7 +84,7 @@ def _get_query_planner() -> QueryPlanner:
     return _query_planner
 
 
-def _load_places_index() -> List[dict]:
+def _load_places_index() -> list[dict]:
     """The catalog loaded at startup; 503 until it exists."""
     catalog = get_catalog()
     if catalog is None:
@@ -192,7 +190,7 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse | JS
         except ValueError:
             logger.warning("Invalid nowIso format: %s", request.nowIso)
 
-    user_location: Optional[dict] = None
+    user_location: dict | None = None
     if request.userLocation:
         user_location = {"lat": request.userLocation.lat, "lng": request.userLocation.lng}
     elif request.coordinates:
@@ -290,8 +288,8 @@ def _see_more(session, language: str) -> ChatResponse | JSONResponse:
     )
 
 
-def _place_results(places: List[dict]) -> List[PlaceResult]:
-    results: List[PlaceResult] = []
+def _place_results(places: list[dict]) -> list[PlaceResult]:
+    results: list[PlaceResult] = []
     for place in places:
         try:
             place_dict = place.copy()
@@ -316,7 +314,7 @@ def _place_results(places: List[dict]) -> List[PlaceResult]:
 
 
 async def _answer(
-    question: str, places: List[dict], language: str, started_at: float
+    question: str, places: list[dict], language: str, started_at: float
 ) -> tuple[str, str]:
     """(answer, source): the model's grounded answer, else the template.
 
@@ -336,7 +334,7 @@ async def _answer(
     return _generate_answer(places, language), "template"
 
 
-def _generate_answer(places: List[dict], language: str) -> str:
+def _generate_answer(places: list[dict], language: str) -> str:
     """Template answer: used when the model is unconfigured, fails, or strays."""
     if not places:
         if language == "pt-BR":
@@ -351,7 +349,7 @@ def _generate_answer(places: List[dict], language: str) -> str:
             "or disabling the 'open now' filter."
         )
 
-    lines: List[str] = []
+    lines: list[str] = []
     for i, place in enumerate(places, 1):
         name = place.get("title") or place.get("titleFormatted") or "Unknown"
         address = place.get("addressFormatted") or place.get("address") or ""

@@ -12,10 +12,9 @@ Integrates with intent classifier to produce structured Query Plans with:
 import json
 import logging
 import re
-import os
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +35,9 @@ class QueryPlan:
     """Query Plan structure per spec"""
     language: str  # "en" | "pt-BR"
     intent: str  # "find_places" | "place_details" | "compare_places" | "smalltalk" | "help"
-    slots: Dict[str, Any]
+    slots: dict[str, Any]
     retrieval_strategy: str  # "structured_only" | "structured_then_lexical" | "structured_then_vector_fallback"
-    debug: Dict[str, Any]
+    debug: dict[str, Any]
 
 
 class QueryPlanner:
@@ -65,7 +64,7 @@ class QueryPlanner:
         'manicure', 'pedicure', 'cabeleireiro', 'maquiagem', 'depilacao',
         'almoco', 'almoço', 'jantar', 'manha', 'manhã', 'noite',
         'barato', 'caro', 'preço', 'preco', 'nota', 'avaliacao', 'avaliação',
-        'aberto', 'fechado', 'horario', 'horário', 'funcionamento',
+        'horario', 'horário', 'funcionamento',
         'entrega', 'delivery', 'cardapio', 'cardápio',
         # Connectors
         'ou', 'mas', 'porque', 'quando', 'onde', 'como', 'qual', 'quais',
@@ -114,20 +113,20 @@ class QueryPlanner:
         # P1/F5 — implicit-category lexicon. Loaded lazily on first call to
         # _detect_categories_strategy0 and cached as a normalised lookup
         # structure so the per-query cost is just substring scans.
-        self._implicit_lexicon_normalized: Optional[Dict[str, Dict[str, List[str]]]] = None
-        self._implicit_lexicon_load_error: Optional[str] = None
+        self._implicit_lexicon_normalized: dict[str, dict[str, list[str]]] | None = None
+        self._implicit_lexicon_load_error: str | None = None
         
         # Try to import langdetect once at init time so we know if it's available
         self._langdetect_available = False
         try:
-            from langdetect import detect, LangDetectException  # noqa: F401
+            from langdetect import LangDetectException, detect  # noqa: F401
             self._langdetect_available = True
             logger.debug("langdetect library available for language detection")
         except ImportError:
             logger.warning("langdetect not installed — falling back to keyword-based language detection. "
                            "Install with: pip install langdetect")
     
-    def _fallback_intent_detection(self, message: str, error_context: Optional[str] = None) -> Dict[str, Any]:
+    def _fallback_intent_detection(self, message: str, error_context: str | None = None) -> dict[str, Any]:
         """
         Minimal fallback intent detection when Intent_Classifier is unavailable.
         
@@ -196,7 +195,7 @@ class QueryPlanner:
         text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
         return text.lower().strip()
     
-    def detect_language(self, message: str, explicit_language: Optional[str] = None) -> str:
+    def detect_language(self, message: str, explicit_language: str | None = None) -> str:
         """
         Detect language from message or use explicit language.
 
@@ -220,7 +219,7 @@ class QueryPlanner:
         # --- Strategy 2: langdetect ---
         if self._langdetect_available and len(message.strip()) >= 5:
             try:
-                from langdetect import detect, LangDetectException
+                from langdetect import detect
                 lang_code = detect(message)
                 # langdetect returns 'pt' for Portuguese (both PT and BR)
                 if lang_code == 'pt':
@@ -271,7 +270,7 @@ class QueryPlanner:
         # Default to find_places
         return 'find_places'
     
-    def extract_place_types(self, message: str, language: str) -> List[str]:
+    def extract_place_types(self, message: str, language: str) -> list[str]:
         """
         Extract place_type from message using Intent_Classifier.
         
@@ -312,7 +311,7 @@ class QueryPlanner:
         logger.debug(f"No place_type mapping for category '{primary_category}'")
         return []
     
-    def _load_implicit_lexicon(self) -> Dict[str, Dict[str, List[str]]]:
+    def _load_implicit_lexicon(self) -> dict[str, dict[str, list[str]]]:
         """Lazy-load the implicit-category lexicon from disk and pre-normalise
         every phrase. Cached on the instance.
 
@@ -328,7 +327,7 @@ class QueryPlanner:
             return self._implicit_lexicon_normalized
 
         try:
-            with open(_IMPLICIT_LEXICON_PATH, "r", encoding="utf-8") as fh:
+            with open(_IMPLICIT_LEXICON_PATH, encoding="utf-8") as fh:
                 raw = json.load(fh)
         except FileNotFoundError:
             self._implicit_lexicon_load_error = "missing_file"
@@ -348,7 +347,7 @@ class QueryPlanner:
             )
             return self._implicit_lexicon_normalized
 
-        normalised: Dict[str, Dict[str, List[str]]] = {}
+        normalised: dict[str, dict[str, list[str]]] = {}
         for lang_key, categories in raw.items():
             if lang_key.startswith("_") or not isinstance(categories, dict):
                 continue
@@ -364,8 +363,8 @@ class QueryPlanner:
         return normalised
 
     def _detect_categories_strategy0(
-        self, message_norm: str, language: Optional[str]
-    ) -> Dict[str, List[str]]:
+        self, message_norm: str, language: str | None
+    ) -> dict[str, list[str]]:
         """Strategy 0 for category extraction: look up implicit semantic
         phrases in the curated lexicon (no ML inference).
 
@@ -387,7 +386,7 @@ class QueryPlanner:
         primary_key = "pt-BR" if (language or "").lower().startswith("pt") else "en"
         scan_order = [primary_key] + [k for k in lexicon.keys() if k != primary_key]
 
-        matches: Dict[str, List[str]] = {}
+        matches: dict[str, list[str]] = {}
         for lang_key in scan_order:
             section = lexicon.get(lang_key)
             if not section:
@@ -400,7 +399,7 @@ class QueryPlanner:
 
     def _scan_category_keywords(
         self, message_norm: str
-    ) -> Tuple[List[str], Dict[str, List[str]]]:
+    ) -> tuple[list[str], dict[str, list[str]]]:
         """Strategy 1 for category extraction: scan the (normalised) message
         for any keyword across **all** category lexicons exposed by the
         classifier. Cheap; no ML inference.
@@ -414,8 +413,8 @@ class QueryPlanner:
         if not self.intent_classifier or not hasattr(self.intent_classifier, 'category_keywords'):
             return [], {}
 
-        matched_in_order: List[str] = []
-        matches_by_category: Dict[str, List[str]] = {}
+        matched_in_order: list[str] = []
+        matches_by_category: dict[str, list[str]] = {}
         for cat_name, keywords in self.intent_classifier.category_keywords.items():
             for keyword in keywords:
                 if self.normalize_text(keyword) in message_norm:
@@ -425,7 +424,7 @@ class QueryPlanner:
 
     def _predict_category_safely(
         self, message: str
-    ) -> Tuple[str, Optional[str], float, List[Dict[str, Any]]]:
+    ) -> tuple[str, str | None, float, list[dict[str, Any]]]:
         """Strategy 2 for category extraction: run the classifier with
         guaranteed-safe error handling.
 
@@ -441,7 +440,7 @@ class QueryPlanner:
             category_result = self.intent_classifier.predict_category(message)
             primary = category_result.get('primary_category') or None
             confidence = float(category_result.get('primary_category_confidence', 0))
-            high_conf: List[Dict[str, Any]] = []
+            high_conf: list[dict[str, Any]] = []
             for cat_info in category_result.get('categories', []):
                 if cat_info.get('confidence', 0) >= 0.3:
                     high_conf.append({
@@ -458,8 +457,8 @@ class QueryPlanner:
             return f"error:{type(e).__name__}", None, 0.0, []
 
     def extract_categories(
-        self, message: str, language: Optional[str] = None
-    ) -> List[str]:
+        self, message: str, language: str | None = None
+    ) -> list[str]:
         """Extract category keywords using all three strategies.
 
         Composes three strategies, **all always** evaluated for instrumentation:
@@ -501,7 +500,7 @@ class QueryPlanner:
             self._predict_category_safely(message)
         )
 
-        detected: List[str] = list(keyword_matches)
+        detected: list[str] = list(keyword_matches)
 
         # Expand Strategy-0 hits into the full keyword lexicon for that
         # category so downstream retrieval gets the same vocabulary surface
@@ -538,7 +537,7 @@ class QueryPlanner:
                 detected.extend(kw.lower() for kw in all_keywords_for_category)
 
         seen = set()
-        unique_detected: List[str] = []
+        unique_detected: list[str] = []
         for item in detected:
             normalized_item = self.normalize_text(item)
             if normalized_item not in seen:
@@ -549,13 +548,13 @@ class QueryPlanner:
         # `agree_strategy12`, and the per-strategy contribution counts to
         # decide whether any strategy can be retired or scaled back over
         # real traffic.
-        agree_strategy12: Optional[bool]
+        agree_strategy12: bool | None
         if primary_category and keyword_match_categories:
             agree_strategy12 = primary_category in keyword_match_categories
         else:
             agree_strategy12 = None
 
-        agree_strategy01: Optional[bool]
+        agree_strategy01: bool | None
         if strategy0_categories and primary_category:
             agree_strategy01 = primary_category in strategy0_categories
         else:
@@ -629,7 +628,7 @@ class QueryPlanner:
     _NOW_WORDS = re.compile(r'\b(agora|now|neste momento|no momento|currently)\b')
     _CLOSED_NOW_KEYWORDS = ['closed', 'fechado', 'fechada', 'fechados', 'fechadas']
 
-    def _detect_open_now_strategy1(self, message_norm: str) -> Tuple[bool, Optional[str]]:
+    def _detect_open_now_strategy1(self, message_norm: str) -> tuple[bool, str | None]:
         """Strategy 1: direct phrase matching for currently-open intent.
 
         Returns ``(hit, signal)`` where ``hit`` is True only when an open-phrase
@@ -665,7 +664,7 @@ class QueryPlanner:
         the structured ``extra`` payload that downstream observability tooling
         depends on.
         """
-        intent_result: Dict[str, Any]
+        intent_result: dict[str, Any]
 
         if not self.intent_classifier:
             intent_result = self._fallback_intent_detection(
@@ -710,7 +709,7 @@ class QueryPlanner:
         has_closed = any(kw in message_norm for kw in self._CLOSED_NOW_KEYWORDS)
         return has_open and not has_closed
 
-    def extract_open_now(self, message: str, language: str) -> Optional[bool]:
+    def extract_open_now(self, message: str, language: str) -> bool | None:
         """Detect whether the user wants currently-open places.
 
         Composes two strategies, both **always** evaluated for instrumentation:
@@ -755,7 +754,7 @@ class QueryPlanner:
 
         return final
     
-    def extract_price_max(self, message: str, language: str) -> Optional[float]:
+    def extract_price_max(self, message: str, language: str) -> float | None:
         """Extract price_max from message."""
         message_lower = self.normalize_text(message)
 
@@ -795,7 +794,7 @@ class QueryPlanner:
 
         return None
     
-    def extract_min_rating(self, message: str, language: str) -> Optional[float]:
+    def extract_min_rating(self, message: str, language: str) -> float | None:
         """Extract min_rating from message.
 
         Handles:
@@ -847,7 +846,7 @@ class QueryPlanner:
 
         return None
     
-    def extract_min_reviews(self, message: str) -> Optional[int]:
+    def extract_min_reviews(self, message: str) -> int | None:
         """Extract min_reviews from message"""
         # Look for review count patterns
         review_patterns = [
@@ -867,7 +866,7 @@ class QueryPlanner:
         
         return None
     
-    def _detect_proximity_strategy1(self, message_norm: str) -> Tuple[bool, Optional[str]]:
+    def _detect_proximity_strategy1(self, message_norm: str) -> tuple[bool, str | None]:
         """Strategy 1: direct phrase / keyword matching on normalised text.
 
         Returns (hit, signal) where ``signal`` is a short label like
@@ -975,7 +974,7 @@ class QueryPlanner:
 
         return strategy1_hit or strategy2_hit
     
-    def extract_location_slots(self, message: str) -> Tuple[Optional[str], Optional[str]]:
+    def extract_location_slots(self, message: str) -> tuple[str | None, str | None]:
         """Extract city and neighborhood from message"""
         # Simple extraction - could be enhanced with NER
         # For PoC, only extract if explicitly mentioned
@@ -996,7 +995,7 @@ class QueryPlanner:
         self,
         message: str,
         language: str,
-        user_location: Optional[Dict[str, float]],
+        user_location: dict[str, float] | None,
         proximity_intent_detected: bool = False
     ) -> str:
         """
@@ -1047,7 +1046,7 @@ class QueryPlanner:
             message_lower = self.normalize_text(message)
             rating_keywords = ['best', 'top', 'melhor', 'rating', 'rated', 'nota', 'avaliado']
             if primary_intent == 'popularity' and any(kw in message_lower for kw in rating_keywords):
-                logger.debug(f"Sort preference: rating (popularity intent with rating keywords)")
+                logger.debug("Sort preference: rating (popularity intent with rating keywords)")
                 return 'rating'
             
             # Default to best_match
@@ -1061,7 +1060,7 @@ class QueryPlanner:
             logger.debug("Sort preference: best_match (fallback due to error)")
             return 'best_match'
     
-    def determine_retrieval_strategy(self, message: str, user_location: Optional[Dict[str, float]]) -> str:
+    def determine_retrieval_strategy(self, message: str, user_location: dict[str, float] | None) -> str:
         """
         Determine retrieval strategy based on design principles.
         
@@ -1075,12 +1074,12 @@ class QueryPlanner:
         logger.debug("Retrieval strategy: structured_then_lexical (filter-first)")
         return 'structured_then_lexical'
     
-    def extract_keywords(self, message: str) -> List[str]:
+    def extract_keywords(self, message: str) -> list[str]:
         """Extract keywords from message (non-structured terms)"""
         # Simple keyword extraction - could be enhanced
         # Remove common stop words and extract meaningful terms
         stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-                     'of', 'with', 'by', 'o', 'a', 'os', 'as', 'de', 'da', 'do', 'das', 'dos',
+                     'of', 'with', 'by', 'o', 'os', 'as', 'de', 'da', 'do', 'das', 'dos',
                      'em', 'para', 'com', 'por'}
         
         words = re.findall(r'\b\w+\b', message.lower())
@@ -1091,9 +1090,9 @@ class QueryPlanner:
     def create_query_plan(
         self,
         message: str,
-        user_location: Optional[Dict[str, float]] = None,
-        explicit_language: Optional[str] = None,
-        filters: Optional[Dict[str, Any]] = None
+        user_location: dict[str, float] | None = None,
+        explicit_language: str | None = None,
+        filters: dict[str, Any] | None = None
     ) -> QueryPlan:
         """
         Create Query Plan from user message.
@@ -1206,7 +1205,7 @@ class QueryPlanner:
             debug=debug
         )
     
-    def plan_to_dict(self, plan: QueryPlan) -> Dict[str, Any]:
+    def plan_to_dict(self, plan: QueryPlan) -> dict[str, Any]:
         """Convert QueryPlan to dictionary (JSON-serializable)"""
         return {
             'language': plan.language,
@@ -1217,7 +1216,7 @@ class QueryPlanner:
         }
 
 
-def merge_slots(previous: Optional[Dict[str, Any]], new: Dict[str, Any]) -> Dict[str, Any]:
+def merge_slots(previous: dict[str, Any] | None, new: dict[str, Any]) -> dict[str, Any]:
     """The slots for a follow-up question in a conversation.
 
     A question that names a kind of place starts a fresh search. Otherwise it

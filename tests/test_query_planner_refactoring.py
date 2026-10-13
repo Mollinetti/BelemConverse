@@ -5,13 +5,11 @@ This test verifies that Query_Planner correctly delegates all intent detection
 to Intent_Classifier and removes duplicate keyword-based logic.
 """
 
-import sys
-from pathlib import Path
 
 # Add src to path
 
-from belem_converse.core.query_planner import QueryPlanner
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import SimpleTFIDFIntentClassifier
+from belem_converse.core.query_planner import QueryPlanner
 
 
 def test_query_planner_uses_intent_classifier():
@@ -29,7 +27,7 @@ def test_query_planner_uses_intent_classifier():
     plan = query_planner.create_query_plan(query, user_location=user_location)
     
     # Verify proximity intent was detected
-    assert plan.slots['proximity_intent_detected'] == True, "Proximity intent should be detected"
+    assert plan.slots['proximity_intent_detected'] is True, "Proximity intent should be detected"
     assert plan.slots['sort_preference'] == 'distance', "Sort preference should be distance"
     
     print("✓ Query_Planner correctly delegates proximity intent detection to Intent_Classifier")
@@ -66,7 +64,7 @@ def test_query_planner_detects_business_hours_intent():
     plan = query_planner.create_query_plan(query)
     
     # Verify open_now was detected
-    assert plan.slots['open_now'] == True, "open_now should be True"
+    assert plan.slots['open_now'] is True, "open_now should be True"
     
     print("✓ Query_Planner correctly delegates business hours intent detection to Intent_Classifier")
 

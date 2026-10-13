@@ -11,7 +11,8 @@ Requirements: 11.1, 11.2, 11.3
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Callable
+from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class PlaceCache:
     supporting lookup by multiple keys and filtering with predicate functions.
     """
     
-    def __init__(self, places_data: List[Dict[str, Any]]):
+    def __init__(self, places_data: list[dict[str, Any]]):
         """
         Initialize PlaceCache with place data.
         
@@ -32,9 +33,9 @@ class PlaceCache:
             places_data: List of place dictionaries from database/data loader
         """
         self.places_data = places_data
-        self._cache_by_id: Dict[str, Dict[str, Any]] = {}
-        self._cache_by_title: Dict[str, Dict[str, Any]] = {}
-        self._cache_by_title_formatted: Dict[str, Dict[str, Any]] = {}
+        self._cache_by_id: dict[str, dict[str, Any]] = {}
+        self._cache_by_title: dict[str, dict[str, Any]] = {}
+        self._cache_by_title_formatted: dict[str, dict[str, Any]] = {}
         self._build_caches()
     
     def _build_caches(self) -> None:
@@ -69,7 +70,7 @@ class PlaceCache:
             f"{len(self._cache_by_title_formatted)} by titleFormatted"
         )
     
-    def get_by_id(self, place_id: str) -> Optional[Dict[str, Any]]:
+    def get_by_id(self, place_id: str) -> dict[str, Any] | None:
         """
         Get place by placeId.
         
@@ -81,7 +82,7 @@ class PlaceCache:
         """
         return self._cache_by_id.get(str(place_id))
     
-    def get_by_title(self, title: str) -> Optional[Dict[str, Any]]:
+    def get_by_title(self, title: str) -> dict[str, Any] | None:
         """
         Get place by title or titleFormatted.
         
@@ -107,7 +108,7 @@ class PlaceCache:
         
         return None
     
-    def get_all(self) -> List[Dict[str, Any]]:
+    def get_all(self) -> list[dict[str, Any]]:
         """
         Get all places from cache.
         
@@ -116,7 +117,7 @@ class PlaceCache:
         """
         return self.places_data
     
-    def filter(self, predicate: Callable[[Dict[str, Any]], bool]) -> List[Dict[str, Any]]:
+    def filter(self, predicate: Callable[[dict[str, Any]], bool]) -> list[dict[str, Any]]:
         """
         Filter places by predicate function.
         
@@ -140,7 +141,7 @@ class PlaceCache:
         self._cache_by_title_formatted.clear()
         self.places_data = []
     
-    def reload(self, places_data: List[Dict[str, Any]]) -> None:
+    def reload(self, places_data: list[dict[str, Any]]) -> None:
         """
         Reload cache with new place data.
         
