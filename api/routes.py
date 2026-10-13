@@ -48,6 +48,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 MAX_RESULTS = 5  # spec: an answer shows at most five places
+MAX_RANKED = 30  # kept per conversation for "see more"
+ANNOTATIONS = ("distanceKm", "openNowStatus")  # per-request fields, not in the catalog
+SEE_MORE_LINE = {
+    "pt-BR": "Mais lugares da sua última busca.",
+    "en": "More places from your last search.",
+}
 
 
 sessions = SessionStore()
@@ -141,7 +147,8 @@ async def get_place(placeId: str) -> Place:
     response_model=ChatResponse,
     responses={
         400: {"model": ErrorResponse, "description": "Bad request"},
-        409: {"description": "conversation_finished: no questions left"},
+        409: {"description": "conversation_finished: no questions left; "
+                            "no_previous_results: nothing to see more of"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
         503: {"model": ErrorResponse, "description": "Service unavailable"},
     },
@@ -158,6 +165,8 @@ async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         )
 
     session = sessions.get_or_create(str(request.session_id))
+    if request.action == "more":
+        return _see_more(session, request.language or "pt-BR")
     if session.turns_left <= 0:
         return JSONResponse(
             status_code=409, content={"code": "conversation_finished", "turns_left": 0}
@@ -216,29 +225,16 @@ async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         len(retrieval_result.places),
         retrieval_result.strategy_used,
     )
-    top_places = retrieval_result.places[:MAX_RESULTS]
-
-    place_results: List[PlaceResult] = []
-    for place in top_places:
-        try:
-            place_dict = place.copy()
-            loc = place_dict.get("location")
-            if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
-                place_dict["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
-            elif isinstance(loc, dict):
-                place_dict["location"] = None
-            place_results.append(PlaceResult(**place_dict))
-        except Exception as exc:
-            logger.error(
-                "Error converting place %s: %s",
-                place.get("placeId", "NO_PLACE_ID"),
-                exc,
-            )
-            logger.error(traceback.format_exc())
-            raise HTTPException(
-                status_code=400,
-                detail=f"Error converting place result: {exc}",
-            ) from exc
+    ranked = retrieval_result.places[:MAX_RANKED]
+    top_places = ranked[:MAX_RESULTS]
+    place_results = _place_results(top_places)
+    session.ranked_ids = [p["placeId"] for p in ranked]
+    session.annotations = {
+        p["placeId"]: ann
+        for p in ranked
+        if (ann := {k: p[k] for k in ANNOTATIONS if k in p})
+    }
+    session.cursor = len(top_places)
 
     answer, answer_source = await _answer(
         request.message, top_places, query_plan.language, started_at
@@ -251,9 +247,60 @@ async def chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         answer=answer,
         results=place_results,
         turns_left=session.turns_left,
+        has_more=session.cursor < len(session.ranked_ids),
         debug={**(query_plan.debug or {}), "answer_source": answer_source},
         processing_time_ms=round(elapsed_ms, 1),
     )
+
+
+def _see_more(session, language: str) -> ChatResponse | JSONResponse:
+    """The next page of the conversation's last ranked list: no search, no model."""
+    if not session.ranked_ids:
+        return JSONResponse(
+            status_code=409,
+            content={"code": "no_previous_results", "turns_left": session.turns_left},
+        )
+    page_ids = session.ranked_ids[session.cursor : session.cursor + MAX_RESULTS]
+    session.cursor += len(page_ids)
+    cache = _get_retriever().place_cache
+    places = [
+        {**place, **session.annotations.get(place_id, {})}
+        for place_id in page_ids
+        if (place := cache.get_by_id(place_id)) is not None
+    ]
+    return ChatResponse(
+        language=language,
+        answer=SEE_MORE_LINE[language],
+        results=_place_results(places),
+        turns_left=session.turns_left,
+        has_more=session.cursor < len(session.ranked_ids),
+        debug={"answer_source": "see_more"},
+    )
+
+
+def _place_results(places: List[dict]) -> List[PlaceResult]:
+    results: List[PlaceResult] = []
+    for place in places:
+        try:
+            place_dict = place.copy()
+            loc = place_dict.get("location")
+            if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
+                place_dict["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
+            elif isinstance(loc, dict):
+                place_dict["location"] = None
+            results.append(PlaceResult(**place_dict))
+        except Exception as exc:
+            logger.error(
+                "Error converting place %s: %s",
+                place.get("placeId", "NO_PLACE_ID"),
+                exc,
+            )
+            logger.error(traceback.format_exc())
+            raise HTTPException(
+                status_code=400,
+                detail=f"Error converting place result: {exc}",
+            ) from exc
+    return results
 
 
 async def _answer(
