@@ -99,7 +99,7 @@ Run the memory procedure above and record the number.
 |---|---|
 | Baseline pytest (T00) | 194 collected at `642c707`: 187 passed · 1 failed · 2 errors · 4 skipped. **Failed:** `test_e2e_integration.py::TestCompleteUserJourneys::test_journey_best_restaurants_open_now` (expects sort `popularity`, gets `best_match`; pre-existing). **Errors:** `test_llama31_model.py::test_portuguese_response`, `::test_instruction_following` (fixture `llm` not found; file deleted in T04). **Skipped:** 4 in `test_e2e_integration.py` (lines 334, 589, 611, 630: "Category matching issue … normalize() argument 2 must be str, not list"). |
 | Diagnostic before (T00) | intent 83.2% · category 85.8% · proximity 93.8% · open-now 99.1% (n=113, v2.9 classifier; re-run at `642c707` matches) |
-| Diagnostic after (T24) | intent 82.3% · category 85.8% · proximity 91.2% · open-now 99.1% (n=113, v3.0 classifier, no tour intent). Intent ≥ 80% ✓. The 3 former tour items were relabelled to the v3.0 routing (T02), so they score correct by construction; excluding them, intent is 90/110 = 81.8%. Proximity −2.6 pts vs baseline. |
+| Diagnostic after (T24) | intent 82.3% · category 85.8% · proximity 91.2% · open-now 99.1% (n=113, v3.0 classifier, no tour intent). Intent ≥ 80% ✓. The 3 former tour items were relabelled to the v3.0 routing (T02), so they score correct by construction; excluding them, intent is 90/110 = 81.8%. Proximity −2.6 pts vs baseline. Re-run 2026-10-13 after the T23 open-now detection fix ("abertos" without "agora"; a named other time cancels it): open-now 100% (the one miss, "farmacia aberta hoje", fixed), intent/category/proximity unchanged. |
 | Catalog rows in → kept / merged / dropped | 3,446 → 2,901 kept / 306 merged / 239 dropped (1 null `placeId`, 238 outside the Belém municipality); `input = kept + merged + dropped` holds. 0 duplicate ids; every row `municipality = Belém`, `state = PA`; 37 Mosqueiro/Outeiro places kept. |
 | Rows with parsed hours / needs_review | Hours parsed for 1,844 of 1,845 usable strings (the miss is the literal text "Invalid format"); 45 serialized-Series values cleared to null; 1,057 rows unknown. The spec's floor is stated over raw rows (2,132 non-null − 45 garbage = 2,087 of 3,446); after dedupe and the municipality filter the catalog has 2,901 rows, and parsing loses only that one usable string. `needs_review`: 8 — mostly legitimate `?` in brand names ("UATA?!", "Com Q? Açaí") plus one URL-as-title; 56 garbled titles repaired from `data/Raw`. |
 | OSM match rate / coordinate mismatches > 150 m (T15) | 142 of 2,901 places confirmed (4.9%) against 1,374 Overpass features for the Belém box (2026-10-11; re-run 2026-10-13 after the catalog rebuild: 1,373 features, same 142 / 14); 14 confirmed places more than 150 m off (153–886 m), listed in `osm_report.json` — mostly beaches/parks whose OSM point is an area centroid, plus a few name collisions to review (`Belém Hostel` ↔ `Itaóca Belém Hotel`, chain branches). Informational only; nothing deleted. |
@@ -116,7 +116,7 @@ the fallback switched off, paced with `--delay 6` (Google) and `--delay 10`
 
 | Model | Provider | Grounded % | pt-BR OK | p50 latency | Free allowance | Chosen |
 |---|---|---|---|---|---|---|
-| `gemini-3.5-flash-lite` | Google AI Studio | 95.2 (20/21) | 10/11 | 1.06 s | not exposed by the API; read it in AI Studio (published figures 500–1,000 requests/day) | **primary** |
+| `gemini-3.5-flash-lite` | Google AI Studio | 95.2 (20/21) | 10/11 | 1.06 s | 1,500 requests/day, 5 requests/min, 250K tokens/min (AI Studio, 2026-10-13) | **primary** |
 | `qwen/qwen3.8-27b` | Groq | 100 (21/21) | 9/11 | 0.57 s | 1,000 requests/day, 8,000 tokens/min (response headers); ~200K tokens/day ≈ 200 answers | **fallback** |
 | `gemini-3.1-flash-lite` | Google AI Studio | 75 (3/4, first 6-question set) | — | 1.9 s | — | no |
 | `gemini-2.5-flash-lite` | Google AI Studio | 0 — every call HTTP 404 | — | — | — | no |
@@ -140,9 +140,13 @@ the fallback switched off, paced with `--delay 6` (Google) and `--delay 10`
     midnight, and per-day "24 horas".
   - Each result carries `openNowStatus` (open, then unknown).
   - The prompt states "horário desconhecido".
-- **Daily allowance metric (≥ 1,000).** Unverified for Gemini. Primary plus
-  fallback together reach it only if AI Studio shows at least about 800
-  requests/day for `gemini-3.5-flash-lite`.
+- **Daily allowance (≥ 1,000): met.** Gemini alone allows 1,500/day, and Groq
+  adds up to about 200 answers/day. The tight limit is per minute: Gemini's
+  5 requests/min plus about 6–9 answers/min on Groq. Beyond that, visitors get
+  the template answer. mvp-2's per-visitor limits must keep demand under that.
+- **After the run**, "abertos" without "agora" now triggers the open-now filter.
+  The spec's Estação das Docas question used to skip it. The prompt and models
+  are unchanged, so the table stands.
 
 ## Definition of done
 
@@ -159,6 +163,6 @@ the fallback switched off, paced with `--delay 6` (Google) and `--delay 10`
 - [x] Diagnostic intent accuracy ≥ 80%.
 - [x] README has no instructions pointing at removed endpoints or local model
       weights.
-- [ ] The branch `mvp-1` is rebased on `main` with no conflicts. The PR is titled
+- [x] The branch `mvp-1` is rebased on `main` with no conflicts. The PR is titled
       `mvp-1 — Lean grounded core`, links `specs/mvp/mvp-1-lean-core/`, and
       summarizes the Evidence table.
