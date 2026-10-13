@@ -6,7 +6,6 @@ retrieval, and ranking for all major user scenarios:
 - Proximity search flow
 - Popularity search flow
 - Verification flow
-- Tour planning flow
 - OSM fallback integration
 """
 
@@ -364,33 +363,6 @@ class TestVerificationFlow:
         
         # Verify results
         assert isinstance(result, RetrievalResult)
-
-
-class TestTourPlanningFlow:
-    """Test tour planning flow routing."""
-    
-    def test_tour_planning_intent_detection(self, query_planner, user_location):
-        """Test: tour planning intent is detected."""
-        query = "plan a tour of museums"
-        
-        # Query planning
-        query_plan = query_planner.create_query_plan(query, user_location=user_location)
-        
-        # Verify tour planning intent
-        # Note: The actual routing to tour planner happens in the main application
-        # Here we just verify the intent is detected
-        assert query_plan is not None
-    
-    def test_tour_planning_with_multiple_places(self, query_planner, user_location):
-        """Test: tour planning with multiple place types."""
-        query = "create a tour visiting restaurants and cafes"
-        
-        # Query planning
-        query_plan = query_planner.create_query_plan(query, user_location=user_location)
-        
-        # Verify categories are detected
-        categories = query_plan.slots.get('categories', [])
-        assert len(categories) > 0
 
 
 class TestOSMFallbackIntegration:

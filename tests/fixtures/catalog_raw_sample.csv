@@ -1,0 +1,26 @@
+placeId,title,categoryName,categories/0,categories/1,address,adressFormatted,addressFormatted,formattedAddress,neighborhood,city,state,location/lat,location/lng,phone,website,url,totalScore,reviewsCount,price,IsSponsored,isSponsored,businessTime
+ChIJdupBarParque,Bar do Parque,Bar,Bar,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,(91) 1111-1111,,https://maps.google.com/?cid=ChIJdupBarParque,4.1,120,0.0,No,,Monday-Sunday: 5 PM to 1 AM
+ChIJdupBarParque,Bar do Parque,Bar,Bar,Pub,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,(91) 3222-2222,,https://maps.google.com/?cid=ChIJdupBarParque,4.3,1284,0.0,No,,Monday-Sunday: 5 PM to 1 AM
+,Lugar Sem Identificador,Cafe,Cafe,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=,4.5,50,0.0,No,,
+ChIJcityStateBroken,Café Imaginário,Cafe,Cafe,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Bel?m,Par?,-1.4555,-48.4880,,,https://maps.google.com/?cid=ChIJcityStateBroken,4.5,50,0.0,No,,
+ChIJconvRepairable,Tudo Conveni?ncia Boaventura,Convenience,Convenience,,,"Av. Boaventura da Silva, 1200 - Umarizal, Belém - PA",,,Campina,Belém,State of Pará,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJconvRepairable,4.5,50,0.0,No,,
+ChIJconvUnrepairable,Conveni?ncia AmPm - Ipiranga,Convenience,Convenience,,,,,"Av. Almirante Barroso, 3000 - Marco, Belém - PA",Campina,Belém,Pará,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJconvUnrepairable,4.5,50,0.0,No,,
+ChIJhours12h,Padaria Estrela,Bakery,Bakery,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJhours12h,4.5,50,0.0,No,,Monday-Sunday: 8 AM to 2 PM
+ChIJhours24clock,Lanchonete Noturna,Brazilian Lanchonete,Brazilian Lanchonete,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJhours24clock,4.5,50,0.0,No,,Monday-Sunday: 19:00 to 23:30
+ChIJhoursAllDay,Farmácia Plantão,Pharmacy,Pharmacy,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJhoursAllDay,4.5,50,0.0,No,,Monday-Sunday: Atendimento 24 horas
+ChIJhoursGarbage,Sabor do Pará,Restaurant,Restaurant,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJhoursGarbage,4.5,50,0.0,No,,"Monday: title
+Sabor do Pará            Closed
+Sabor do Pará    10 AM to 11 PM
+Name: openingHours/0/hours, dtype: object; Tuesday: title
+Sabor do Pará    10 AM to 11 PM
+Name: openingHours/1/hours, dtype: object"
+ChIJhoursEmpty,Livraria Fox,Book store,Book store,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJhoursEmpty,4.5,50,0.0,No,,
+ChIJtitleCaps,RESTAURANTE DO PARÁ,Restaurant,Restaurant,,,,"Tv. Padre Eutíquio, 500 - Batista Campos, Belém - PA",,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJtitleCaps,4.5,50,0.0,No,,
+ChIJtitleLower,bar da praça,Bar,Bar,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJtitleLower,4.5,50,0.0,No,,
+ChIJzeroReviews,Açaí da Esquina,Açaí shop,Açaí shop,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJzeroReviews,0,0,0.0,No,,
+ChIJananindeua,Churrascaria Ananin,Restaurant,Restaurant,,"Rua Exemplo, 100 - Belém - PA",,,,Centro,Ananindeua,PA,-1.3656,-48.3722,,,https://maps.google.com/?cid=ChIJananindeua,4.5,50,0.0,No,,
+ChIJmosqueiro,Barraca da Praia do Farol,Bar,Bar,,"Rua Exemplo, 100 - Belém - PA",,,,Mosqueiro,Mosqueiro,PA,-1.1650,-48.4720,,,https://maps.google.com/?cid=ChIJmosqueiro,4.5,50,0.0,No,,
+ChIJoutOfBbox,Restaurante Distante,Restaurant,Restaurant,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-2.4430,-54.7080,,,https://maps.google.com/?cid=ChIJoutOfBbox,4.5,50,0.0,No,,
+ChIJsponsorUpper,Hotel Patrocinado,Hotel,Hotel,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJsponsorUpper,4.5,50,0.0,Yes,,
+ChIJsponsorLower,Pousada Patrocinada,Bed & breakfast,Bed & breakfast,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJsponsorLower,4.5,50,0.0,,Yes,
+ChIJsnackBar,Lanches do Zé,Snack bar,Snack bar,,"Rua Exemplo, 100 - Belém - PA",,,,Campina,Belém,PA,-1.4527,-48.4914,,,https://maps.google.com/?cid=ChIJsnackBar,4.5,50,0.0,No,,

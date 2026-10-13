@@ -37,9 +37,19 @@ class CityConfig:
     
     # Timezone
     timezone: str = "UTC"
+
+    # Short state code written to the catalog (e.g., "PA").
+    state_code: str = ""
+    # Catalog build: values of the export's `city` column that belong to this
+    # municipality (matched accent-insensitively; districts included).
+    municipalities: list[str] = field(default_factory=list)
+    # Words left lowercase when an all-caps or all-lowercase title is recased.
+    title_case_exceptions: list[str] = field(default_factory=list)
     
     # Data paths (relative to project root)
     csv_path: str = ""
+    # Built place catalog, relative to DATA_DIR (BELEM_DATA_DIR overrides it).
+    catalog_path: str = ""
     chroma_db_path: str = ""
     
     # Category mappings - map generic categories to city-specific terms

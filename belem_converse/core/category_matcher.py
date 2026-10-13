@@ -33,6 +33,11 @@ class CategoryMatcher:
         self.intent_classifier = intent_classifier
         self._special_cases = self._load_special_cases()
         self._category_keywords_cache = None
+        # (place_category, query_category, threshold) -> bool. A catalog has
+        # thousands of places but only hundreds of distinct category strings,
+        # so each pair is fuzzy-matched once instead of on every request.
+        # ponytail: unbounded, sized by the category vocabulary; LRU if it grows.
+        self._match_cache: dict[tuple, bool] = {}
     
     def _load_special_cases(self) -> Dict[str, List[str]]:
         """
@@ -137,8 +142,24 @@ class CategoryMatcher:
         return SequenceMatcher(None, norm1, norm2).ratio()
     
     def _matches_keywords(
-        self, 
-        place_category: str, 
+        self,
+        place_category: str,
+        query_category: str,
+        fuzzy_threshold: float = 0.8
+    ) -> bool:
+        """Memoized _match_keywords_uncached: the result depends only on its arguments."""
+        if not (isinstance(place_category, str) and isinstance(query_category, str)):
+            return self._match_keywords_uncached(place_category, query_category, fuzzy_threshold)
+        key = (place_category, query_category, fuzzy_threshold)
+        if key not in self._match_cache:
+            self._match_cache[key] = self._match_keywords_uncached(
+                place_category, query_category, fuzzy_threshold
+            )
+        return self._match_cache[key]
+
+    def _match_keywords_uncached(
+        self,
+        place_category: str,
         query_category: str,
         fuzzy_threshold: float = 0.8
     ) -> bool:

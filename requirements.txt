@@ -4,8 +4,11 @@
 #
 # Preferred install:
 #     pip install -e .
-# or, for a CPU-only deployment:
+# or:
 #     pip install -r requirements.txt
+#
+# The offline catalog build also needs the `tools` extra (pandas):
+#     pip install -e ".[tools]"
 
 # --- API ---
 fastapi>=0.109.0
@@ -13,9 +16,9 @@ uvicorn[standard]>=0.27.0
 pydantic>=2.0.0
 python-multipart>=0.0.9
 python-dotenv>=1.0.0
+httpx>=0.27
 
 # --- Data + retrieval ---
-pandas>=2.0
 numpy>=1.26
 scipy>=1.11
 scikit-learn>=1.3
@@ -23,12 +26,3 @@ rapidfuzz>=3.0
 h3>=3.7
 requests>=2.31
 tqdm>=4.66
-
-# --- LLM stack (GGUF summariser + embeddings + vector store) ---
-llama-cpp-python>=0.2.52
-sentence-transformers>=2.2.2
-chromadb>=0.4.22
-langchain>=0.1.0
-langchain-core>=0.1.0
-langchain-community>=0.0.25
-langchain-huggingface>=0.0.3

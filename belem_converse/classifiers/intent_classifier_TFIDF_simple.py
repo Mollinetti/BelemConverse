@@ -1,8 +1,6 @@
 """
 Simplified TF-IDF Intent Classifier for fast performance.
 Optimized for speed while maintaining accuracy.
-
-Includes tour_planning intent for itinerary generation.
 """
 
 import json
@@ -28,7 +26,7 @@ class SimpleTFIDFIntentClassifier:
     Simplified TF-IDF classifier optimized for speed.
     
     Detects:
-    - Intents: location, popularity, price, business_hours, tour_planning, verification
+    - Intents: location, popularity, price, business_hours, verification
     - Categories: restaurant, cafe, hotel, bar, shopping, entertainment, tourist_attraction, acai
     """
 
@@ -37,6 +35,9 @@ class SimpleTFIDFIntentClassifier:
     #
     # Changelog
     # ---------
+    # 3.0 — mvp-1: tour_planning intent removed (keywords, training templates
+    #       and is_tour_planning_query). Tour phrases now route as ordinary
+    #       place questions.
     # 2.9 — P1 quick wins from docs/archive/spec/12-intent-classifier-improvement-plan.md:
     #       (F5) implicit-category lexicon at
     #            belem_converse/classifiers/data/implicit_category_lexicon.json
@@ -58,7 +59,7 @@ class SimpleTFIDFIntentClassifier:
     #       (F3) both vectorizers switch to FeatureUnion(word + char_wb (3,5))
     #       to survive PT-BR typos and accent omissions.
     # 2.7 — intent-specific training templates + negative examples for location.
-    MODEL_VERSION = "2.9"
+    MODEL_VERSION = "3.0"
     
     def __init__(self):
         # Core intent keywords
@@ -84,15 +85,6 @@ class SimpleTFIDFIntentClassifier:
             'business_hours': [
                 'open', 'hours', 'schedule', 'available', 'time', 'when',
                 'aberto', 'horário', 'funcionamento', 'disponível', 'closes', 'opens'
-            ],
-            'tour_planning': [
-                'tour', 'itinerary', 'day trip', 'plan my day', 'what to do',
-                'roteiro', 'passeio', 'o que fazer', 'dia em', 'planejar',
-                'one day', 'um dia', 'half day', 'meio dia', 'schedule my',
-                'walking tour', 'food tour', 'sightseeing', 'visit in a day',
-                'things to do', 'must see', 'must visit', 'recommend a day',
-                'full day', 'morning to evening', 'afternoon tour',
-                'suggest places to visit', 'create itinerary', 'trip plan'
             ],
             'verification': [
                 # IMPORTANT: keep this list strict. Do NOT add generic
@@ -496,18 +488,6 @@ class SimpleTFIDFIntentClassifier:
                 '{kw} funcionando agora',
                 'what time does {kw} close',
             ],
-            'tour_planning': [
-                'tour of {kw}',
-                'itinerary for {kw}',
-                'day trip to {kw}',
-                'plan a visit to {kw}',
-                'roteiro de {kw}',
-                'passeio por {kw}',
-                'o que fazer em {kw}',
-                'visit {kw} in one day',
-                'sightseeing {kw}',
-                'full day at {kw}',
-            ],
             'verification': [
                 'does {kw} exist',
                 'is {kw} still open',
@@ -822,23 +802,6 @@ class SimpleTFIDFIntentClassifier:
             'primary_category_confidence': category_result['primary_confidence'],
             'original_query': query
         }
-    
-    def is_tour_planning_query(self, query: str) -> bool:
-        """Quick check if query is asking for tour planning."""
-        result = self.predict_intent(query)
-        
-        # Check classifier result
-        if result.get('primary_intent') == 'tour_planning':
-            return True
-        
-        # Fallback to keyword detection
-        query_lower = query.lower()
-        tour_keywords = [
-            'tour', 'itinerary', 'day trip', 'plan my day',
-            'roteiro', 'passeio', 'o que fazer', 'dia em'
-        ]
-        
-        return any(keyword in query_lower for keyword in tour_keywords)
     
     def force_retrain(self):
         """Force retraining of models (useful when keywords are updated)."""

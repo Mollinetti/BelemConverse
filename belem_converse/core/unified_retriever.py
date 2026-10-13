@@ -14,8 +14,12 @@ Validates: Requirements 4.1, 4.2, 4.3, 2.2, 2.3, 2.4
 """
 
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
+
+from belem_converse.cities import get_city_config
 
 from .place_cache import PlaceCache
 from .category_matcher import CategoryMatcher
@@ -77,6 +81,8 @@ class UnifiedRetriever:
         self.ranking_engine = ranking_engine
         self.vector_store = vector_store
         self.osm_client = osm_client
+        # "Open now" is judged on the city's clock, not the server's (UTC).
+        self.timezone = ZoneInfo(get_city_config().timezone)
         
         logger.info(
             "UnifiedRetriever initialized with "
@@ -144,7 +150,10 @@ class UnifiedRetriever:
             mode=ranking_mode,
             user_location=user_location
         )
-        
+        # Open places before places with unknown hours; sort is stable, so each
+        # group keeps its ranked order.
+        ranked_results.sort(key=lambda p: p.get('openNowStatus') == 'unknown')
+
         logger.info(
             f"Retrieval complete: {len(ranked_results)} results, "
             f"strategy={strategy_used}, osm_triggered={osm_triggered}"
@@ -214,9 +223,12 @@ class UnifiedRetriever:
                 logger.info("Step 2: Skipping proximity filter")
         
         # STEP 3: Filter by category - THIRD
-        categories = slots.get('categories') or (
-            [slots.get('place_type')] if slots.get('place_type') else None
-        )
+        # The planner gives place_type as a list; wrapping it again ([[...]])
+        # crashed the category matcher for questions with no category words.
+        place_type = slots.get('place_type')
+        if isinstance(place_type, str):
+            place_type = [place_type]
+        categories = slots.get('categories') or place_type or None
         if categories:
             logger.info(f"Step 3: Filtering by categories: {categories}")
             candidates = self._filter_by_category(candidates, categories)
@@ -252,59 +264,42 @@ class UnifiedRetriever:
     
     def _filter_by_open_now(self, places: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Filter places by open_now status.
-        
-        Args:
-            places: List of places to filter
-            
-        Returns:
-            List of places that are currently open or have unknown status
+        Judge each place's businessTime against the current time in the city.
+
+        Returns copies labelled ``openNowStatus``: "open" places first, then
+        "unknown" (no or unparseable hours, given the benefit of the doubt).
+        Closed places are dropped. Cached places are never modified.
         """
-        from datetime import datetime
-        from belem_converse.utils.business_hours_parser import BusinessHoursParser
-        
+        from belem_converse.utils.business_hours_parser import BusinessHours, BusinessHoursParser
+
         parser = BusinessHoursParser()
-        now = datetime.now()
-        
+        now = datetime.now(self.timezone)
+        day_name = BusinessHours.DAY_NAMES[now.weekday()]  # not strftime: locale-proof
+        current_time = now.time()
+
         open_places = []
         unknown_places = []
-        
+
         for place in places:
             business_time_str = place.get('businessTime')
             if not business_time_str:
-                unknown_places.append(place)
+                unknown_places.append({**place, 'openNowStatus': 'unknown'})
                 continue
-            
+
             try:
                 business_hours = parser.parse(business_time_str)
-                
                 if business_hours.parse_error:
-                    unknown_places.append(place)
-                    continue
-                
-                # Check for "Open 24 hours"
-                time_str_lower = business_time_str.lower()
-                if '24' in time_str_lower and ('hour' in time_str_lower or 'hora' in time_str_lower):
-                    open_places.append(place)
-                    continue
-                
-                # Check if open now
-                day_name = now.strftime('%A')
-                current_time = now.time()
-                
-                if business_hours.is_open_at(day_name, current_time):
-                    open_places.append(place)
+                    unknown_places.append({**place, 'openNowStatus': 'unknown'})
+                elif business_hours.is_open_at(day_name, current_time):
+                    open_places.append({**place, 'openNowStatus': 'open'})
                 # Closed places are excluded
-                
             except Exception as e:
                 logger.debug(f"Error checking open_now for place {place.get('placeId')}: {e}")
-                unknown_places.append(place)
-        
-        # Return open places first, then unknown (to give benefit of doubt)
-        result = open_places + unknown_places
+                unknown_places.append({**place, 'openNowStatus': 'unknown'})
+
         logger.debug(f"Open filter: {len(open_places)} open, {len(unknown_places)} unknown")
-        return result
-    
+        return open_places + unknown_places
+
     def _filter_by_proximity_with_escalation(
         self,
         places: List[Dict[str, Any]],
@@ -462,23 +457,24 @@ class UnifiedRetriever:
             user_location: User's location
             
         Returns:
-            List of places with distanceKm field added
+            Copies of the places with a distanceKm field. The input dicts are
+            the shared catalog, so they are never written to: one visitor's
+            distances must not show up in another visitor's results.
         """
+        annotated = []
         for place in places:
-            location = place.get('location', {})
+            location = place.get('location') or {}
             place_lat = location.get('lat')
             place_lng = location.get('lng')
-            
+
+            distance_km = None
             if place_lat is not None and place_lng is not None:
                 distance_km = self._haversine_distance(
                     user_location.latitude, user_location.longitude,
                     place_lat, place_lng
                 )
-                place['distanceKm'] = distance_km
-            else:
-                place['distanceKm'] = None
-        
-        return places
+            annotated.append({**place, 'distanceKm': distance_km})
+        return annotated
     
     def _haversine_distance(
         self,
@@ -716,8 +712,6 @@ class UnifiedRetriever:
         
         try:
             # Query OSM using the realtime search client
-            from langchain_core.documents import Document
-            
             osm_documents = self.osm_client.search(
                 query=original_query,
                 user_coordinates=(user_location.latitude, user_location.longitude),
