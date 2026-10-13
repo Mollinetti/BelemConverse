@@ -209,3 +209,14 @@ def test_unparseable_numeric_settings_fall_back_to_defaults(monkeypatch, name, v
 
     assert run("q", handler=handler) == "ok"
     assert seen[0]["max_tokens"] == 250
+
+
+@pytest.mark.parametrize("language, status, label", [
+    ("pt-BR", "open", "aberto agora"),
+    ("pt-BR", "unknown", "horário desconhecido"),
+    ("en", "unknown", "hours unknown"),
+])
+def test_open_status_is_stated_for_each_place(language, status, label):
+    # "unknown" must reach the model too, or it guesses that the place is open.
+    message = llm._user_message("abertos agora", [dict(PLACES[0], openNowStatus=status)], language)
+    assert label in message.split("<places>", 1)[1]
