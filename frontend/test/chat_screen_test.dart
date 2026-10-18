@@ -125,6 +125,25 @@ void main() {
     expect(find.textContaining('Acordando o servidor'), findsNothing);
   });
 
+  testWidgets('chips are announced as buttons, not checkboxes', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final chat = await pumpChat(tester, FakeBackend());
+    expect(
+      tester.getSemantics(find.text('Onde comer açaí?')),
+      containsSemantics(label: 'Onde comer açaí?', isButton: true, hasTapAction: true, hasCheckedState: false, hasSelectedState: false),
+    );
+
+    await ask(tester, chat);
+
+    for (final label in ['Ver mais', 'Abertos agora']) {
+      expect(
+        tester.getSemantics(find.text(label)),
+        containsSemantics(label: label, isButton: true, hasTapAction: true, hasCheckedState: false, hasSelectedState: false),
+      );
+    }
+    semantics.dispose();
+  });
+
   test('every example question passes the input gate', () {
     for (final example in ChatScreen.examples.values.expand((e) => e)) {
       expect(example.replaceAll(allowedChars, ''), isEmpty, reason: example);
