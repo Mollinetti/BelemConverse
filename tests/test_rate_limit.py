@@ -201,3 +201,28 @@ def test_trusted_proxy_hops_setting(monkeypatch):
         assert trusted_proxy_hops() == 1
     monkeypatch.delenv("TRUSTED_PROXY_HOPS")
     assert trusted_proxy_hops() == 1
+
+
+def test_responses_say_how_many_messages_are_left(client, monkeypatch):
+    fake_model(monkeypatch, return_value=None)
+    session_id = str(uuid.uuid4())
+    question = {"session_id": session_id, "message": "bares", "language": "pt-BR"}
+    more = {"session_id": session_id, "action": "more", "language": "pt-BR"}
+
+    left = [
+        client.post("/api/chat", json=question).headers["X-RateLimit-Remaining"],
+        client.post("/api/chat", json=more).headers["X-RateLimit-Remaining"],
+        see_more(client, "1.2.3.4").headers["X-RateLimit-Remaining"],  # a 409
+    ]
+
+    assert left == ["19", "18", "19"]  # the third is another visitor
+
+
+def test_rate_limited_response_says_zero_left(client):
+    for _ in range(20):
+        see_more(client, "1.2.3.4")
+
+    response = see_more(client, "1.2.3.4")
+
+    assert response.status_code == 429
+    assert response.headers["X-RateLimit-Remaining"] == "0"
