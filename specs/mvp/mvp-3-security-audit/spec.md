@@ -1,4 +1,4 @@
-# mvp-3 — Security audit before go-live
+# mvp-3 — Security audit of the live MVP
 
 **Status**: approved  ·  **Type**: audit + fix
 **Branch**: mvp-3  ·  **Spec dir**: specs/mvp/mvp-3-security-audit/
@@ -6,8 +6,8 @@
 
 ## Goal
 
-Before anyone is given the public link, show that BelemConverse leaks nothing
-and has no serious hole:
+Show that the live BelemConverse (public since 2026-10-18) leaks nothing and
+has no serious hole:
 
 - **No leaked secrets or personal data.** No API key or `.env` content appears
   in git history, the Docker image, the Flutter web bundle, notebooks, logs or
@@ -18,11 +18,13 @@ and has no serious hole:
 - **Repeatable.** The same scans can be run again with one command before every
   deploy.
 
-This phase is the **go-live gate** for mvp-2. The `mvp-2` work up to a locally
-built container (mvp-2 T22) comes first. The backend may be deployed to its
-unadvertised Render URL so that the live checks can run. The mvp-2 PR is not
-merged (which would publish `docs/app/` on GitHub Pages) and the link is not
-shared until this phase's Definition of done is checked.
+This phase was planned as the go-live gate for mvp-2. On 2026-10-18 the owner
+merged mvp-2 to `main` first, so it audits a **live** service: the API on
+Render and the app on GitHub Pages, both deploying from the `mvp-2` branch.
+A Critical finding is fixed and deployed at once, ahead of the rest of the
+phase. The fix-verification checks run on a second, temporary Render service
+built from `mvp-3`, so the live one is not disturbed. When this phase merges
+into `main`, Render and Pages switch from `mvp-2` to `main`.
 
 ## Step 0 — Tooling research (done 2026-10-13)
 
@@ -174,8 +176,8 @@ Supply-chain cautions:
 
 | Severity | Meaning here | Rule |
 |---|---|---|
-| Critical | A secret is exposed now, or code can be run remotely on the public service | Fix in phase. Blocks go-live. |
-| High | One plausible mistake or request exposes a secret or personal data, or the API gives a stranger write access or data they should not see | Fix in phase, with a test. Blocks go-live. |
+| Critical | A secret is exposed now, or code can be run remotely on the public service | Fix and deploy at once, ahead of the rest of the phase. |
+| High | One plausible mistake or request exposes a secret or personal data, or the API gives a stranger write access or data they should not see | Fix in phase, with a test, and deploy when the phase merges. |
 | Medium | Defence-in-depth gap or information disclosure with limited impact | Goes to the backlog in `findings.md`. Fix in phase only if the fix is small and an existing test covers it. |
 | Low | Hardening or hygiene | Goes to the backlog. |
 
@@ -282,7 +284,7 @@ None. Decisions made by the owner on 2026-10-13:
 - **Scope:** audit, then fix Critical and High in this phase. Medium and Low go
   to the backlog.
 - **Timing:** this phase gates mvp-2 go-live. A quick secret sweep of `main` runs
-  first (T01).
+  first (T01). *Superseded on 2026-10-18, see below.*
 - **Skills:** Anthropic-official tools plus vetted third-party skills, each
   pinned to a reviewed commit.
 - **Leaked secret:** rotate, then rewrite history. Force-push only after an
@@ -291,18 +293,24 @@ None. Decisions made by the owner on 2026-10-13:
 
 Decided by the owner on 2026-10-18:
 
+- **mvp-2 went live first.** It merged to `main` before this audit. mvp-3
+  branches from `main`, audits the live service and merges into `main`; then
+  the Render blueprint and GitHub Pages move from `mvp-2` to `main`.
+
 - **Repository cleanup** joins this phase as its last work (T18–T19), driven
   by the "Cleanup candidates" table. `notebooks/` was already untracked on
   mvp-2.
 
 ## Branch, commit and PR convention
 
-- **Branch:** `mvp-3`, cut from `mvp-2` once mvp-2 T22 (local container) passes.
-  Merge into `mvp-2` before the mvp-2 PR. The history purge (K01) is a
-  repo-wide operation outside any branch; run it at a quiet point when no branch
-  has uncommitted work.
+- **Branch:** `mvp-3`, cut from `main` (mvp-2 merged there on 2026-10-18).
+  Merge into `main`, then switch the Render blueprint and GitHub Pages from
+  `mvp-2` to `main`. The history purge (K01) is a repo-wide operation outside
+  any branch; run it at a quiet point when no branch has uncommitted work. It
+  rewrites `main` and `mvp-2`, which Render and Pages deploy from, so both
+  redeploy after the force-push.
 - **Commits:** every commit starts with `mvp-3:`.
-- **PR title:** `mvp-3 — Security audit before go-live`.
+- **PR title:** `mvp-3 — Security audit of the live MVP`.
 - **PR body:** links `specs/mvp/mvp-3-security-audit/`, summarizes
   `findings.md` (counts by severity and status) and the Evidence table, and
   includes **no secret values, even redacted fragments**.
