@@ -128,9 +128,13 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, settings, _) {
         return TextButton(
           onPressed: () => settings.toggleLanguage(),
-          child: Text(
-            settings.language.flag,
-            style: const TextStyle(fontSize: 20),
+          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          child: Tooltip(
+            message: settings.language.name,
+            child: Text(
+              settings.language.short,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
           ),
         );
       },
