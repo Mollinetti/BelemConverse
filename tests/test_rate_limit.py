@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import api.routes as routes
-from belem_converse.limits import DailyCap, RateLimiter
+from belem_converse.limits import DailyCap, RateLimiter, client_ip
 from tests.conftest import fake_model
 from tests.test_sessions import FakeClock
 
@@ -45,6 +45,42 @@ def test_idle_visitors_are_forgotten():
     limiter.hit("new")
 
     assert len(limiter) == 1
+
+
+# --- client address behind proxies ---------------------------------------------
+# Each trusted proxy appends the address it saw, so with N trusted hops the
+# visitor is the N-th entry from the right; anything left of it is whatever
+# the client sent and can be forged. On Render N is 2 (validation.md).
+
+
+def test_one_hop_is_the_right_most_entry():
+    assert client_ip("1.1.1.1, 10.0.0.1", "s", hops=1) == "10.0.0.1"
+
+
+def test_two_hops_skip_the_platform_proxy():
+    assert client_ip("8.8.8.8, 10.0.0.7", "s", hops=2) == "8.8.8.8"
+
+
+def test_two_hops_ignore_a_forged_prefix():
+    assert client_ip("6.6.6.6, 5.5.5.5, 8.8.8.8, 10.0.0.7", "s", hops=2) == "8.8.8.8"
+
+
+def test_fewer_entries_than_hops_uses_the_left_most():
+    assert client_ip("8.8.8.8", "s", hops=2) == "8.8.8.8"
+
+
+def test_no_header_uses_the_socket_peer():
+    assert client_ip(None, "127.0.0.1", hops=2) == "127.0.0.1"
+    assert client_ip(" , ", "127.0.0.1", hops=2) == "127.0.0.1"
+
+
+def test_varying_proxy_entry_does_not_reset_the_count(client, monkeypatch):
+    # What the live check found: Render's own entry changes per request.
+    monkeypatch.setattr(routes, "TRUSTED_PROXY_HOPS", 2)
+    responses = [see_more(client, f"1.2.3.4, 10.0.0.{i}") for i in range(21)]
+
+    assert [r.status_code for r in responses].count(429) == 1
+    assert responses[20].status_code == 429
 
 
 # --- API -----------------------------------------------------------------------
@@ -150,3 +186,15 @@ def test_daily_cap_reads_the_environment(monkeypatch):
     assert DailyCap().cap == 800
     monkeypatch.delenv("LLM_DAILY_CAP")
     assert DailyCap().cap == 800
+
+
+def test_trusted_proxy_hops_setting(monkeypatch):
+    from belem_converse.limits import trusted_proxy_hops
+
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "2")
+    assert trusted_proxy_hops() == 2
+    for bad in ("0", "-3", "many"):
+        monkeypatch.setenv("TRUSTED_PROXY_HOPS", bad)
+        assert trusted_proxy_hops() == 1
+    monkeypatch.delenv("TRUSTED_PROXY_HOPS")
+    assert trusted_proxy_hops() == 1

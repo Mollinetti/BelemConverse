@@ -23,3 +23,5 @@ services:
         value: "800"
       - key: ALLOWED_ORIGINS
         value: https://mollinetti.github.io
+      - key: TRUSTED_PROXY_HOPS
+        value: "2"

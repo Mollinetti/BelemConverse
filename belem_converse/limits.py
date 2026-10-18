@@ -41,11 +41,27 @@ class RateLimiter:
         return True
 
 
-def client_ip(forwarded_for: str | None, socket_host: str | None) -> str:
-    """The visitor's address: the right-most X-Forwarded-For entry, which
-    Render's proxy appends (left-most entries are whatever the client sent),
-    else the socket peer."""
-    return (forwarded_for or "").split(",")[-1].strip() or socket_host or "unknown"
+def client_ip(forwarded_for: str | None, socket_host: str | None, hops: int = 1) -> str:
+    """The visitor's address behind ``hops`` trusted proxies.
+
+    Each trusted proxy appends the address it saw to X-Forwarded-For, so the
+    visitor is the ``hops``-th entry from the right; entries further left are
+    whatever the client sent and can be forged. With fewer entries than hops,
+    the left-most one; with no header, the socket peer. Render needs 2: its
+    own proxy appends a changing address after the visitor's.
+    """
+    entries = [e.strip() for e in (forwarded_for or "").split(",") if e.strip()]
+    if not entries:
+        return socket_host or "unknown"
+    return entries[-hops] if len(entries) >= hops else entries[0]
+
+
+def trusted_proxy_hops() -> int:
+    """TRUSTED_PROXY_HOPS (default 1, at least 1)."""
+    try:
+        return max(1, int(os.getenv("TRUSTED_PROXY_HOPS", "")))
+    except ValueError:
+        return 1
 
 
 class DailyCap:
