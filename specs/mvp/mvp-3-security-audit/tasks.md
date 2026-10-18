@@ -138,12 +138,12 @@ Any other Medium or Low goes to the backlog section of `findings.md`.
 - **T16** Re-run the LLM review on the fix diff: `/security-review` on the
   `mvp-3` branch. Its findings go back to T08. → depends on T15
 
-## Live checks (a temporary Render service built from `mvp-3`)
+## Live checks (the Render service, pointed at `mvp-3`)
 
-- **T17** Create a second free Render web service from `render.yaml` on the
-  `mvp-3` branch, with its own name and not linked anywhere, so the live
-  `belemconverse` service keeps serving `mvp-2`. Run the validation.md live
-  checks against it, then delete it. The checks:
+- **T17** Point the `belemconverse` Render service at the `mvp-3` branch and
+  run the validation.md live checks against it. Downtime is accepted while the
+  audit runs (owner, 2026-10-18); between checks the service may stay on
+  `mvp-3` or be suspended. The checks:
   - CORS from a foreign origin.
   - A 500-path request.
   - Removed routes.
