@@ -25,22 +25,20 @@ import json
 import logging
 import time
 from collections import Counter, defaultdict
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
 from belem_converse.core.query_planner import QueryPlanner
-
 from tests.diagnostics.diagnostic_corpus import (
     ALL_QUERIES,
     CORPUS_A_GOLDEN,
     CORPUS_B_DIAGNOSTIC,
     DiagnosticQuery,
 )
-
 
 # ---------------------------------------------------------------------------
 # Log capture for instrumentation events
@@ -81,7 +79,7 @@ class _InstrumentationCapture(logging.Handler):
 
     def __init__(self) -> None:
         super().__init__()
-        self.events: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        self.events: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     def emit(self, record: logging.LogRecord) -> None:
         if record.msg not in self.EVENT_NAMES:
@@ -111,20 +109,20 @@ class QueryResult:
     language: str
     failure_class: str
 
-    expected_intents: List[str]
-    expected_category: Optional[str]
+    expected_intents: list[str]
+    expected_category: str | None
     expected_proximity: bool
-    expected_open_now: Optional[bool]
+    expected_open_now: bool | None
 
     predicted_intent: str
     predicted_intent_confidence: float
-    predicted_top3_intents: List[Dict[str, float]]
+    predicted_top3_intents: list[dict[str, float]]
     predicted_category: str
     predicted_category_confidence: float
-    predicted_top3_categories: List[Dict[str, float]]
+    predicted_top3_categories: list[dict[str, float]]
 
     proximity_returned: bool
-    open_now_returned: Optional[bool]
+    open_now_returned: bool | None
     categories_returned_count: int
 
     intent_correct: bool
@@ -136,9 +134,9 @@ class QueryResult:
     latency_ms_category: float
     latency_ms_total: float
 
-    instrumentation_proximity: Optional[Dict[str, Any]] = None
-    instrumentation_open_now: Optional[Dict[str, Any]] = None
-    instrumentation_category: Optional[Dict[str, Any]] = None
+    instrumentation_proximity: dict[str, Any] | None = None
+    instrumentation_open_now: dict[str, Any] | None = None
+    instrumentation_category: dict[str, Any] | None = None
 
     notes: str = ""
 
@@ -237,7 +235,7 @@ def _run_single(
     )
 
 
-def run() -> Tuple[List[QueryResult], Dict[str, Any]]:
+def run() -> tuple[list[QueryResult], dict[str, Any]]:
     """Run the full diagnostic. Returns (per_query_results, aggregate_metrics)."""
     classifier = _load_classifier()
     planner = QueryPlanner(intent_classifier=classifier)
@@ -265,8 +263,8 @@ def run() -> Tuple[List[QueryResult], Dict[str, Any]]:
 
 
 def _per_label_prf(
-    results: List[QueryResult], get_pred: callable, get_expected_set: callable
-) -> Dict[str, Dict[str, float]]:
+    results: list[QueryResult], get_pred: callable, get_expected_set: callable
+) -> dict[str, dict[str, float]]:
     """Compute per-label precision/recall/F1 treating each label independently.
 
     A prediction is a True Positive for label L when:
@@ -320,8 +318,8 @@ def _per_label_prf(
 
 
 def _confusion_matrix(
-    results: List[QueryResult], get_pred: callable, get_expected: callable
-) -> Dict[str, Dict[str, int]]:
+    results: list[QueryResult], get_pred: callable, get_expected: callable
+) -> dict[str, dict[str, int]]:
     """Build a confusion matrix using the FIRST expected label as the row.
 
     For multi-label expected sets we use the first element (alphabetical order
@@ -329,7 +327,7 @@ def _confusion_matrix(
     is a known simplification — the per-label PRF metrics above are the more
     rigorous view.
     """
-    matrix: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    matrix: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for r in results:
         gold = get_expected(r)
         pred = get_pred(r)
@@ -338,7 +336,7 @@ def _confusion_matrix(
     return {k: dict(v) for k, v in matrix.items()}
 
 
-def _aggregate(results: List[QueryResult]) -> Dict[str, Any]:
+def _aggregate(results: list[QueryResult]) -> dict[str, Any]:
     n = len(results)
     if n == 0:
         return {}
@@ -350,7 +348,7 @@ def _aggregate(results: List[QueryResult]) -> Dict[str, Any]:
     open_acc = sum(r.open_now_correct for r in results) / n
 
     # Per-failure-class breakdown
-    by_class: Dict[str, Dict[str, Any]] = {}
+    by_class: dict[str, dict[str, Any]] = {}
     for cls in sorted({r.failure_class for r in results}):
         subset = [r for r in results if r.failure_class == cls]
         by_class[cls] = {
@@ -362,7 +360,7 @@ def _aggregate(results: List[QueryResult]) -> Dict[str, Any]:
         }
 
     # Per-language breakdown
-    by_lang: Dict[str, Dict[str, Any]] = {}
+    by_lang: dict[str, dict[str, Any]] = {}
     for lang in sorted({r.language for r in results}):
         subset = [r for r in results if r.language == lang]
         by_lang[lang] = {
@@ -497,7 +495,7 @@ def _aggregate(results: List[QueryResult]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _md_table(headers: List[str], rows: List[List[Any]]) -> str:
+def _md_table(headers: list[str], rows: list[list[Any]]) -> str:
     sep = "| " + " | ".join("---" for _ in headers) + " |"
     head = "| " + " | ".join(headers) + " |"
     body = "\n".join(
@@ -506,9 +504,9 @@ def _md_table(headers: List[str], rows: List[List[Any]]) -> str:
     return "\n".join([head, sep, body])
 
 
-def render_markdown(results: List[QueryResult], aggregate: Dict[str, Any]) -> str:
+def render_markdown(results: list[QueryResult], aggregate: dict[str, Any]) -> str:
     """Render the human-readable markdown report."""
-    lines: List[str] = []
+    lines: list[str] = []
     lines.append("# Intent Classifier Diagnostic Report")
     lines.append("")
     lines.append(
@@ -750,10 +748,10 @@ def render_markdown(results: List[QueryResult], aggregate: Dict[str, Any]) -> st
 
 
 def write_artifacts(
-    results: List[QueryResult],
-    aggregate: Dict[str, Any],
-    out_dir: Optional[Path] = None,
-) -> Tuple[Path, Path]:
+    results: list[QueryResult],
+    aggregate: dict[str, Any],
+    out_dir: Path | None = None,
+) -> tuple[Path, Path]:
     """Write the JSON + markdown artifacts to ``out_dir``. Returns the two paths."""
     if out_dir is None:
         out_dir = Path(__file__).parent / "reports"

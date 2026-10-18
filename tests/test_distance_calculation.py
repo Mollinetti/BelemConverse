@@ -9,20 +9,19 @@ Property 13: Distance Calculation Invariant
 Validates: Requirements 6.5
 """
 
-import sys
-from pathlib import Path
 
 # Add project root and src to path
 
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, MagicMock
-from typing import List, Dict, Any
+
+from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
+from belem_converse.core.ranking_engine import Location, RankingEngine
 
 # Import using standard imports since we added src to path
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.category_matcher import CategoryMatcher
-from belem_converse.core.ranking_engine import RankingEngine, Location
+from belem_converse.core.unified_retriever import UnifiedRetriever
 
 
 @pytest.fixture

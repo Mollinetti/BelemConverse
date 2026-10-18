@@ -7,7 +7,9 @@ environment-only:
 
     LLM_BASE_URL, LLM_MODEL, LLM_API_KEY                       primary
     LLM_FALLBACK_BASE_URL, LLM_FALLBACK_MODEL, LLM_FALLBACK_API_KEY   fallback
-    LLM_TIMEOUT_S   (default 10)   one budget shared by both providers
+    LLM_TIMEOUT_S   (default 10)   one budget shared by both providers; each
+                                   gets an equal share of what is left, so a
+                                   hanging primary cannot starve the fallback
     LLM_MAX_TOKENS  (default 250)
 
 The model is told to bold every place it names; ``is_grounded`` then checks
@@ -155,12 +157,13 @@ async def summarize(
     # so planning and retrieval time count against it too.
     deadline = (started_at if started_at is not None else time.monotonic()) + budget
     async with httpx.AsyncClient(transport=transport, timeout=budget) as client:
-        for provider in providers:
+        for index, provider in enumerate(providers):
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 break
+            share = remaining / (len(providers) - index)
             try:
-                return await asyncio.wait_for(_complete(client, provider, messages, max_tokens), remaining)
+                return await asyncio.wait_for(_complete(client, provider, messages, max_tokens), share)
             # asyncio.TimeoutError is only an alias of TimeoutError from Python 3.11.
             except (httpx.HTTPError, TimeoutError, asyncio.TimeoutError,
                     KeyError, IndexError, TypeError, ValueError) as exc:

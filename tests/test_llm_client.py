@@ -143,6 +143,24 @@ def test_timeout_budget_is_shared_with_fallback(monkeypatch):
     assert time.monotonic() - start < 1.0
 
 
+def test_slow_primary_leaves_time_for_the_fallback(monkeypatch):
+    # mvp-2: a primary that hangs must not starve the fallback. Seen live: the
+    # primary took 15 s while the fallback answered in 0.3 s, and every visitor
+    # got the template. Each provider gets an equal share of the time left.
+    monkeypatch.setenv("LLM_TIMEOUT_S", "0.6")
+    monkeypatch.setenv("LLM_FALLBACK_BASE_URL", "https://fallback.test/v1")
+    monkeypatch.setenv("LLM_FALLBACK_MODEL", "fallback-model")
+
+    async def handler(request):
+        if request.url.host == "primary.test":
+            await asyncio.sleep(5)
+        return completion("from fallback")
+
+    start = time.monotonic()
+    assert run("q", handler=handler) == "from fallback"
+    assert time.monotonic() - start < 0.6
+
+
 def test_unconfigured_returns_none_without_calling(monkeypatch):
     monkeypatch.delenv("LLM_BASE_URL")
     calls = []

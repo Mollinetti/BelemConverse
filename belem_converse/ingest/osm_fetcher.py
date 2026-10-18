@@ -5,11 +5,13 @@ This module fetches points of interest from OpenStreetMap to supplement
 and refresh the local database of establishments.
 """
 
-import requests
 import logging
 import time
-from typing import List, Dict, Any, Optional
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +25,13 @@ class OSMPlace:
     latitude: float
     longitude: float
     category: str
-    subcategories: List[str] = field(default_factory=list)
-    address: Optional[str] = None
-    phone: Optional[str] = None
-    website: Optional[str] = None
-    opening_hours: Optional[str] = None
+    subcategories: list[str] = field(default_factory=list)
+    address: str | None = None
+    phone: str | None = None
+    website: str | None = None
+    opening_hours: str | None = None
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for CSV export."""
         return {
             'osm_id': self.osm_id,
@@ -133,7 +135,7 @@ class OSMFetcher:
     
     def __init__(
         self,
-        bbox: Optional[Dict[str, float]] = None,
+        bbox: dict[str, float] | None = None,
         overpass_url: str = None,
         timeout: int = 180,
         retry_count: int = 3,
@@ -155,7 +157,7 @@ class OSMFetcher:
         self.retry_count = retry_count
         self.retry_delay = retry_delay
         
-    def _build_query(self, categories: Optional[List[str]] = None) -> str:
+    def _build_query(self, categories: list[str] | None = None) -> str:
         """
         Build Overpass QL query for the specified categories.
         
@@ -178,7 +180,6 @@ class OSMFetcher:
         else:
             # Fetch all mapped categories
             tag_filters = []
-            seen_keys = set()
             for osm_tag in self.CATEGORY_MAPPINGS.keys():
                 key, value = osm_tag.split('=')
                 tag_filters.append(f'["{key}"="{value}"]')
@@ -198,7 +199,7 @@ out body center;
 """
         return query
     
-    def _parse_element(self, element: Dict[str, Any]) -> Optional[OSMPlace]:
+    def _parse_element(self, element: dict[str, Any]) -> OSMPlace | None:
         """
         Parse a single OSM element into an OSMPlace object.
         
@@ -275,9 +276,9 @@ out body center;
     
     def fetch(
         self,
-        categories: Optional[List[str]] = None,
-        progress_callback: Optional[callable] = None
-    ) -> List[OSMPlace]:
+        categories: list[str] | None = None,
+        progress_callback: Callable | None = None
+    ) -> list[OSMPlace]:
         """
         Fetch POIs from OpenStreetMap.
         
@@ -364,10 +365,10 @@ out body center;
     
     def fetch_by_category_batch(
         self,
-        categories: List[str],
+        categories: list[str],
         batch_size: int = 5,
         delay_between_batches: int = 5
-    ) -> List[OSMPlace]:
+    ) -> list[OSMPlace]:
         """
         Fetch POIs in batches to avoid overloading the Overpass API.
         
@@ -404,7 +405,7 @@ out body center;
         return unique_places
 
 
-def get_all_categories() -> List[str]:
+def get_all_categories() -> list[str]:
     """Get list of all supported category names."""
     return list(set(OSMFetcher.CATEGORY_MAPPINGS.values()))
 

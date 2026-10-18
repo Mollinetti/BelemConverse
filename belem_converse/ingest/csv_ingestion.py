@@ -14,7 +14,8 @@ import logging
 import re
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Set
+from typing import Any
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class PlaceTypeInference:
         return best_type
 
     @classmethod
-    def infer_place_type(cls, category_name: Optional[str], categories: List[str]) -> str:
+    def infer_place_type(cls, category_name: str | None, categories: list[str]) -> str:
         """
         Infer place_type using precedence rules:
         1. Check categoryName first, if matches STOP
@@ -96,7 +97,7 @@ class PlaceTypeInference:
 class CSVIngestionPipeline:
     """CSV ingestion pipeline per PoC spec"""
     
-    def __init__(self, output_dir: Optional[Path] = None):
+    def __init__(self, output_dir: Path | None = None):
         """
         Initialize ingestion pipeline.
         
@@ -109,9 +110,9 @@ class CSVIngestionPipeline:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         self.place_type_inference = PlaceTypeInference()
-        self.places_index: List[Dict[str, Any]] = []
+        self.places_index: list[dict[str, Any]] = []
     
-    def normalize_string(self, value: Any) -> Optional[str]:
+    def normalize_string(self, value: Any) -> str | None:
         """Normalize string: trim whitespace, empty string => null"""
         if value is None:
             return None
@@ -122,7 +123,7 @@ class CSVIngestionPipeline:
         value_str = str(value).strip()
         return value_str if value_str else None
     
-    def normalize_number(self, value: Any, default: Optional[float] = None) -> Optional[float]:
+    def normalize_number(self, value: Any, default: float | None = None) -> float | None:
         """Parse number, invalid => null"""
         if value is None or pd.isna(value):
             return default
@@ -131,7 +132,7 @@ class CSVIngestionPipeline:
         except (ValueError, TypeError):
             return default
     
-    def normalize_int(self, value: Any, default: Optional[int] = None) -> Optional[int]:
+    def normalize_int(self, value: Any, default: int | None = None) -> int | None:
         """Parse int, invalid => null (or default for distribution fields)"""
         if value is None or pd.isna(value):
             return default
@@ -148,7 +149,7 @@ class CSVIngestionPipeline:
         true_values = ["TRUE", "1", "YES", "SIM"]
         return value_str in true_values
     
-    def build_categories(self, row: pd.Series) -> List[str]:
+    def build_categories(self, row: pd.Series) -> list[str]:
         """Build categories[] from categories/0..8 + ensure categoryName included"""
         categories = []
         
@@ -167,7 +168,7 @@ class CSVIngestionPipeline:
         
         return categories
     
-    def ingest_csv(self, csv_path: Path) -> Dict[str, Any]:
+    def ingest_csv(self, csv_path: Path) -> dict[str, Any]:
         """
         Ingest CSV file and produce canonical places.
         
@@ -241,7 +242,7 @@ class CSVIngestionPipeline:
             logger.error(f"CSV ingestion failed: {e}")
             raise
     
-    def process_row(self, row: pd.Series, row_index: int) -> Optional[Dict[str, Any]]:
+    def process_row(self, row: pd.Series, row_index: int) -> dict[str, Any] | None:
         """
         Process a single CSV row into canonical Place format.
         
@@ -319,6 +320,6 @@ class CSVIngestionPipeline:
         
         return place
     
-    def get_places_index(self) -> List[Dict[str, Any]]:
+    def get_places_index(self) -> list[dict[str, Any]]:
         """Get the in-memory searchable index of places"""
         return self.places_index
