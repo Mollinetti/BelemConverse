@@ -253,8 +253,11 @@ under `docs/app/`, which Pages serves from `main:/docs`:
 cd frontend
 flutter build web --release --base-href /BelemConverse/app/ \
   --dart-define=API_BASE_URL=https://<service>.onrender.com/api
-cd .. && rm -rf docs/app && cp -r frontend/build/web docs/app
+cd .. && rm -rf docs/app && rsync -a --exclude canvaskit frontend/build/web/ docs/app/
 ```
+
+`canvaskit/` is left out: the app loads its renderer from Google's CDN, so the
+26 MB folder would only bloat the repository.
 
 Commit `docs/app/` and push to `main`. In the repository settings, *Pages*
 must serve the `main` branch from `/docs`. The backend only accepts browser
