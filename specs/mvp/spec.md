@@ -1,7 +1,7 @@
 # BelemConverse MVP — free-tier public showcase
 
 **Status**: approved · **Owner**: mollinetti · **Date**: 2026-10-11
-**Phases**: [mvp-1 — Lean grounded core](mvp-1-lean-core/spec.md) → [mvp-2 — Public conversational MVP](mvp-2-public-mvp/spec.md) → [mvp-3 — Security audit before go-live](mvp-3-security-audit/spec.md) (mvp-3 gates mvp-2 go-live)
+**Phases**: [mvp-1 — Lean grounded core](mvp-1-lean-core/spec.md) → [mvp-2 — Public conversational MVP](mvp-2-public-mvp/spec.md) → [mvp-3 — Security audit of the live MVP](mvp-3-security-audit/spec.md) (mvp-2 went live on 2026-10-18, before mvp-3)
 **Process**: each phase follows the `feature-spec` skill layout (`spec.md` WHAT/WHY, `plan.md` HOW, `tasks.md` TDD order, `validation.md` gates). Branches are `mvp-1` and `mvp-2` (`phase-1` is taken by the archived Oriximiná fork).
 
 Supersedes the PoC specs archived in [`specs/archive/`](../archive/) and
@@ -249,5 +249,8 @@ Kept from the archived constitution:
    in data.
 5. `data/`, `models/` and `notebooks/` stay out of git. The one exception is the
    small built `catalog/belem.sqlite` that the deploy needs (mvp-2).
-6. The public link is not shared and mvp-2 is not merged to `main` until the
-   mvp-3 security audit's Definition of done is checked.
+6. mvp-2 was merged to `main` and went live on 2026-10-18, by the owner's
+   decision, before the mvp-3 security audit. Until mvp-3's Definition of done
+   is checked, the live service counts as unaudited: a Critical finding is
+   fixed and deployed at once. Render and GitHub Pages deploy from the `mvp-2`
+   branch until mvp-3 merges into `main`; then both switch to `main`.

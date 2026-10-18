@@ -2,7 +2,7 @@
 
 **Status**: approved  ·  **Type**: roadmap
 **Branch**: mvp-2  ·  **Spec dir**: specs/mvp/mvp-2-public-mvp/
-**Overview**: [../spec.md](../spec.md)  ·  **Previous**: [mvp-1](../mvp-1-lean-core/spec.md)  ·  **Gate**: [mvp-3 security audit](../mvp-3-security-audit/spec.md)
+**Overview**: [../spec.md](../spec.md)  ·  **Previous**: [mvp-1](../mvp-1-lean-core/spec.md)  ·  **Audit**: [mvp-3 security audit](../mvp-3-security-audit/spec.md) (after go-live)
 
 ## Goal
 

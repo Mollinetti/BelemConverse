@@ -43,7 +43,7 @@ trivy image --scanners secret,vuln --severity HIGH,CRITICAL --exit-code 1 belemc
 - `cd frontend && flutter analyze && flutter test` stays clean (no frontend
   change is expected).
 
-## Manual checks (against the unadvertised Render URL)
+## Manual checks (against the temporary `mvp-3` Render service, T17)
 
 ### Live API
 
@@ -129,6 +129,7 @@ module.
 - [ ] The manual checks pass, and the Evidence table is filled in. It contains
       no secret values.
 - [ ] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
-- [ ] The PR `mvp-3 — Security audit before go-live` is merged into `mvp-2`.
-- [ ] **Go-live unblocked:** mvp-2 may merge to `main` (publishing `docs/app/`),
-      and the public link may be shared.
+- [ ] The PR `mvp-3 — Security audit of the live MVP` is merged into `main`.
+- [ ] **The live service runs the audited code:** the Render blueprint and
+      GitHub Pages deploy from `main`, and the T17 checks pass against the live
+      URLs.
