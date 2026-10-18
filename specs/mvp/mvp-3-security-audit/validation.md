@@ -80,11 +80,26 @@ trivy image --scanners secret,vuln --severity HIGH,CRITICAL --exit-code 1 belemc
 3. GitHub → Settings → Code security shows Secret scanning, Push protection,
    Dependabot alerts and Private vulnerability reporting **enabled**.
 
+### Repository cleanup (after T19)
+
+```bash
+git ls-files -ci --exclude-standard                       # expect: nothing
+uvx vulture belem_converse api --min-confidence 80        # expect: only false positives, listed in findings.md
+cd frontend && for d in $(sed -n '/^dependencies:/,/^dev_dependencies:/p' pubspec.yaml \
+  | grep -oE '^  [a-z_]+:' | tr -d ' :' | grep -v '^flutter$'); do
+  grep -rqs "package:$d/" lib || echo "unused: $d"; done   # expect: nothing
+```
+
+**Expected:** every C-row in spec.md is removed or has a kept-with-reason
+line in `findings.md`; plan.md's reachability check reports no unreachable
+module.
+
 ## Evidence (fill in during the phase)
 
 | Item | Value |
 |---|---|
 | Tool versions: gitleaks / trufflehog / osv-scanner / pip-audit / trivy / semgrep / ruff | _tbd_ |
+| Cleanup: candidates removed / kept with a reason; lines, files and Flutter packages removed | _tbd_ |
 | Plugin pins: `claude-security` / ToB skills SHA / `owasp-llm-top10` SHA | _tbd_ |
 | Findings by severity before fixes (C/H/M/L) | _tbd_ |
 | Findings by severity after fixes, open (C/H/M/L) | 0 / 0 / _tbd_ / _tbd_ |
@@ -97,6 +112,10 @@ trivy image --scanners secret,vuln --severity HIGH,CRITICAL --exit-code 1 belemc
 | Live checks 1–5 pass | _tbd_ |
 
 ## Definition of done
+
+- [ ] Repository cleanup: every "Cleanup candidates" row (spec.md) is removed
+      or kept with a reason in `findings.md`, the checks above pass, and the
+      gates still pass after it.
 
 - [ ] Every P1 acceptance criterion is covered by the tests in the map above or
       by the scan gate, and both pass.
