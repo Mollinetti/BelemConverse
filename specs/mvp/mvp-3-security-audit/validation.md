@@ -43,7 +43,7 @@ trivy image --scanners secret,vuln --severity HIGH,CRITICAL --exit-code 1 belemc
 - `cd frontend && flutter analyze && flutter test` stays clean (no frontend
   change is expected).
 
-## Manual checks (against the temporary `mvp-3` Render service, T17)
+## Manual checks (against the Render service pointed at `mvp-3`, T17)
 
 ### Live API
 
