@@ -384,3 +384,17 @@ def _generate_answer(places: list[dict], language: str) -> str:
         return f"Aqui estão os lugares encontrados:\n\n{body}\n\nEstes são os lugares que correspondem à sua busca."
     return f"Here are the places found:\n\n{body}\n\nThese are the places matching your search."
 
+
+
+# TEMPORARY (mvp-2 T23 diagnosis): echo the caller's own proxy headers. Removed in the next commit.
+@router.get("/_proxy-headers", include_in_schema=False)
+async def _proxy_headers(http_request: Request) -> dict:
+    h = http_request.headers
+    return {
+        "x-forwarded-for": h.get("x-forwarded-for"),
+        "cf-connecting-ip": h.get("cf-connecting-ip"),
+        "true-client-ip": h.get("true-client-ip"),
+        "x-real-ip": h.get("x-real-ip"),
+        "socket": http_request.client.host if http_request.client else None,
+        "TRUSTED_PROXY_HOPS": TRUSTED_PROXY_HOPS,
+    }
