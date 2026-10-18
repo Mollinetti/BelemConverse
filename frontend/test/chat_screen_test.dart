@@ -144,6 +144,18 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('the language button is text, not a flag emoji', (tester) async {
+    // A flag emoji makes the browser download a 0.7 MB color-emoji font.
+    await pumpChat(tester, FakeBackend());
+
+    await tester.tap(find.text('PT'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('EN'), findsOneWidget);
+    expect(find.textContaining('🇧🇷'), findsNothing);
+    expect(find.textContaining('🇺🇸'), findsNothing);
+  });
+
   test('every example question passes the input gate', () {
     for (final example in ChatScreen.examples.values.expand((e) => e)) {
       expect(example.replaceAll(allowedChars, ''), isEmpty, reason: example);
