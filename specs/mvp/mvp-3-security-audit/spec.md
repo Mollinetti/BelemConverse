@@ -22,9 +22,10 @@ This phase was planned as the go-live gate for mvp-2. On 2026-10-18 the owner
 merged mvp-2 to `main` first, so it audits a **live** service: the API on
 Render and the app on GitHub Pages, both deploying from the `mvp-2` branch.
 A Critical finding is fixed and deployed at once, ahead of the rest of the
-phase. The fix-verification checks run on a second, temporary Render service
-built from `mvp-3`, so the live one is not disturbed. When this phase merges
-into `main`, Render and Pages switch from `mvp-2` to `main`.
+phase. The service is not essential, so the live Render service may be
+pointed at `mvp-3` for the fix-verification checks, and may be down while the
+audit runs (owner, 2026-10-18). When this phase merges into `main`, Render
+and Pages switch from `mvp-2` to `main`.
 
 ## Step 0 — Tooling research (done 2026-10-13)
 
