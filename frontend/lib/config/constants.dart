@@ -33,14 +33,14 @@ class AppConstants {
 
 /// Supported languages per OpenAPI spec
 enum AppLanguage {
-  portuguese('pt-BR', 'Português', '🇧🇷'),
-  english('en', 'English', '🇺🇸');
+  portuguese('pt-BR', 'Português', 'PT'),
+  english('en', 'English', 'EN');
   
   final String code; // 'pt-BR' or 'en' per OpenAPI spec
   final String name;
-  final String flag;
+  final String short; // button label; a flag emoji would cost a 0.7 MB font download
   
-  const AppLanguage(this.code, this.name, this.flag);
+  const AppLanguage(this.code, this.name, this.short);
   
   static AppLanguage fromCode(String code) {
     // Handle both 'pt' and 'pt-BR' for backward compatibility
