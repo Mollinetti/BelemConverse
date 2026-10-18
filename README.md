@@ -359,7 +359,7 @@ messages from one visitor in 10 minutes (`rate_limited`).
 ├── docs/
 │   ├── archive/spec/     Proof-of-concept specs + ADRs (reference)
 │   └── index.html …      Project site (GitHub Pages)
-├── notebooks/            Exploratory notebooks (read-only history)
+├── notebooks/            Exploratory notebooks: local only, not in git
 ├── tests/                pytest suite + diagnostics/ eval harnesses
 └── data/                 Raw exports for the catalog build — gitignored
 ```
