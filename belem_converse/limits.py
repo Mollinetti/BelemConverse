@@ -47,8 +47,9 @@ def client_ip(forwarded_for: str | None, socket_host: str | None, hops: int = 1)
     Each trusted proxy appends the address it saw to X-Forwarded-For, so the
     visitor is the ``hops``-th entry from the right; entries further left are
     whatever the client sent and can be forged. With fewer entries than hops,
-    the left-most one; with no header, the socket peer. Render needs 2: its
-    own proxy appends a changing address after the visitor's.
+    the left-most one; with no header, the socket peer. Render needs 3: its
+    header reads "visitor, Cloudflare edge, Render proxy", and the last two
+    change on every request.
     """
     entries = [e.strip() for e in (forwarded_for or "").split(",") if e.strip()]
     if not entries:
