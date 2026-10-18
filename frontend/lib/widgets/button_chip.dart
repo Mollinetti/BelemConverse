@@ -26,6 +26,7 @@ class ButtonChip extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: onPressed != null,
+      focusable: onPressed != null,
       label: label,
       onTap: onPressed,
       excludeSemantics: true,

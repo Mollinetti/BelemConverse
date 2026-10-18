@@ -130,7 +130,7 @@ void main() {
     final chat = await pumpChat(tester, FakeBackend());
     expect(
       tester.getSemantics(find.text('Onde comer açaí?')),
-      containsSemantics(label: 'Onde comer açaí?', isButton: true, hasTapAction: true, hasCheckedState: false, hasSelectedState: false),
+      containsSemantics(label: 'Onde comer açaí?', isButton: true, hasTapAction: true, isFocusable: true, hasCheckedState: false, hasSelectedState: false),
     );
 
     await ask(tester, chat);
@@ -138,7 +138,7 @@ void main() {
     for (final label in ['Ver mais', 'Abertos agora']) {
       expect(
         tester.getSemantics(find.text(label)),
-        containsSemantics(label: label, isButton: true, hasTapAction: true, hasCheckedState: false, hasSelectedState: false),
+        containsSemantics(label: label, isButton: true, hasTapAction: true, isFocusable: true, hasCheckedState: false, hasSelectedState: false),
       );
     }
     semantics.dispose();
