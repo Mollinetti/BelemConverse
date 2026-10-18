@@ -178,7 +178,7 @@ marked "verify gone" and only need a test proving they stay gone.
 | K10 | Medium | No secret scanning or push protection on the GitHub repo | repo settings | Enable (manual) |
 | K11 | Medium | Python dependencies unpinned (`>=` floors only), no lockfile; `python-multipart>=0.0.9` has known DoS CVEs | `requirements.txt`, `pyproject.toml` | Triage |
 | K12 | Low | `ChatFilters` has no bounds, `placeId` is not validated, an invalid `nowIso` is accepted, and user text is logged at INFO | `api/schemas.py`, `api/routes.py:191,210` | Backlog unless the audit raises it |
-| K13 | Low | Notebooks keep saved outputs with server paths; stray result logs are tracked | `notebooks/*.ipynb`, `tests/*_results.*` | Backlog |
+| K13 | Low | Notebooks keep saved outputs with server paths. Since mvp-2 `notebooks/` is gitignored and no longer tracked, but earlier commits still contain it; the stray result logs are gitignored and were never tracked | git history (`notebooks/*.ipynb`) | Accept, or remove from history with a rewrite (owner decision) |
 | K14 | Low | `/docs`, `/redoc` and `/openapi.json` are public | `api/main.py:50-51` | Accept: an open-source demo with a public API, and `/openapi.json` is the contract |
 
 The same scan found no secret ever committed: `.env` was never tracked, and a

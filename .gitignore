@@ -70,3 +70,6 @@ Thumbs.db
 
 # Local tooling output
 graphify-out/
+
+# Exploratory notebooks: kept locally, not part of the project (since mvp-2).
+notebooks/
