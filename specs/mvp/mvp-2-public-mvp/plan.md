@@ -94,9 +94,11 @@ All new modules are small single files, and none adds a dependency.
     the cap is reached it returns `None` without HTTP.
   - Client IP: the `TRUSTED_PROXY_HOPS`-th `X-Forwarded-For` entry from the
     right (default 1; each trusted proxy appends one), else
-    `request.client.host`. **Render needs 2:** the deploy check found that
-    Render's own proxy appends a changing address after the visitor's, so the
-    right-most entry never limited anyone.
+    `request.client.host`. **Render needs 3:** measured on the deploy, its
+    header reads `visitor, Cloudflare edge, Render proxy`, and the last two
+    change on every request, so the right-most entry never limited anyone.
+    Cloudflare drops a forged `X-Forwarded-For` and overwrites a forged
+    `CF-Connecting-IP`, so the visitor entry cannot be spoofed.
   - Mark it with `# ponytail: per-process memory, resets on restart`.
 
 ### frontend/ (Flutter, provider)
@@ -239,7 +241,7 @@ Render free (Docker) ── FastAPI
 - **X-Forwarded-For spoofing.** Counting `TRUSTED_PROXY_HOPS` entries from the
   right trusts only the proxies in front of the API; entries a client forges
   sit further left and are ignored. Render does not document its proxy chain,
-  so the value (2) is verified against the deploy (validation.md) and must be
+  so the value (3) is verified against the deploy (validation.md) and must be
   re-checked if the 21-request walkthrough stops returning a 429.
 - **The gate allows `?` and `!` and nothing else,** because users naturally type
   them and they carry no structure a prompt injection can use (no quotes,

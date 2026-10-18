@@ -50,7 +50,7 @@ def test_idle_visitors_are_forgotten():
 # --- client address behind proxies ---------------------------------------------
 # Each trusted proxy appends the address it saw, so with N trusted hops the
 # visitor is the N-th entry from the right; anything left of it is whatever
-# the client sent and can be forged. On Render N is 2 (validation.md).
+# the client sent and can be forged. On Render N is 3 (validation.md).
 
 
 def test_one_hop_is_the_right_most_entry():
@@ -74,10 +74,13 @@ def test_no_header_uses_the_socket_peer():
     assert client_ip(" , ", "127.0.0.1", hops=2) == "127.0.0.1"
 
 
-def test_varying_proxy_entry_does_not_reset_the_count(client, monkeypatch):
-    # What the live check found: Render's own entry changes per request.
-    monkeypatch.setattr(routes, "TRUSTED_PROXY_HOPS", 2)
-    responses = [see_more(client, f"1.2.3.4, 10.0.0.{i}") for i in range(21)]
+def test_varying_proxy_entries_do_not_reset_the_count(client, monkeypatch):
+    # Measured on Render: "visitor, Cloudflare edge, Render proxy", and the
+    # last two change on every request.
+    monkeypatch.setattr(routes, "TRUSTED_PROXY_HOPS", 3)
+    responses = [
+        see_more(client, f"1.2.3.4, 172.68.174.{i}, 10.199.48.{i}") for i in range(21)
+    ]
 
     assert [r.status_code for r in responses].count(429) == 1
     assert responses[20].status_code == 429
