@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/message.dart';
+import 'button_chip.dart';
 import 'place_card.dart';
 
 /// A chat message bubble widget
@@ -8,10 +9,20 @@ class MessageBubble extends StatelessWidget {
   final Message message;
   final VoidCallback? onPlaceTap;
 
+  /// Asks a follow-up chip; null hides the chips (older answers, no turns left).
+  final ValueChanged<String>? onFollowUp;
+
+  /// Shows the next results; null hides "Ver mais".
+  final VoidCallback? onSeeMore;
+  final String seeMoreLabel;
+
   const MessageBubble({
     super.key,
     required this.message,
     this.onPlaceTap,
+    this.onFollowUp,
+    this.onSeeMore,
+    this.seeMoreLabel = 'Ver mais',
   });
 
   @override
@@ -40,6 +51,7 @@ class MessageBubble extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildPlaces(context),
                 ],
+                _buildActions(),
                 if (message.processingTimeMs != null && !message.isUser)
                   _buildProcessingTime(),
               ],
@@ -82,7 +94,7 @@ class MessageBubble extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -118,6 +130,25 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
+  Widget _buildActions() {
+    final chips = [
+      if (onSeeMore != null && message.hasMore)
+        ButtonChip(
+          avatar: const Icon(Icons.expand_more, size: 18),
+          label: seeMoreLabel,
+          onPressed: onSeeMore,
+        ),
+      if (onFollowUp != null)
+        for (final followUp in message.followUps)
+          ButtonChip(label: followUp, onPressed: () => onFollowUp!(followUp)),
+    ];
+    if (chips.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(spacing: 8, runSpacing: 8, children: chips),
+    );
+  }
+
   Widget _buildProcessingTime() {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -125,7 +156,7 @@ class MessageBubble extends StatelessWidget {
         '${message.processingTimeMs!.round()}ms',
         style: TextStyle(
           fontSize: 11,
-          color: ParaColors.textSecondary.withOpacity(0.6),
+          color: ParaColors.textSecondary.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -241,7 +272,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: ParaColors.vermelho.withOpacity(0.6),
+              color: ParaColors.vermelho.withValues(alpha: 0.6),
               shape: BoxShape.circle,
             ),
           ),

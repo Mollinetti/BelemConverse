@@ -35,4 +35,56 @@ def built_catalog(tmp_path):
     shutil.copy(FIXTURES_DIR / "raw_repair_sample.csv", raw_dir)
     out_dir = tmp_path / "belem"
     build(csv_path=FIXTURES_DIR / "catalog_raw_sample.csv", raw_dir=raw_dir, out_dir=out_dir)
-    return out_dir / "places.sqlite"
+    return out_dir / "belem.sqlite"
+
+
+# --- mvp-2 API fixtures --------------------------------------------------------
+
+LLM_VARS = [
+    "LLM_BASE_URL", "LLM_MODEL", "LLM_API_KEY",
+    "LLM_FALLBACK_BASE_URL", "LLM_FALLBACK_MODEL", "LLM_FALLBACK_API_KEY",
+]
+
+
+@pytest.fixture
+def client(built_catalog, monkeypatch):
+    """A TestClient over the fixture catalog, with no model configured."""
+    from fastapi.testclient import TestClient
+
+    import api.dependencies as deps
+    import api.routes as routes
+    from api.main import app
+    from belem_converse.catalog import load_places
+
+    for name in LLM_VARS:
+        monkeypatch.delenv(name, raising=False)
+    # Startup state and the lazily built retriever are module-level singletons.
+    monkeypatch.setattr(deps, "_catalog", None)
+    monkeypatch.setattr(deps, "_load_catalog", lambda: load_places(built_catalog))
+    for attr in ("_place_cache", "_category_matcher", "_ranking_engine", "_retriever"):
+        monkeypatch.setattr(routes, attr, None)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+def fake_model(monkeypatch, **behaviour):
+    """Replace ``llm.summarize`` with an AsyncMock; returns the mock."""
+    from unittest.mock import AsyncMock
+
+    from belem_converse import llm
+
+    mock = AsyncMock(**behaviour)
+    monkeypatch.setattr(llm, "summarize", mock)
+    return mock
+
+
+@pytest.fixture(autouse=True)
+def fresh_state(monkeypatch):
+    """Conversations, the visitor limit and the daily model cap start empty in every test."""
+    import api.routes as routes
+    from belem_converse.limits import DailyCap, RateLimiter
+    from belem_converse.sessions import SessionStore
+
+    monkeypatch.setattr(routes, "sessions", SessionStore())
+    monkeypatch.setattr(routes, "rate_limiter", RateLimiter())
+    monkeypatch.setattr(routes, "daily_cap", DailyCap())

@@ -9,11 +9,10 @@ Parses the businessTime column format which varies:
 Provides functionality to check if a place is open at a given time.
 """
 
-import re
 import logging
-from datetime import datetime, time
-from typing import Dict, List, Optional, Tuple
+import re
 from dataclasses import dataclass, field
+from datetime import datetime, time
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class DaySchedule:
     """Represents the schedule for a single day."""
     day_name: str
     is_closed: bool = False
-    time_ranges: List[TimeRange] = field(default_factory=list)
+    time_ranges: list[TimeRange] = field(default_factory=list)
     
     def is_open_at(self, check_time: time) -> bool:
         """Check if open at a specific time."""
@@ -66,8 +65,8 @@ class DaySchedule:
 class BusinessHours:
     """Complete business hours for a place."""
     raw_text: str
-    schedules: Dict[str, DaySchedule] = field(default_factory=dict)
-    parse_error: Optional[str] = None
+    schedules: dict[str, DaySchedule] = field(default_factory=dict)
+    parse_error: str | None = None
     
     # Day name mappings
     DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -98,11 +97,11 @@ class BusinessHours:
         current_time = now.time()
         return self.is_open_at(day_name, current_time)
     
-    def get_hours_for_day(self, day: str) -> Optional[DaySchedule]:
+    def get_hours_for_day(self, day: str) -> DaySchedule | None:
         """Get schedule for a specific day."""
         return self.schedules.get(day)
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             'raw_text': self.raw_text,
@@ -272,7 +271,7 @@ class BusinessHoursParser:
         
         return result
     
-    def _parse_days(self, day_string: str) -> List[str]:
+    def _parse_days(self, day_string: str) -> list[str]:
         """Parse day string into list of day names."""
         days = []
         day_string = day_string.strip()
@@ -323,7 +322,7 @@ class BusinessHoursParser:
         
         return text
     
-    def _normalize_single_day(self, day: str) -> Optional[str]:
+    def _normalize_single_day(self, day: str) -> str | None:
         """Normalize a single day name."""
         day_lower = day.lower().strip()
         
@@ -347,7 +346,7 @@ class BusinessHoursParser:
         """'Open 24 hours', 'Atendimento 24 horas', '24h', '24/7' and the like."""
         return re.search(r'\b24\s*(h\b|hours?\b|horas?\b)|\b24/7\b', text) is not None
 
-    def _parse_time_ranges(self, time_string: str) -> List[TimeRange]:
+    def _parse_time_ranges(self, time_string: str) -> list[TimeRange]:
         """Parse time ranges from string."""
         ranges = []
         
@@ -366,7 +365,7 @@ class BusinessHoursParser:
         
         return ranges
     
-    def _parse_single_range(self, text: str) -> Optional[TimeRange]:
+    def _parse_single_range(self, text: str) -> TimeRange | None:
         """Parse a single time range (e.g., '9 AM to 5 PM')."""
         try:
             # Replace various separators
@@ -394,7 +393,7 @@ class BusinessHoursParser:
         
         return None
     
-    def _parse_time(self, time_tuple: Tuple) -> Optional[time]:
+    def _parse_time(self, time_tuple: tuple) -> time | None:
         """Parse a time from regex match tuple."""
         try:
             hour = int(time_tuple[0])
@@ -450,7 +449,7 @@ class BusinessHoursParser:
         self, 
         hours_string: str, 
         day: str
-    ) -> Optional[List[Tuple[str, str]]]:
+    ) -> list[tuple[str, str]] | None:
         """
         Get open hours for a specific day.
         

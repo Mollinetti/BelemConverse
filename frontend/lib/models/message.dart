@@ -7,8 +7,16 @@ class Message {
   final bool isUser;
   final DateTime timestamp;
   final List<Place> places;
-  final String? source;
   final double? processingTimeMs;
+
+  /// Suggested next questions (assistant answers only).
+  final List<String> followUps;
+
+  /// Whether "see more" has further results for this answer.
+  final bool hasMore;
+
+  /// Questions left in the conversation after this answer.
+  final int? turnsLeft;
 
   Message({
     required this.id,
@@ -16,8 +24,10 @@ class Message {
     required this.isUser,
     required this.timestamp,
     this.places = const [],
-    this.source,
     this.processingTimeMs,
+    this.followUps = const [],
+    this.hasMore = false,
+    this.turnsLeft,
   });
 
   /// Create a user message
@@ -34,8 +44,10 @@ class Message {
   factory Message.assistant({
     required String content,
     List<Place> places = const [],
-    String? source,
     double? processingTimeMs,
+    List<String> followUps = const [],
+    bool hasMore = false,
+    int? turnsLeft,
   }) {
     return Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -43,8 +55,10 @@ class Message {
       isUser: false,
       timestamp: DateTime.now(),
       places: places,
-      source: source,
       processingTimeMs: processingTimeMs,
+      followUps: followUps,
+      hasMore: hasMore,
+      turnsLeft: turnsLeft,
     );
   }
 
@@ -59,33 +73,4 @@ class Message {
   }
 
   bool get isLoading => id == 'loading';
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'content': content,
-      'isUser': isUser,
-      'timestamp': timestamp.toIso8601String(),
-      'places': places.map((p) => p.toJson()).toList(),
-      'source': source,
-      'processingTimeMs': processingTimeMs,
-    };
-  }
-
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
-      id: json['id'] as String,
-      content: json['content'] as String,
-      isUser: json['isUser'] as bool,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      places: (json['places'] as List<dynamic>?)
-              ?.map((p) => Place.fromJson(p as Map<String, dynamic>))
-              .toList() ??
-          [],
-      source: json['source'] as String?,
-      processingTimeMs: json['processingTimeMs'] as double?,
-    );
-  }
 }
-
-

@@ -3,7 +3,7 @@ Configuration settings for the RAG-based travel guide agent.
 """
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 # Base paths (env-overridable for Docker / alternate deploy targets)
 BASE_DIR = Path(__file__).parent.parent.parent
@@ -14,11 +14,7 @@ DATA_CONFIG = {
     "csv_path": str(DATA_DIR / "csvs" / "combined_all_data.csv")
 }
 
-# Model Selection (can be overridden by environment variable)
-SELECTED_MODEL = os.getenv("BELEM_MODEL", "llama3.1")  # Options: llama3.1, mistral
-
-# City Configuration (for multi-city support)
-SELECTED_CITY = os.getenv("BELEM_CITY", "belem")
+# City Configuration (the city profile is chosen by BELEMCONVERSE_CITY, see cities/)
 CURRENT_CITY_NAME = "Belém"
 
 # City bounds for Belém
@@ -187,7 +183,7 @@ ENV_VARS = {
     "TOKENIZERS_PARALLELISM": "false"
 }
 
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     """Get the complete configuration dictionary."""
     return {
         "data": DATA_CONFIG,

@@ -8,20 +8,17 @@ This test suite validates the filter-first retrieval path including:
 - RankingEngine integration
 """
 
-import sys
-from pathlib import Path
 
 # Add src to path
 
 import pytest
-from datetime import datetime
 
-# Import modules
-from belem_converse.core.unified_retriever import UnifiedRetriever, RetrievalResult
-from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.category_matcher import CategoryMatcher
+from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.ranking_engine import RankingEngine
 
+# Import modules
+from belem_converse.core.unified_retriever import RetrievalResult, UnifiedRetriever
 
 
 @pytest.fixture

@@ -23,8 +23,10 @@ public showcase.
   my phone and start asking right away, with no install or sign-up, so that
   trying the product takes seconds.
 - **P1 — Plain-text input.** As the showcase owner, I want the chat box to accept
-  only letters, digits, spaces, commas, periods and colons, up to 400
-  characters, and the server to enforce the same rule. That way crafted inputs
+  only letters, digits, spaces, commas, periods, colons, question marks and
+  exclamation marks, up to 400 characters, and the server to enforce the same
+  rule. `?` and `!` are allowed because visitors naturally type them; every
+  other symbol stays out. That way crafted inputs
   cannot steer the assistant.
 - **P1 — Short conversation with memory.** As a visitor, I want up to 4 answered
   questions in one conversation, and a follow-up such as "e abertos agora?" to
@@ -35,6 +37,10 @@ public showcase.
   browse beyond the first five.
 - **P2 — Suggested follow-ups.** As a visitor, I want a few one-tap follow-up
   suggestions after each answer, so that I know what else I can ask.
+- **P2 — Nearby search only in Belém.** As the showcase owner, I want
+  location-based search to work only for visitors who are in Belém, so that
+  someone elsewhere is not shown meaningless distances ("4,000 km away") and
+  understands why "near me" does not apply to them.
 - **P2 — Fair use.** As the showcase owner, I want per-visitor and daily limits,
   so that one visitor or a script cannot use up the free allowances and break
   the demo for everyone.
@@ -59,10 +65,11 @@ public showcase.
 
 ### Plain-text input (P1)
 
-- **Given** the chat box, **When** a visitor types or pastes `?`, `!`, quotes,
-  angle brackets, braces, newlines or emoji, **Then** those characters do not
-  appear in the box. Letters with Portuguese accents, digits, spaces, `,`, `.`
-  and `:` do appear.
+- **Given** the chat box, **When** a visitor types or pastes quotes, angle
+  brackets, braces, brackets, slashes, `;`, `@`, `#`, `*`, `-`, `_` or any
+  other symbol, newlines or emoji, **Then** those characters do not appear in
+  the box. Letters with Portuguese accents, digits, spaces, `,`, `.`, `:`, `?`
+  and `!` do appear.
 - **Given** the chat box, **When** the text reaches 400 characters, **Then** no
   more can be typed.
 - **Given** a direct call to the backend that bypasses the app, **When** the
@@ -72,7 +79,7 @@ public showcase.
   called.
 - **Given** the message
   `Restaurantes abertos perto da Praça da República, 20:00`, **When** it is sent,
-  **Then** it is accepted.
+  **Then** it is accepted. So is `Onde tem açaí?!`.
 
 ### Short conversation with memory (P1)
 
@@ -104,6 +111,20 @@ public showcase.
 - **Given** any answered question, **When** the answer is shown, **Then** 2–4
   follow-up suggestions appear in the answer's language. Tapping one asks it as a
   normal question. Every suggestion would itself pass the input rule.
+
+### Nearby search only in Belém (P2)
+
+- **Given** a visitor whose shared location is inside the city profile's
+  bounds, **When** they ask for places near them, **Then** results are filtered
+  and sorted by distance, as before.
+- **Given** a visitor whose shared location is outside those bounds, **When**
+  they ask for places near them ("perto de mim"), **Then** the answer opens with
+  a short note in their language saying that searching nearby only works in
+  Belém, followed by places from the whole city. No distance appears on any
+  card, and the question counts as answered.
+- **Given** a visitor outside the bounds, **When** they ask anything else,
+  **Then** their location is ignored without a note, and "Mais perto de mim" is
+  never suggested.
 
 ### Fair use (P2)
 

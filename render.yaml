@@ -1,0 +1,27 @@
+# Render blueprint: one free Docker web service for the API.
+# Secrets are entered in the Render dashboard (sync: false), never committed.
+services:
+  - type: web
+    name: belemconverse
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai
+      - key: LLM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_FALLBACK_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_FALLBACK_MODEL
+        value: qwen/qwen3.8-27b
+      - key: LLM_FALLBACK_API_KEY
+        sync: false
+      - key: LLM_DAILY_CAP
+        value: "800"
+      - key: ALLOWED_ORIGINS
+        value: https://mollinetti.github.io
+      - key: TRUSTED_PROXY_HOPS
+        value: "3"  # visitor, Cloudflare edge, Render proxy (measured)

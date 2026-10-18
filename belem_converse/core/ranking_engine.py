@@ -7,9 +7,9 @@ supporting four ranking modes: distance, rating, popularity, and best_match.
 Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.5, 10.6
 """
 
-from typing import List, Optional, Any, Dict
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -71,10 +71,10 @@ class RankingEngine:
     
     def rank(
         self,
-        places: List[Any],
+        places: list[Any],
         mode: str,
-        user_location: Optional[Location] = None
-    ) -> List[Any]:
+        user_location: Location | None = None
+    ) -> list[Any]:
         """
         Rank places according to specified mode.
         
@@ -106,7 +106,7 @@ class RankingEngine:
         else:
             raise ValueError(f"Unknown ranking mode: {mode}")
     
-    def _get_location(self, place: Any) -> Optional[Location]:
+    def _get_location(self, place: Any) -> Location | None:
         """
         Extract location from place object or dictionary.
         
@@ -166,9 +166,9 @@ class RankingEngine:
     
     def _rank_by_distance(
         self,
-        places: List[Any],
+        places: list[Any],
         user_location: Location
-    ) -> List[Any]:
+    ) -> list[Any]:
         """
         Sort by distance ascending, rating as tiebreaker.
         
@@ -194,7 +194,7 @@ class RankingEngine:
         
         return sorted(places, key=sort_key)
     
-    def _rank_by_rating(self, places: List[Any]) -> List[Any]:
+    def _rank_by_rating(self, places: list[Any]) -> list[Any]:
         """
         Sort by totalScore descending, reviewsCount as tiebreaker.
         
@@ -214,7 +214,7 @@ class RankingEngine:
         
         return sorted(places, key=sort_key)
     
-    def _rank_by_popularity(self, places: List[Any]) -> List[Any]:
+    def _rank_by_popularity(self, places: list[Any]) -> list[Any]:
         """
         Sort by Bayesian popularity score descending.
         
@@ -237,9 +237,9 @@ class RankingEngine:
     
     def _rank_by_best_match(
         self,
-        places: List[Any],
-        user_location: Optional[Location]
-    ) -> List[Any]:
+        places: list[Any],
+        user_location: Location | None
+    ) -> list[Any]:
         """
         Composite scoring: 45% rating, 35% popularity, 20% proximity.
         

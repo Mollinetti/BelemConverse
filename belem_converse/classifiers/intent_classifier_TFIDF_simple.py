@@ -4,16 +4,14 @@ Optimized for speed while maintaining accuracy.
 """
 
 import json
-import unicodedata
 import pickle
-import os
+import unicodedata
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion
-import numpy as np
-
 
 # Resolved at import time so train() doesn't pay path-resolution cost.
 _IMPLICIT_LEXICON_PATH = (
@@ -366,7 +364,7 @@ class SimpleTFIDFIntentClassifier:
         text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
         return text.lower().strip()
     
-    def _load_implicit_lexicon(self) -> Dict[str, List[str]]:
+    def _load_implicit_lexicon(self) -> dict[str, list[str]]:
         """Load and flatten the implicit-category lexicon for training-data
         injection (P1/F5).
 
@@ -382,7 +380,7 @@ class SimpleTFIDFIntentClassifier:
         the data file shipped (e.g. minimal Docker images).
         """
         try:
-            with open(_IMPLICIT_LEXICON_PATH, "r", encoding="utf-8") as fh:
+            with open(_IMPLICIT_LEXICON_PATH, encoding="utf-8") as fh:
                 raw = json.load(fh)
         except FileNotFoundError:
             print(
@@ -394,7 +392,7 @@ class SimpleTFIDFIntentClassifier:
             print(f"WARNING: failed to load implicit lexicon: {e} — training without F5.")
             return {}
 
-        flat: Dict[str, List[str]] = {}
+        flat: dict[str, list[str]] = {}
         for lang_key, categories in raw.items():
             if lang_key.startswith("_") or not isinstance(categories, dict):
                 continue
@@ -408,10 +406,10 @@ class SimpleTFIDFIntentClassifier:
 
     def _prepare_simple_training_data(
         self,
-        keywords_dict: Dict[str, List[str]],
+        keywords_dict: dict[str, list[str]],
         include_location_negatives: bool = True,
-        semantic_examples: Optional[Dict[str, List[str]]] = None,
-    ) -> Tuple[List[str], List[str]]:
+        semantic_examples: dict[str, list[str]] | None = None,
+    ) -> tuple[list[str], list[str]]:
         """
         Prepare training data with intent-specific templates and negative examples.
 
@@ -511,8 +509,8 @@ class SimpleTFIDFIntentClassifier:
             'looking for {kw}',
         ]
 
-        X: List[str] = []
-        y: List[str] = []
+        X: list[str] = []
+        y: list[str] = []
 
         for label, keywords in keywords_dict.items():
             templates = intent_templates.get(label, default_templates)
@@ -700,7 +698,7 @@ class SimpleTFIDFIntentClassifier:
             print(f"Model load error: {e}")
             return False
     
-    def predict_intent(self, query: str) -> Dict[str, Any]:
+    def predict_intent(self, query: str) -> dict[str, Any]:
         """Fast intent prediction."""
         if not self.is_trained:
             self.train()
@@ -717,7 +715,7 @@ class SimpleTFIDFIntentClassifier:
         proba = self.intent_classifier.predict_proba(X_vec)[0]
         
         # Get probabilities
-        intent_probs = dict(zip(self.intent_classifier.classes_, proba))
+        intent_probs = dict(zip(self.intent_classifier.classes_, proba, strict=True))
         
         # Sort by confidence
         sorted_intents = sorted(intent_probs.items(), key=lambda x: x[1], reverse=True)
@@ -744,7 +742,7 @@ class SimpleTFIDFIntentClassifier:
             'primary_confidence': top_intents[0]['confidence']
         }
     
-    def predict_category(self, query: str) -> Dict[str, Any]:
+    def predict_category(self, query: str) -> dict[str, Any]:
         """Fast category prediction."""
         if not self.is_trained:
             self.train()
@@ -761,7 +759,7 @@ class SimpleTFIDFIntentClassifier:
         proba = self.category_classifier.predict_proba(X_vec)[0]
         
         # Get probabilities
-        category_probs = dict(zip(self.category_classifier.classes_, proba))
+        category_probs = dict(zip(self.category_classifier.classes_, proba, strict=True))
         
         # Sort by confidence
         sorted_categories = sorted(category_probs.items(), key=lambda x: x[1], reverse=True)
@@ -788,7 +786,7 @@ class SimpleTFIDFIntentClassifier:
             'primary_confidence': top_categories[0]['confidence']
         }
     
-    def predict(self, query: str) -> Dict[str, Any]:
+    def predict(self, query: str) -> dict[str, Any]:
         """Fast prediction of both intent and category."""
         intent_result = self.predict_intent(query)
         category_result = self.predict_category(query)

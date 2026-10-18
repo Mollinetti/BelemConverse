@@ -15,98 +15,62 @@ class ApiService {
   })  : baseUrl = baseUrl ?? AppConstants.apiBaseUrl,
         _client = client ?? http.Client();
 
-  /// Send a chat message and get a response per OpenAPI spec
+  /// Ask [message] in conversation [sessionId], or page the last answer with
+  /// `action: 'more'` (no message, costs no question).
   Future<Message> sendMessage({
-    required String message,
-    required String language, // Should be 'en' or 'pt-BR'
+    String? message,
+    required String language, // 'en' or 'pt-BR'
+    required String sessionId,
+    String? action,
     double? latitude,
     double? longitude,
-    String? nowIso,
     Map<String, dynamic>? filters,
   }) async {
+    final body = <String, dynamic>{
+      'session_id': sessionId,
+      'language': language,
+      if (message != null) 'message': message,
+      if (action != null) 'action': action,
+      if (latitude != null && longitude != null)
+        'userLocation': {'lat': latitude, 'lng': longitude},
+      if (filters != null && filters.isNotEmpty) 'filters': filters,
+    };
+
+    final http.Response response;
     try {
-      final body = <String, dynamic>{
-        'message': message,
-        'language': language, // 'en' or 'pt-BR'
-      };
-
-      // Add userLocation (preferred) or coordinates (legacy fallback)
-      if (latitude != null && longitude != null) {
-        body['userLocation'] = {
-          'lat': latitude,
-          'lng': longitude,
-        };
-        // Also include legacy coordinates for backward compatibility
-        body['coordinates'] = {
-          'lat': latitude,
-          'lng': longitude,
-        };
-      }
-
-      // Add nowIso if provided
-      if (nowIso != null) {
-        body['nowIso'] = nowIso;
-      }
-
-      // Add filters if provided
-      if (filters != null && filters.isNotEmpty) {
-        body['filters'] = filters;
-      }
-
-      final response = await _client
+      response = await _client
           .post(
             Uri.parse('$baseUrl/chat'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
+            headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
             body: jsonEncode(body),
           )
           .timeout(AppConstants.apiTimeout);
+    } catch (e) {
+      throw ApiException('Could not reach the server: $e', originalError: e);
+    }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        
-        // Use new format (results, answer) with fallback to legacy (places, response)
-        final results = data['results'] as List<dynamic>?;
-        final places = data['places'] as List<dynamic>?;
-        final placesList = (results ?? places ?? [])
-            .map((p) => Place.fromJson(p as Map<String, dynamic>))
-            .toList();
-
-        final answer = data['answer'] as String? ?? 
-                      data['response'] as String? ?? 
-                      '';
-
+    switch (response.statusCode) {
+      case 200:
+        final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
         return Message.assistant(
-          content: answer,
-          places: placesList,
-          source: data['source'] as String?,
+          content: data['answer'] as String? ?? '',
+          places: (data['results'] as List<dynamic>? ?? [])
+              .map((p) => Place.fromJson(p as Map<String, dynamic>))
+              .toList(),
+          followUps: (data['follow_ups'] as List<dynamic>? ?? []).cast<String>(),
+          hasMore: data['has_more'] as bool? ?? false,
+          turnsLeft: data['turns_left'] as int?,
           processingTimeMs: (data['processing_time_ms'] as num?)?.toDouble(),
         );
-      } else if (response.statusCode == 503) {
-        throw ApiException(
-          'O servidor está inicializando. Por favor, aguarde um momento.',
-          statusCode: 503,
-        );
-      } else {
-        final error = jsonDecode(response.body);
-        throw ApiException(
-          error['detail'] ?? 'Erro desconhecido',
-          statusCode: response.statusCode,
-        );
-      }
-    } on http.ClientException catch (e) {
-      throw ApiException(
-        'Não foi possível conectar ao servidor. Verifique sua conexão.',
-        originalError: e,
-      );
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(
-        'Erro ao processar a solicitação: $e',
-        originalError: e,
-      );
+      case 409:
+        final code = (jsonDecode(response.body) as Map<String, dynamic>)['code'];
+        throw code == 'no_previous_results' ? NoPreviousResults() : ConversationFinished();
+      case 422:
+        throw InvalidInput();
+      case 429:
+        throw TooManyRequests();
+      default:
+        throw ApiException('HTTP ${response.statusCode}', statusCode: response.statusCode);
     }
   }
 
@@ -127,17 +91,6 @@ class ApiService {
     }
   }
 
-  /// Clear conversation history on the server
-  Future<void> clearHistory() async {
-    try {
-      await _client
-          .post(Uri.parse('$baseUrl/clear-history'))
-          .timeout(AppConstants.connectionTimeout);
-    } catch (e) {
-      // Ignore errors when clearing history
-    }
-  }
-
   void dispose() {
     _client.close();
   }
@@ -155,4 +108,22 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// 409: no questions left in this conversation.
+class ConversationFinished extends ApiException {
+  ConversationFinished() : super('conversation finished', statusCode: 409);
+}
 
+/// 409 on "see more": the server has no previous results (e.g. it restarted).
+class NoPreviousResults extends ApiException {
+  NoPreviousResults() : super('no previous results', statusCode: 409);
+}
+
+/// 422: the server's input gate refused the message.
+class InvalidInput extends ApiException {
+  InvalidInput() : super('invalid input', statusCode: 422);
+}
+
+/// 429: too many messages from this visitor; wait a few minutes.
+class TooManyRequests extends ApiException {
+  TooManyRequests() : super('too many requests', statusCode: 429);
+}

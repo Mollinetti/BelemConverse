@@ -13,25 +13,27 @@ import logging
 import time
 import traceback
 from datetime import datetime
-from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from belem_converse import llm
+from belem_converse import follow_ups, llm
+from belem_converse.cities import get_city_config
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
 from belem_converse.core.category_matcher import CategoryMatcher
 from belem_converse.core.place_cache import PlaceCache
-from belem_converse.core.query_planner import QueryPlanner
+from belem_converse.core.query_planner import QueryPlanner, merge_slots
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
+from belem_converse.limits import DailyCap, RateLimiter, client_ip, trusted_proxy_hops
+from belem_converse.sessions import SessionStore
 
 from . import __version__
 from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
 from .schemas import (
-    ChatFilters,
     ChatRequest,
     ChatResponse,
     ErrorResponse,
@@ -46,15 +48,36 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 MAX_RESULTS = 5  # spec: an answer shows at most five places
+MAX_RANKED = 30  # kept per conversation for "see more"
+ANNOTATIONS = ("distanceKm", "openNowStatus")  # per-request fields, not in the catalog
+# Distances from another city are meaningless, so a location outside the city
+# profile's bounds is discarded; a question that asked for something nearby is
+# told why. The rest of the answer covers the whole city.
+_CITY = get_city_config().name
+OUTSIDE_CITY_NOTICE = {
+    "pt-BR": f"A busca por proximidade só funciona em {_CITY}, e você não parece estar aqui. "
+             f"Estes são lugares de toda a cidade.",
+    "en": f"Searching near you only works in {_CITY}, and you don't seem to be here. "
+          f"These are places from across the city.",
+}
+SEE_MORE_LINE = {
+    "pt-BR": "Mais lugares da sua última busca.",
+    "en": "More places from your last search.",
+}
 
+
+sessions = SessionStore()
+rate_limiter = RateLimiter()
+TRUSTED_PROXY_HOPS = trusted_proxy_hops()
+daily_cap = DailyCap()
 
 # ----- module-level singletons (built lazily on first chat) -----------------
-_intent_classifier: Optional[SimpleTFIDFIntentClassifier] = None
-_query_planner: Optional[QueryPlanner] = None
-_place_cache: Optional[PlaceCache] = None
-_category_matcher: Optional[CategoryMatcher] = None
-_ranking_engine: Optional[RankingEngine] = None
-_retriever: Optional[UnifiedRetriever] = None
+_intent_classifier: SimpleTFIDFIntentClassifier | None = None
+_query_planner: QueryPlanner | None = None
+_place_cache: PlaceCache | None = None
+_category_matcher: CategoryMatcher | None = None
+_ranking_engine: RankingEngine | None = None
+_retriever: UnifiedRetriever | None = None
 
 
 def _get_intent_classifier() -> SimpleTFIDFIntentClassifier:
@@ -73,7 +96,7 @@ def _get_query_planner() -> QueryPlanner:
     return _query_planner
 
 
-def _load_places_index() -> List[dict]:
+def _load_places_index() -> list[dict]:
     """The catalog loaded at startup; 503 until it exists."""
     catalog = get_catalog()
     if catalog is None:
@@ -137,11 +160,35 @@ async def get_place(placeId: str) -> Place:
     response_model=ChatResponse,
     responses={
         400: {"model": ErrorResponse, "description": "Bad request"},
+        429: {"description": "rate_limited: too many messages from this visitor"},
+        409: {"description": "conversation_finished: no questions left; "
+                            "no_previous_results: nothing to see more of"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
         503: {"model": ErrorResponse, "description": "Service unavailable"},
     },
 )
-async def chat(request: ChatRequest) -> ChatResponse:
+async def chat(
+    request: ChatRequest, http_request: Request, response: Response
+) -> ChatResponse | JSONResponse:
+    """The per-visitor limit, then the conversation; every response says how many
+    messages the visitor has left in X-RateLimit-Remaining."""
+    visitor = client_ip(
+        http_request.headers.get("x-forwarded-for"),
+        http_request.client.host if http_request.client else None,
+        TRUSTED_PROXY_HOPS,
+    )
+    if not rate_limiter.hit(visitor):
+        return JSONResponse(
+            status_code=429, content={"code": "rate_limited"},
+            headers={"X-RateLimit-Remaining": "0"},
+        )
+    result = await _chat(request)
+    headers = result.headers if isinstance(result, Response) else response.headers
+    headers["X-RateLimit-Remaining"] = str(rate_limiter.remaining(visitor))
+    return result
+
+
+async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
     start = time.time()
     started_at = time.monotonic()  # the model's time budget counts from here
@@ -152,6 +199,16 @@ async def chat(request: ChatRequest) -> ChatResponse:
             detail=f"Place catalog not loaded. {BUILD_HINT}",
         )
 
+    session = sessions.get_or_create(str(request.session_id))
+    if request.action == "more":
+        return _see_more(session, request.language or "pt-BR")
+    if session.turns_left <= 0:
+        return JSONResponse(
+            status_code=409, content={"code": "conversation_finished", "turns_left": 0}
+        )
+    # Taken before the first await, so parallel requests cannot answer a 5th.
+    session.turns_used += 1
+
     # Optional client-supplied "now" timestamp (used by open-hours filtering).
     if request.nowIso:
         try:
@@ -159,11 +216,16 @@ async def chat(request: ChatRequest) -> ChatResponse:
         except ValueError:
             logger.warning("Invalid nowIso format: %s", request.nowIso)
 
-    user_location: Optional[dict] = None
+    user_location: dict | None = None
     if request.userLocation:
         user_location = {"lat": request.userLocation.lat, "lng": request.userLocation.lng}
     elif request.coordinates:
         user_location = {"lat": request.coordinates.lat, "lng": request.coordinates.lng}
+    outside_city = user_location is not None and not get_city_config().is_within_bounds(
+        user_location["lat"], user_location["lng"]
+    )
+    if outside_city:
+        user_location = None
 
     filters_dict = request.filters.dict(exclude_none=True) if request.filters else None
 
@@ -186,11 +248,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
         logger.exception("Retriever build failed")
         raise HTTPException(status_code=500, detail=f"Retriever error: {exc}") from exc
 
+    # A follow-up refines the conversation's previous question.
+    slots = merge_slots(session.last_plan, query_plan.slots)
+    session.last_plan = slots
     query_plan_dict = {
         "intent": query_plan.intent,
-        "slots": query_plan.slots,
+        "slots": slots,
         "retrieval_strategy": "structured_only",
-        "proximity_intent_detected": query_plan.slots.get("proximity_intent_detected", False),
+        "proximity_intent_detected": slots.get("proximity_intent_detected", False),
         "language": query_plan.language,
     }
     # CPU-bound: run it off the event loop so other requests are not stalled.
@@ -200,10 +265,69 @@ async def chat(request: ChatRequest) -> ChatResponse:
         len(retrieval_result.places),
         retrieval_result.strategy_used,
     )
-    top_places = retrieval_result.places[:MAX_RESULTS]
+    ranked = retrieval_result.places[:MAX_RANKED]
+    top_places = ranked[:MAX_RESULTS]
+    place_results = _place_results(top_places)
+    session.ranked_ids = [p["placeId"] for p in ranked]
+    session.annotations = {
+        p["placeId"]: ann
+        for p in ranked
+        if (ann := {k: p[k] for k in ANNOTATIONS if k in p})
+    }
+    session.cursor = len(top_places)
 
-    place_results: List[PlaceResult] = []
-    for place in top_places:
+    answer, answer_source = await _answer(
+        request.message, top_places, query_plan.language, started_at
+    )
+    if outside_city and query_plan.slots.get("proximity_intent_detected"):
+        answer = f"{OUTSIDE_CITY_NOTICE[query_plan.language]}\n\n{answer}"
+    elapsed_ms = (time.time() - start) * 1000
+    logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
+
+    return ChatResponse(
+        language=query_plan.language,
+        answer=answer,
+        results=place_results,
+        turns_left=session.turns_left,
+        has_more=session.cursor < len(session.ranked_ids),
+        follow_ups=follow_ups.build(slots, query_plan.language, user_location is not None),
+        debug={
+            **(query_plan.debug or {}),
+            "answer_source": answer_source,
+            "location_outside_city": outside_city,
+        },
+        processing_time_ms=round(elapsed_ms, 1),
+    )
+
+
+def _see_more(session, language: str) -> ChatResponse | JSONResponse:
+    """The next page of the conversation's last ranked list: no search, no model."""
+    if not session.ranked_ids:
+        return JSONResponse(
+            status_code=409,
+            content={"code": "no_previous_results", "turns_left": session.turns_left},
+        )
+    page_ids = session.ranked_ids[session.cursor : session.cursor + MAX_RESULTS]
+    session.cursor += len(page_ids)
+    cache = _get_retriever().place_cache
+    places = [
+        {**place, **session.annotations.get(place_id, {})}
+        for place_id in page_ids
+        if (place := cache.get_by_id(place_id)) is not None
+    ]
+    return ChatResponse(
+        language=language,
+        answer=SEE_MORE_LINE[language],
+        results=_place_results(places),
+        turns_left=session.turns_left,
+        has_more=session.cursor < len(session.ranked_ids),
+        debug={"answer_source": "see_more"},
+    )
+
+
+def _place_results(places: list[dict]) -> list[PlaceResult]:
+    results: list[PlaceResult] = []
+    for place in places:
         try:
             place_dict = place.copy()
             loc = place_dict.get("location")
@@ -211,7 +335,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 place_dict["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
             elif isinstance(loc, dict):
                 place_dict["location"] = None
-            place_results.append(PlaceResult(**place_dict))
+            results.append(PlaceResult(**place_dict))
         except Exception as exc:
             logger.error(
                 "Error converting place %s: %s",
@@ -223,31 +347,17 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 status_code=400,
                 detail=f"Error converting place result: {exc}",
             ) from exc
-
-    answer, answer_source = await _answer(
-        request.message, top_places, query_plan.language, started_at
-    )
-    elapsed_ms = (time.time() - start) * 1000
-    logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
-
-    return ChatResponse(
-        language=query_plan.language,
-        answer=answer,
-        results=place_results,
-        debug={**(query_plan.debug or {}), "answer_source": answer_source},
-        response=answer,
-        processing_time_ms=round(elapsed_ms, 1),
-    )
+    return results
 
 
 async def _answer(
-    question: str, places: List[dict], language: str, started_at: float
+    question: str, places: list[dict], language: str, started_at: float
 ) -> tuple[str, str]:
     """(answer, source): the model's grounded answer, else the template.
 
     The model is called at most once, and not at all when nothing was found.
     """
-    if places:
+    if places and daily_cap.take():
         try:
             text = await llm.summarize(question, places, language, started_at=started_at)
         except Exception:  # the visitor always gets an answer, whatever the model client does
@@ -261,7 +371,7 @@ async def _answer(
     return _generate_answer(places, language), "template"
 
 
-def _generate_answer(places: List[dict], language: str) -> str:
+def _generate_answer(places: list[dict], language: str) -> str:
     """Template answer: used when the model is unconfigured, fails, or strays."""
     if not places:
         if language == "pt-BR":
@@ -276,7 +386,7 @@ def _generate_answer(places: List[dict], language: str) -> str:
             "or disabling the 'open now' filter."
         )
 
-    lines: List[str] = []
+    lines: list[str] = []
     for i, place in enumerate(places, 1):
         name = place.get("title") or place.get("titleFormatted") or "Unknown"
         address = place.get("addressFormatted") or place.get("address") or ""
@@ -308,4 +418,5 @@ def _generate_answer(places: List[dict], language: str) -> str:
     if language == "pt-BR":
         return f"Aqui estão os lugares encontrados:\n\n{body}\n\nEstes são os lugares que correspondem à sua busca."
     return f"Here are the places found:\n\n{body}\n\nThese are the places matching your search."
+
 

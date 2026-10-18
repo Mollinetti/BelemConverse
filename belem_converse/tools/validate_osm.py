@@ -19,7 +19,7 @@ from pathlib import Path
 
 from belem_converse.cities import CityConfig, get_city_config
 from belem_converse.ingest.place_matcher import MatchStatus, PlaceMatcher
-from belem_converse.utils.config import DATA_DIR
+from belem_converse.utils.config import BASE_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    catalog = args.catalog or DATA_DIR / get_city_config().catalog_path
+    catalog = args.catalog or BASE_DIR / get_city_config().catalog_path
     report = validate(catalog)
     print(
         f"{report['verified']} of {report['catalog_rows']} places confirmed by OSM "
