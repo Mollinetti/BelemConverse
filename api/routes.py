@@ -27,7 +27,7 @@ from belem_converse.core.place_cache import PlaceCache
 from belem_converse.core.query_planner import QueryPlanner, merge_slots
 from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import UnifiedRetriever
-from belem_converse.limits import DailyCap, RateLimiter, client_ip
+from belem_converse.limits import DailyCap, RateLimiter, client_ip, trusted_proxy_hops
 from belem_converse.sessions import SessionStore
 
 from . import __version__
@@ -57,6 +57,7 @@ SEE_MORE_LINE = {
 
 sessions = SessionStore()
 rate_limiter = RateLimiter()
+TRUSTED_PROXY_HOPS = trusted_proxy_hops()
 daily_cap = DailyCap()
 
 # ----- module-level singletons (built lazily on first chat) -----------------
@@ -163,6 +164,7 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse | JS
     visitor = client_ip(
         http_request.headers.get("x-forwarded-for"),
         http_request.client.host if http_request.client else None,
+        TRUSTED_PROXY_HOPS,
     )
     if not rate_limiter.hit(visitor):
         return JSONResponse(status_code=429, content={"code": "rate_limited"})

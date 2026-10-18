@@ -92,8 +92,11 @@ All new modules are small single files, and none adds a dependency.
   - `DailyCap(cap=int(os.getenv("LLM_DAILY_CAP", 800)))`: a counter reset when
     the date in the city time zone changes. It wraps `llm.summarize`, and once
     the cap is reached it returns `None` without HTTP.
-  - Client IP: the **right-most** `X-Forwarded-For` entry (the one appended by
-    Render's proxy), else `request.client.host`.
+  - Client IP: the `TRUSTED_PROXY_HOPS`-th `X-Forwarded-For` entry from the
+    right (default 1; each trusted proxy appends one), else
+    `request.client.host`. **Render needs 2:** the deploy check found that
+    Render's own proxy appends a changing address after the visitor's, so the
+    right-most entry never limited anyone.
   - Mark it with `# ponytail: per-process memory, resets on restart`.
 
 ### frontend/ (Flutter, provider)
@@ -233,10 +236,11 @@ Render free (Docker) ── FastAPI
   ping, which is against the free tier's spirit and burns the 750 h/month.
 - **In-memory sessions and limits reset** on restart or redeploy. Acceptable for
   a showcase: the worst case is that a visitor gets a fresh 4 turns.
-- **X-Forwarded-For spoofing.** Taking the right-most hop trusts only Render's
-  proxy. If Render's header behaviour differs, the limiter falls back to the
-  socket address, so it is still bounded per proxy IP. Verify once against a
-  deploy (validation.md).
+- **X-Forwarded-For spoofing.** Counting `TRUSTED_PROXY_HOPS` entries from the
+  right trusts only the proxies in front of the API; entries a client forges
+  sit further left and are ignored. Render does not document its proxy chain,
+  so the value (2) is verified against the deploy (validation.md) and must be
+  re-checked if the 21-request walkthrough stops returning a 429.
 - **The gate allows `?` and `!` and nothing else,** because users naturally type
   them and they carry no structure a prompt injection can use (no quotes,
   brackets, markup, separators or newlines). Every other symbol is filtered
