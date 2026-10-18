@@ -87,6 +87,10 @@ only describes what deterministic retrieval hands it.
 - **Filters before it ranks.** Opening hours, then proximity with a radius that
   escalates 500 m → 1 km → 2 km, then category. Rating and popularity only
   reorder what survives.
+- **Searches near you only in Belém.** A shared location outside the city's
+  bounds (from the city profile) is ignored: no distances from another city,
+  and a "near me" question is told why before getting places from across
+  Belém.
 - **Cannot invent a place.** At most five retrieved places reach the model, and
   its reply is checked: if it names anything else, the visitor gets a plain
   template answer instead.

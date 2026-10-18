@@ -103,6 +103,15 @@
   never match inside other words; main-category matches rank first. Each
   category chip brings back its kind of place. → depends on T10
 
+## Nearby search only in Belém
+
+- **T12a** Failing tests in `tests/test_location_outside_city.py`: inside the
+  bounds, distances as before; outside (São Paulo), a nearby question gets the
+  localized notice, city-wide results with no `distanceKm` (also in what the
+  model sees and in "see more"), and no "closest" chip; a non-nearby question
+  gets no notice. Then implement in `chat()` per plan.md step 3a.
+  → depends on T06, T10
+
 ## Fair use
 
 - **T11 [P]** Write failing tests in `tests/test_rate_limit.py`.

@@ -193,7 +193,7 @@ data as data, and LLM output is length-capped and grounding-checked (D2).
 After each answer, `follow_ups` carries 2–3 deterministic question chips
 derived from the plan. A chip is skipped when its filter is already applied:
 - "Abertos agora".
-- "Mais perto", only when the user shared a location.
+- "Mais perto", only when the user shared a location inside the city.
 - "Melhor avaliados".
 - One sibling category.
 
