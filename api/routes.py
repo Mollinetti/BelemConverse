@@ -14,7 +14,7 @@ import time
 import traceback
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -156,18 +156,31 @@ async def get_place(placeId: str) -> Place:
         503: {"model": ErrorResponse, "description": "Service unavailable"},
     },
 )
-async def chat(request: ChatRequest, http_request: Request) -> ChatResponse | JSONResponse:
-    """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
-    start = time.time()
-    started_at = time.monotonic()  # the model's time budget counts from here
-
+async def chat(
+    request: ChatRequest, http_request: Request, response: Response
+) -> ChatResponse | JSONResponse:
+    """The per-visitor limit, then the conversation; every response says how many
+    messages the visitor has left in X-RateLimit-Remaining."""
     visitor = client_ip(
         http_request.headers.get("x-forwarded-for"),
         http_request.client.host if http_request.client else None,
         TRUSTED_PROXY_HOPS,
     )
     if not rate_limiter.hit(visitor):
-        return JSONResponse(status_code=429, content={"code": "rate_limited"})
+        return JSONResponse(
+            status_code=429, content={"code": "rate_limited"},
+            headers={"X-RateLimit-Remaining": "0"},
+        )
+    result = await _chat(request)
+    headers = result.headers if isinstance(result, Response) else response.headers
+    headers["X-RateLimit-Remaining"] = str(rate_limiter.remaining(visitor))
+    return result
+
+
+async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
+    """Plan -> retrieve -> summarize per OpenAPI spec (`docs/archive/spec/05-openapi.yaml`)."""
+    start = time.time()
+    started_at = time.monotonic()  # the model's time budget counts from here
 
     if not is_system_ready():
         raise HTTPException(
