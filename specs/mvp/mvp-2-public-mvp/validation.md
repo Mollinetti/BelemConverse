@@ -21,6 +21,7 @@
 - `tests/test_follow_ups.py`
 - `tests/test_category_retrieval.py` (açaí, ice cream and restaurant questions
   on the real catalog)
+- `tests/test_location_outside_city.py` (nearby search only inside Belém)
 - `tests/test_rate_limit.py` (per-visitor limit and daily cap)
 - `tests/test_env_example.py`
 - `tests/test_deploy_files.py`
@@ -94,6 +95,18 @@
    question and none for "Ver mais". `debug.answer_source` is `llm` when the
    model answered.
 4. Capture screenshots of steps 1, 2, 5 and 6 in both languages.
+
+### P2 — Nearby search only in Belém
+
+```bash
+curl -s https://<service>.onrender.com/api/chat -H 'content-type: application/json' \
+  -d "{\"session_id\":\"$(uuidgen)\",\"message\":\"bares perto de mim\",\"language\":\"pt-BR\",\"userLocation\":{\"lat\":-23.55,\"lng\":-46.63}}" \
+  | jq '.answer[:90], [.results[].distanceKm], .debug.location_outside_city'
+```
+
+**Expected:** the answer starts with "A busca por proximidade só funciona em
+Belém…", every `distanceKm` is `null`, and `location_outside_city` is `true`.
+The same call with `{"lat":-1.4527,"lng":-48.4914}` returns distances.
 
 ### P2 — Fair use (run once, then let the limit expire)
 
