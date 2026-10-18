@@ -27,26 +27,20 @@
 <body>
 
 <div class="shell">
-  <div class="flag">
-    <svg class="flag-art" viewBox="0 0 400 300" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
-      <line x1="40" y1="-60" x2="360" y2="360" stroke="#FAF9F6" stroke-width="92"/>
-      <path d="M200,98L210.9,128.7L243.4,129.4L217.6,149.2L227,180.4L200,162L173,180.4L182.4,149.2L156.6,129.4L189.1,128.7Z" fill="#002060" transform="translate(0 -3)"/>
-    </svg>
-    <header class="masthead">
-      <a class="wordmark" href="index.html">BelemConverse</a>
-      <nav>
-        <a href="index.html" aria-current="page">Home</a>
-        <a href="authors.html">About the authors</a>
-        <a href="history.html">Project history</a>
-        <a href="https://github.com/Mollinetti/BelemConverse">Repository</a>
-        <a href="app/">Try it</a>
-      </nav>
-    </header>
-    <p class="asked">&ldquo;tem um boteco massa por aqui pra tomar uma gelada?&rdquo;</p>
-    <p class="gloss">Any decent bar around here for a cold one?</p>
-  </div>
+  <header class="masthead">
+    <a class="wordmark" href="index.html">BelemConverse</a>
+    <nav>
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="authors.html">About the authors</a>
+      <a href="history.html">Project history</a>
+      <a href="https://github.com/Mollinetti/BelemConverse">Repository</a>
+      <a href="app/">Try it</a>
+    </nav>
+  </header>
 
   <section class="hero">
+    <p class="asked">&ldquo;tem um boteco massa por aqui pra tomar uma gelada?&rdquo;</p>
+    <p class="gloss">Any decent bar around here for a cold one?</p>
 
     <div class="plan">
       <span class="plan-label">Query plan</span>
@@ -278,143 +272,32 @@
             <span class="chip">0 results</span>
           </div>
           <div class="answer">
-            <p>I couldn&rsquo;t find any places matching your search. Try widening the search radius, choosing a different type, or disabling the &lsquo;open now&rsquo; filter.</p>
+            <p>Nothing matched. I widened the search to two kilometres and still found no sushi place open at this hour — the latest one nearby closes at 23:30. Want me to drop the open-now filter and show you what is there for tomorrow, or look for something else that is open at 3am?</p>
           </div>
-          <p class="note">When retrieval comes back empty the model is not called at all. A fixed message says nothing matched and what to change, so there is nothing to invent.</p>
+          <p class="note">When retrieval comes back empty, the agent asks a clarifying question instead of inventing a place. That behaviour is specified, not incidental.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="how">
+  <section>
     <div class="section-head">
-      <h2>How an answer gets made, and where the model isn&rsquo;t</h2>
-      <p class="measure">Almost everything here is plain code on a free server. Reading the question, filtering and ranking places, suggesting follow-ups, paging through more results and the fallback answer all run without a language model. A hosted model is called at most once per question, only to put the top five places into a friendly paragraph. With the model switched off, the site still answers every question.</p>
+      <h2>How an answer gets made</h2>
+      <p class="measure">Three stages, in a fixed order. The language model is only involved in the last one.</p>
     </div>
-
-    <figure class="loop-fig">
-      <div class="loop-scroll">
-      <svg viewBox="0 0 900 1052" role="img" aria-label="Flowchart of one question. Cheap checks, planning and search run as plain code. Six exits answer without the model. The model is called once, and its reply is checked before it is used. Every exit ends in a reply, and a follow-up starts the loop again." xmlns="http://www.w3.org/2000/svg">
-      <defs><marker id="fh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="f-head" d="M0 0L10 5L0 10z"/></marker></defs>
-      <line class="f-line" x1="199" y1="88" x2="199" y2="116" marker-end="url(#fh)"/>
-      <rect class="f-node" x="44" y="24" width="310" height="64" rx="8"/>
-      <text class="f-title" x="60" y="47">Visitor asks a question</text>
-      <text class="f-sub" x="60" y="65">Typed, or a tap on a suggested chip</text>
-      <text class="f-sub" x="60" y="80">Flutter page on GitHub Pages</text>
-      <line class="f-line" x1="199" y1="182" x2="199" y2="210" marker-end="url(#fh)"/>
-      <rect class="f-node" x="44" y="118" width="310" height="64" rx="8"/>
-      <text class="f-title" x="60" y="141">Cheap checks</text>
-      <text class="f-sub" x="60" y="159">Plain characters only, 400 at most</text>
-      <text class="f-sub" x="60" y="174">20 messages per 10 minutes</text>
-      <line class="f-line" x1="354" y1="150" x2="546" y2="150" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="142" text-anchor="middle">a check fails</text>
-      <rect class="f-exit" x="548" y="124" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="145">Refused with a fixed message</text>
-      <text class="f-sub" x="562" y="163">Nothing is searched</text>
-      <text class="f-tag" x="846" y="163" text-anchor="end">model calls: 0</text>
-      <line class="f-line" x1="199" y1="276" x2="199" y2="304" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="297">no</text>
-      <polygon class="f-ask" points="56,212 342,212 354,224 354,264 342,276 56,276 44,264 44,224"/>
-      <text class="f-title" x="60" y="235">Asking for “see more”?</text>
-      <text class="f-sub" x="60" y="253">Tap on the button under a list</text>
-      <line class="f-line" x1="354" y1="244" x2="546" y2="244" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="236" text-anchor="middle">yes</text>
-      <rect class="f-exit" x="548" y="218" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="239">Next five from the saved list of 30</text>
-      <text class="f-sub" x="562" y="257">Does not use up a question</text>
-      <text class="f-tag" x="846" y="257" text-anchor="end">model calls: 0</text>
-      <line class="f-line" x1="199" y1="370" x2="199" y2="398" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="391">yes</text>
-      <polygon class="f-ask" points="56,306 342,306 354,318 354,358 342,370 56,370 44,358 44,318"/>
-      <text class="f-title" x="60" y="329">Questions left?</text>
-      <text class="f-sub" x="60" y="347">Four per conversation</text>
-      <line class="f-line" x1="354" y1="338" x2="546" y2="338" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="330" text-anchor="middle">none left</text>
-      <rect class="f-exit" x="548" y="312" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="333">Conversation finished</text>
-      <text class="f-sub" x="562" y="351">Visitor starts a new one</text>
-      <text class="f-tag" x="846" y="351" text-anchor="end">model calls: 0</text>
-      <line class="f-line" x1="199" y1="464" x2="199" y2="492" marker-end="url(#fh)"/>
-      <rect class="f-node" x="44" y="400" width="310" height="64" rx="8"/>
-      <text class="f-title" x="60" y="423">Plan the question</text>
-      <text class="f-sub" x="60" y="441">Rules and a TF-IDF classifier, about 0.15 ms</text>
-      <text class="f-sub" x="60" y="456">Language, kind of place, open now, sort</text>
-      <line class="f-line" x1="199" y1="558" x2="199" y2="586" marker-end="url(#fh)"/>
-      <rect class="f-node" x="44" y="494" width="310" height="64" rx="8"/>
-      <text class="f-title" x="60" y="517">Search the catalog</text>
-      <text class="f-sub" x="60" y="535">About 2,900 places held in memory</text>
-      <text class="f-sub" x="60" y="550">Hours, then radius, then category, then rank</text>
-      <line class="f-line" x1="199" y1="652" x2="199" y2="680" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="673">yes</text>
-      <polygon class="f-ask" points="56,588 342,588 354,600 354,640 342,652 56,652 44,640 44,600"/>
-      <text class="f-title" x="60" y="611">Any place found?</text>
-      <text class="f-sub" x="60" y="629">After the radius grows 500 m, 1 km, 2 km</text>
-      <line class="f-line" x1="354" y1="620" x2="546" y2="620" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="612" text-anchor="middle">no</text>
-      <rect class="f-exit" x="548" y="594" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="615">Template: nothing matched, try widening</text>
-      <text class="f-sub" x="562" y="633">Written by code, not a model</text>
-      <text class="f-tag" x="846" y="633" text-anchor="end">model calls: 0</text>
-      <line class="f-line" x1="199" y1="746" x2="199" y2="774" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="767">yes</text>
-      <polygon class="f-ask" points="56,682 342,682 354,694 354,734 342,746 56,746 44,734 44,694"/>
-      <text class="f-title" x="60" y="705">Model allowed?</text>
-      <text class="f-sub" x="60" y="723">Key set and under 800 calls today</text>
-      <line class="f-line" x1="354" y1="714" x2="546" y2="714" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="706" text-anchor="middle">no</text>
-      <rect class="f-exit" x="548" y="688" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="709">Template answer from the same places</text>
-      <text class="f-sub" x="562" y="727">Written by code, not a model</text>
-      <text class="f-tag" x="846" y="727" text-anchor="end">model calls: 0</text>
-      <line class="f-line" x1="199" y1="840" x2="199" y2="868" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="861">reply</text>
-      <rect class="f-model" x="44" y="776" width="310" height="64" rx="8"/>
-      <text class="f-title f-on" x="60" y="799">One model call</text>
-      <text class="f-sub f-on" x="60" y="817">The question and the top five places</text>
-      <text class="f-sub f-on" x="60" y="832">250 tokens at most, 10 s, backup provider</text>
-      <line class="f-line" x1="354" y1="808" x2="546" y2="808" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="800" text-anchor="middle">no reply in time</text>
-      <rect class="f-exit" x="548" y="782" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="803">Template answer from the same places</text>
-      <text class="f-sub" x="562" y="821">Provider down or too slow</text>
-      <text class="f-tag f-tag-1" x="846" y="821" text-anchor="end">model calls: 1</text>
-      <line class="f-line" x1="199" y1="934" x2="199" y2="962" marker-end="url(#fh)"/>
-      <text class="f-cond" x="207" y="955">fits</text>
-      <polygon class="f-ask" points="56,870 342,870 354,882 354,922 342,934 56,934 44,922 44,882"/>
-      <text class="f-title" x="60" y="893">Grounding check</text>
-      <text class="f-sub" x="60" y="911">Does the reply name only those places?</text>
-      <line class="f-line" x1="354" y1="902" x2="546" y2="902" marker-end="url(#fh)"/>
-      <text class="f-cond" x="451" y="894" text-anchor="middle">names another place</text>
-      <rect class="f-exit" x="548" y="876" width="312" height="52" rx="8"/>
-      <text class="f-title" x="562" y="897">Template answer from the same places</text>
-      <text class="f-sub" x="562" y="915">The model’s reply is thrown away</text>
-      <text class="f-tag f-tag-1" x="846" y="915" text-anchor="end">model calls: 1</text>
-      <rect class="f-node" x="44" y="964" width="310" height="64" rx="8"/>
-      <text class="f-title" x="60" y="987">Reply sent</text>
-      <text class="f-sub" x="60" y="1005">Answer, up to five cards, 2–3 follow-up chips</text>
-      <text class="f-sub" x="60" y="1020">Chips come from rules, not the model</text>
-      <path class="f-line f-loop" d="M44 996 H18 V56 H42" marker-end="url(#fh)"/>
-      <text class="f-cond" transform="translate(11 526) rotate(-90)" text-anchor="middle">next question</text>
-      </svg>
+    <div class="stages">
+      <div class="stage">
+        <h3>Plan</h3>
+        <p>A TF-IDF intent classifier turns the message into a structured query plan: what kind of place, whether opening hours matter, how to sort, which language to answer in. Keyword matching covers it if the classifier is unavailable.</p>
       </div>
-      <figcaption>One question, start to finish. Every exit on the right ends in a reply to the visitor, and a follow-up starts the loop again. Five of the seven exits never call the model. The other two call it once, then fall back to a template. A model reply reaches the visitor only if it passes the grounding check.</figcaption>
-    </figure>
-
-    <table class="cost">
-      <caption>What each part costs</caption>
-      <tr><th scope="row">Checks, planning, search, follow-up chips</th><td>Plain CPU work on the free Render instance. A TF-IDF classifier and keyword rules read the question; filters run over a SQLite catalog already in memory. $0.</td></tr>
-      <tr><th scope="row">Template answer</th><td>Built by code from the same five places. Used whenever the model is not allowed, fails, or strays. $0, always available.</td></tr>
-      <tr><th scope="row">Model call</th><td>One request to a free tier (Google AI Studio, with Groq as backup), at most 250 tokens back. $0, kept there by the limits below.</td></tr>
-      <tr><th scope="row">Hosting</th><td>The Flutter client on GitHub Pages, the API on Render&rsquo;s free web service. $0.</td></tr>
-    </table>
-
-    <div class="split inner">
-      <h3>Three limits keep the model&rsquo;s bill at zero</h3>
-      <ul class="rules">
-        <li><strong>Call it less.</strong> Refused messages, &ldquo;see more&rdquo;, empty searches and spent conversations never reach the model.</li>
-        <li><strong>Send it less.</strong> Five places and the question, in a short prompt, with at most 250 tokens back.</li>
-        <li><strong>Stop at a ceiling.</strong> 20 messages per visitor every 10 minutes, 4 questions per conversation, 800 model calls a day. Past that, every answer is a template.</li>
-      </ul>
+      <div class="stage">
+        <h3>Retrieve</h3>
+        <p>Filters run in a fixed precedence — opening hours first, then proximity with the radius escalating 500 m to 1 km to 2 km until five results exist, then category, then everything else. Rating and popularity only ever affect ranking, never what survives filtering.</p>
+      </div>
+      <div class="stage">
+        <h3>Answer</h3>
+        <p>At most five places reach the model, along with the original message. It writes the reply in the language you used and explains why each place matched — distance, rating, opening hours. It cannot search, and it cannot add anything.</p>
+      </div>
     </div>
   </section>
 
@@ -423,8 +306,8 @@
       <h2>What it will not do</h2>
     </div>
     <ul class="rules">
-      <li><strong>It will not invent a place.</strong> The model only ever sees the candidates retrieval hands it, and its reply is checked against them. If it names anything else, the visitor gets the template answer instead.</li>
-      <li><strong>It will not let popularity override geography.</strong> Opening hours, distance and category decide what survives. Rating and popularity only reorder it.</li>
+      <li><strong>It will not invent a place.</strong> The model only ever sees the candidates retrieval hands it. If a restaurant is not in the index, it cannot appear in an answer.</li>
+      <li><strong>It will not let similarity override geography.</strong> Vector search exists as a gated fallback. It never overrules a distance or opening-hours constraint.</li>
       <li><strong>It will not measure distances from another city.</strong> Searching near you works only when you are in Belém. From anywhere else your location is set aside, and a &ldquo;near me&rdquo; question is told so before it gets places from across the city.</li>
       <li><strong>It will not guess at opening hours.</strong> Where the data does not say, the result is labelled unknown rather than assumed open.</li>
       <li><strong>It will not pad an empty result.</strong> Zero matches after full radius escalation produces a clarifying question, not a longer radius quietly applied or a plausible-sounding substitute.</li>
