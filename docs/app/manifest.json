@@ -1,0 +1,36 @@
+{
+    "name": "BelemConverse — onde ir em Belém",
+    "short_name": "BelemConverse",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FAF9F6",
+    "theme_color": "#C30023",
+    "description": "Pergunte onde comer, beber ou passear em Belém do Pará, em português ou inglês.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "lang": "pt-BR"
+}

@@ -45,7 +45,7 @@ def get_belem_config() -> CityConfig:
         
         # Data paths (relative to LLM/ directory)
         csv_path="data/csvs/combined_all_data.csv",
-        catalog_path="belem/places.sqlite",
+        catalog_path="catalog/belem.sqlite",
         chroma_db_path="data/chroma_db",
         
         # Category mappings - generic category to local search terms
@@ -104,6 +104,15 @@ def get_belem_config() -> CityConfig:
             'beach': 'tourist_attraction'
         },
         
+        # Follow-up chips suggesting another kind of place.
+        category_labels={
+            'restaurant': {'pt-BR': 'Restaurantes', 'en': 'Restaurants'},
+            'cafe': {'pt-BR': 'Cafés', 'en': 'Cafés'},
+            'acai': {'pt-BR': 'Açaí', 'en': 'Açaí'},
+            'ice_cream': {'pt-BR': 'Sorveterias', 'en': 'Ice cream'},
+            'bar': {'pt-BR': 'Bares', 'en': 'Bars'},
+        },
+
         # Special local categories unique to Belém
         local_categories=[
             'açaí',  # Açaí is especially important in Belém

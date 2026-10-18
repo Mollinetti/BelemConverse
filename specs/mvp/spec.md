@@ -158,12 +158,12 @@ Keep `ingest/osm_fetcher.py` for the validation scrape.
 **Server** (Pydantic validator on `ChatRequest.message`):
 1. NFC-normalise and collapse whitespace.
 2. Require 1–400 characters.
-3. Allow only characters where `isalpha() or isdigit()`, plus space, `,`, `.`
-   and `:`.
+3. Allow only characters where `isalpha() or isdigit()`, plus space, `,`, `.`,
+   `:`, `?` and `!`.
 4. Anything else returns 422 with a localized message.
 
 **Client:** mirror the rule with `maxLength: 400` and
-`FilteringTextInputFormatter.allow(RegExp(r"[\p{L}\p{N} ,.:]", unicode: true))`.
+`FilteringTextInputFormatter.allow(RegExp(r"[\p{L}\p{N} ,.:?!]", unicode: true))`.
 
 The gate is a mitigation, not a complete defence. The prompt also fences place
 data as data, and LLM output is length-capped and grounding-checked (D2).
@@ -193,7 +193,7 @@ data as data, and LLM output is length-capped and grounding-checked (D2).
 After each answer, `follow_ups` carries 2–3 deterministic question chips
 derived from the plan. A chip is skipped when its filter is already applied:
 - "Abertos agora".
-- "Mais perto", only when the user shared a location.
+- "Mais perto", only when the user shared a location inside the city.
 - "Melhor avaliados".
 - One sibling category.
 

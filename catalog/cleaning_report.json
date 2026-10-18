@@ -1,0 +1,25 @@
+{
+  "input_rows": 3446,
+  "kept": 2901,
+  "merged_duplicates": 306,
+  "dropped": 239,
+  "fixes": {
+    "duplicates_merged": 306,
+    "null_place_id_dropped": 1,
+    "outside_municipality_dropped": 238,
+    "city_state_normalized": 2241,
+    "addresses_unified": 0,
+    "titles_repaired_from_raw": 56,
+    "titles_flagged_needs_review": 8,
+    "titles_title_cased": 233,
+    "hours_parsed": 1844,
+    "hours_unknown": 1057,
+    "hours_garbage_cleared": 45,
+    "zero_review_ratings_nulled": 397,
+    "sponsor_flags_unified": 0
+  },
+  "sources": {
+    "csv": "combined_all_data.csv",
+    "raw_dir": "Raw"
+  }
+}

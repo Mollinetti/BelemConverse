@@ -6,8 +6,6 @@ Each city should provide its own configuration implementing these fields.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional
-from pathlib import Path
 
 
 @dataclass
@@ -28,12 +26,12 @@ class CityConfig:
     
     # Languages
     primary_language: str  # Main language (e.g., "pt")
-    supported_languages: List[str] = field(default_factory=lambda: ["pt", "en"])
+    supported_languages: list[str] = field(default_factory=lambda: ["pt", "en"])
     
     # Geographic bounds
-    center_coordinates: Tuple[float, float] = (0.0, 0.0)  # (lat, lng)
-    bounds_min: Tuple[float, float] = (0.0, 0.0)  # SW corner (lat, lng)
-    bounds_max: Tuple[float, float] = (0.0, 0.0)  # NE corner (lat, lng)
+    center_coordinates: tuple[float, float] = (0.0, 0.0)  # (lat, lng)
+    bounds_min: tuple[float, float] = (0.0, 0.0)  # SW corner (lat, lng)
+    bounds_max: tuple[float, float] = (0.0, 0.0)  # NE corner (lat, lng)
     
     # Timezone
     timezone: str = "UTC"
@@ -48,18 +46,22 @@ class CityConfig:
     
     # Data paths (relative to project root)
     csv_path: str = ""
-    # Built place catalog, relative to DATA_DIR (BELEM_DATA_DIR overrides it).
+    # Built place catalog, relative to the project root (committed to git).
     catalog_path: str = ""
     chroma_db_path: str = ""
     
     # Category mappings - map generic categories to city-specific terms
-    category_mappings: Dict[str, List[str]] = field(default_factory=dict)
+    category_mappings: dict[str, list[str]] = field(default_factory=dict)
     
     # Subcategory mappings - map subcategories to parent categories
-    subcategory_mappings: Dict[str, str] = field(default_factory=dict)
+    subcategory_mappings: dict[str, str] = field(default_factory=dict)
     
+    # Follow-up chip text per category and language ({"bar": {"pt-BR": "Bares", "en": "Bars"}}).
+    # Each label must be letters and spaces only, and the planner must read it as that category.
+    category_labels: dict[str, dict[str, str]] = field(default_factory=dict)
+
     # Special local categories (unique to this city)
-    local_categories: List[str] = field(default_factory=list)
+    local_categories: list[str] = field(default_factory=list)
     
     # Default search radius in km
     default_search_radius: float = 5.0
@@ -75,11 +77,11 @@ class CityConfig:
             self.bounds_min[1] <= lng <= self.bounds_max[1]
         )
     
-    def get_category_terms(self, category: str) -> List[str]:
+    def get_category_terms(self, category: str) -> list[str]:
         """Get all search terms for a category."""
         return self.category_mappings.get(category, [category])
     
-    def get_parent_category(self, subcategory: str) -> Optional[str]:
+    def get_parent_category(self, subcategory: str) -> str | None:
         """Get parent category for a subcategory."""
         return self.subcategory_mappings.get(subcategory)
     
@@ -89,7 +91,7 @@ class CityConfig:
             return f"{self.name}, {self.state}, {self.country}"
         return f"{self.name}, {self.state}, {self.country}"
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             'name': self.name,

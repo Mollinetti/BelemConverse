@@ -5,17 +5,16 @@ Provides functions to load city configurations dynamically
 based on environment variables or explicit selection.
 """
 
-import os
 import logging
-from typing import Dict, Optional, List
-from pathlib import Path
+import os
+from collections.abc import Callable
 
 from .base_city import CityConfig
 
 logger = logging.getLogger(__name__)
 
 # Registry of available cities
-_CITY_REGISTRY: Dict[str, callable] = {}
+_CITY_REGISTRY: dict[str, Callable] = {}
 
 # Default city if none specified
 DEFAULT_CITY = "belem"
@@ -49,7 +48,7 @@ def _load_builtin_cities():
         logger.warning(f"Could not load Belem config: {e}")
 
 
-def load_city(slug: str) -> Optional[CityConfig]:
+def load_city(slug: str) -> CityConfig | None:
     """
     Load a city configuration by slug.
     
@@ -107,7 +106,7 @@ def get_city_config() -> CityConfig:
     return config
 
 
-def list_available_cities() -> List[str]:
+def list_available_cities() -> list[str]:
     """
     List all available city slugs.
     

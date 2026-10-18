@@ -2,8 +2,12 @@
 Pydantic schemas for API request/response validation.
 """
 
-from typing import Optional, List, Literal
-from pydantic import BaseModel, Field
+from typing import Literal
+from uuid import UUID
+
+from pydantic import BaseModel, Field, model_validator
+
+from belem_converse import gate
 
 
 class LatLng(BaseModel):
@@ -20,29 +24,48 @@ class Coordinates(BaseModel):
 
 class ChatFilters(BaseModel):
     """Explicit filters for chat request."""
-    placeType: Optional[List[str]] = Field(default=None, description="Place types to filter")
-    city: Optional[str] = Field(default=None, description="City filter")
-    neighborhood: Optional[str] = Field(default=None, description="Neighborhood filter")
-    openNow: Optional[bool] = Field(default=None, description="Filter for places open now")
-    priceMax: Optional[float] = Field(default=None, description="Maximum price")
-    minRating: Optional[float] = Field(default=None, description="Minimum rating")
-    minReviews: Optional[int] = Field(default=None, description="Minimum review count")
+    placeType: list[str] | None = Field(default=None, description="Place types to filter")
+    city: str | None = Field(default=None, description="City filter")
+    neighborhood: str | None = Field(default=None, description="Neighborhood filter")
+    openNow: bool | None = Field(default=None, description="Filter for places open now")
+    priceMax: float | None = Field(default=None, description="Maximum price")
+    minRating: float | None = Field(default=None, description="Minimum rating")
+    minReviews: int | None = Field(default=None, description="Minimum review count")
 
 
 class ChatRequest(BaseModel):
     """Request body for chat endpoint per OpenAPI spec."""
-    message: str = Field(..., min_length=1, max_length=2000, description="User message")
-    language: Optional[Literal["en", "pt-BR"]] = Field(default=None, description="Response language")
-    userLocation: Optional[LatLng] = Field(default=None, description="User location")
-    nowIso: Optional[str] = Field(default=None, description="Client current time in ISO-8601")
-    filters: Optional[ChatFilters] = Field(default=None, description="Explicit filters")
+    session_id: UUID = Field(..., description="Conversation id: a UUID the client makes per conversation")
+    message: str | None = Field(
+        default=None,
+        description="Visitor question: letters, digits, spaces and , . : ? ! only; required unless action is 'more'",
+        json_schema_extra={"maxLength": gate.MAX_LEN},
+    )
+    action: Literal["more"] | None = Field(
+        default=None, description="'more': the next results of the last answer, free of charge"
+    )
+    language: Literal["en", "pt-BR"] | None = Field(default=None, description="Response language")
+    userLocation: LatLng | None = Field(default=None, description="User location")
+    nowIso: str | None = Field(default=None, description="Client current time in ISO-8601")
+    filters: ChatFilters | None = Field(default=None, description="Explicit filters")
     
     # Legacy support
-    coordinates: Optional[Coordinates] = Field(default=None, description="User location (legacy)")
+    coordinates: Coordinates | None = Field(default=None, description="User location (legacy)")
     
+    @model_validator(mode="after")
+    def _gate(self):
+        """The input gate; a GateError becomes a 422 in the request's language."""
+        if self.message is None:
+            if self.action != "more":
+                raise gate.GateError("empty", self.language)
+            return self
+        self.message = gate.clean_message(self.message, language=self.language)
+        return self
+
     class Config:
         json_schema_extra = {
             "example": {
+                "session_id": "3f1c2b9e-8d4a-4c6e-9b1a-2e7f5d0c4a11",
                 "message": "Quais são os melhores restaurantes perto de mim?",
                 "language": "pt-BR",
                 "userLocation": {"lat": -1.4695, "lng": -48.4665}
@@ -62,82 +85,67 @@ class ReviewsDistribution(BaseModel):
 class Place(BaseModel):
     """Canonical Place entity per OpenAPI spec."""
     placeId: str
-    cid: Optional[str] = None
-    fid: Optional[str] = None
-    title: Optional[str] = None
-    titleFormatted: Optional[str] = None
-    subTitle: Optional[str] = None
-    categoryName: Optional[str] = None
-    categories: List[str] = Field(default_factory=list)
-    address: Optional[str] = None
-    addressFormatted: Optional[str] = None
-    street: Optional[str] = None
-    streetFormatted: Optional[str] = None
-    neighborhood: Optional[str] = None
-    locatedIn: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    postalCode: Optional[str] = None
-    countryCode: Optional[str] = None
-    location: Optional[LatLng] = None
-    phone: Optional[str] = None
-    phoneUnformatted: Optional[str] = None
-    url: Optional[str] = None
-    website: Optional[str] = None
-    googleFoodUrl: Optional[str] = None
-    menu: Optional[str] = None
-    reserveTableUrl: Optional[str] = None
-    price: Optional[float] = None
-    rank: Optional[float] = None
-    totalScore: Optional[float] = None
-    reviewsCount: Optional[int] = None
+    cid: str | None = None
+    fid: str | None = None
+    title: str | None = None
+    titleFormatted: str | None = None
+    subTitle: str | None = None
+    categoryName: str | None = None
+    categories: list[str] = Field(default_factory=list)
+    address: str | None = None
+    addressFormatted: str | None = None
+    street: str | None = None
+    streetFormatted: str | None = None
+    neighborhood: str | None = None
+    locatedIn: str | None = None
+    city: str | None = None
+    state: str | None = None
+    postalCode: str | None = None
+    countryCode: str | None = None
+    location: LatLng | None = None
+    phone: str | None = None
+    phoneUnformatted: str | None = None
+    url: str | None = None
+    website: str | None = None
+    googleFoodUrl: str | None = None
+    menu: str | None = None
+    reserveTableUrl: str | None = None
+    price: float | None = None
+    rank: float | None = None
+    totalScore: float | None = None
+    reviewsCount: int | None = None
     reviewsDistribution: ReviewsDistribution = Field(default_factory=ReviewsDistribution)
     isSponsored: bool = Field(default=False)
-    businessTime: Optional[str] = None
+    businessTime: str | None = None
     place_type: Literal["restaurant", "bar", "park", "other"]
 
 
 class PlaceResult(Place):
     """Place result with computed fields per OpenAPI spec."""
-    distanceKm: Optional[float] = Field(default=None, description="Distance in km")
-    openNowStatus: Optional[Literal["open", "closed", "unknown"]] = Field(
+    distanceKm: float | None = Field(default=None, description="Distance in km")
+    openNowStatus: Literal["open", "closed", "unknown"] | None = Field(
         default=None,
         description="Open now status"
     )
-
-
-class PlaceLegacy(BaseModel):
-    """Legacy Place schema for backward compatibility."""
-    name: str
-    address: Optional[str] = None
-    category: Optional[str] = None
-    rating: Optional[float] = None
-    reviews_count: Optional[int] = None
-    lat: Optional[float] = None
-    lng: Optional[float] = None
-    phone: Optional[str] = None
-    distance_km: Optional[float] = None
-    source: str = Field(default="database", description="Data source: database or osm_realtime")
 
 
 class ChatResponse(BaseModel):
     """Response body for chat endpoint per OpenAPI spec."""
     language: Literal["en", "pt-BR"] = Field(..., description="Response language")
     answer: str = Field(..., description="LLM response text")
-    results: List[PlaceResult] = Field(default_factory=list, max_items=5, description="Up to 5 place results")
-    debug: Optional[dict] = Field(default=None, description="Debug information")
-    
-    # Legacy fields for backward compatibility
-    response: Optional[str] = Field(default=None, description="LLM response text (legacy)")
-    places: Optional[List[PlaceLegacy]] = Field(default=None, description="Extracted places (legacy)")
-    source: Optional[str] = Field(default=None, description="Primary data source used (legacy)")
-    processing_time_ms: Optional[float] = None
+    results: list[PlaceResult] = Field(default_factory=list, max_items=5, description="Up to 5 place results")
+    turns_left: int = Field(..., ge=0, description="Questions left in this conversation")
+    has_more: bool = Field(default=False, description="More results to see with action 'more'")
+    follow_ups: list[str] = Field(default_factory=list, description="Suggested next questions")
+    debug: dict | None = Field(default=None, description="Debug information")
+    processing_time_ms: float | None = None
     
     class Config:
         json_schema_extra = {
             "example": {
                 "language": "pt-BR",
                 "answer": "Aqui estão os melhores restaurantes próximos...",
+                "turns_left": 3,
                 "results": [
                     {
                         "placeId": "place_123",
@@ -164,7 +172,7 @@ class HealthResponse(BaseModel):
 
 class LanguagesResponse(BaseModel):
     """Available languages response."""
-    languages: List[dict] = [
+    languages: list[dict] = [
         {"code": "pt", "name": "Português"},
         {"code": "en", "name": "English"}
     ]
@@ -174,6 +182,6 @@ class LanguagesResponse(BaseModel):
 class ErrorResponse(BaseModel):
     """Error response."""
     error: str
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
