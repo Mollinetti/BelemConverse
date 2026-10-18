@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from belem_converse import follow_ups, llm
+from belem_converse.cities import get_city_config
 from belem_converse.classifiers.intent_classifier_TFIDF_simple import (
     SimpleTFIDFIntentClassifier,
 )
@@ -49,6 +50,16 @@ router = APIRouter()
 MAX_RESULTS = 5  # spec: an answer shows at most five places
 MAX_RANKED = 30  # kept per conversation for "see more"
 ANNOTATIONS = ("distanceKm", "openNowStatus")  # per-request fields, not in the catalog
+# Distances from another city are meaningless, so a location outside the city
+# profile's bounds is discarded; a question that asked for something nearby is
+# told why. The rest of the answer covers the whole city.
+_CITY = get_city_config().name
+OUTSIDE_CITY_NOTICE = {
+    "pt-BR": f"A busca por proximidade só funciona em {_CITY}, e você não parece estar aqui. "
+             f"Estes são lugares de toda a cidade.",
+    "en": f"Searching near you only works in {_CITY}, and you don't seem to be here. "
+          f"These are places from across the city.",
+}
 SEE_MORE_LINE = {
     "pt-BR": "Mais lugares da sua última busca.",
     "en": "More places from your last search.",
@@ -210,6 +221,11 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         user_location = {"lat": request.userLocation.lat, "lng": request.userLocation.lng}
     elif request.coordinates:
         user_location = {"lat": request.coordinates.lat, "lng": request.coordinates.lng}
+    outside_city = user_location is not None and not get_city_config().is_within_bounds(
+        user_location["lat"], user_location["lng"]
+    )
+    if outside_city:
+        user_location = None
 
     filters_dict = request.filters.dict(exclude_none=True) if request.filters else None
 
@@ -263,6 +279,8 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     answer, answer_source = await _answer(
         request.message, top_places, query_plan.language, started_at
     )
+    if outside_city and query_plan.slots.get("proximity_intent_detected"):
+        answer = f"{OUTSIDE_CITY_NOTICE[query_plan.language]}\n\n{answer}"
     elapsed_ms = (time.time() - start) * 1000
     logger.info("Chat response generated in %.0fms (answer: %s)", elapsed_ms, answer_source)
 
@@ -273,7 +291,11 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         turns_left=session.turns_left,
         has_more=session.cursor < len(session.ranked_ids),
         follow_ups=follow_ups.build(slots, query_plan.language, user_location is not None),
-        debug={**(query_plan.debug or {}), "answer_source": answer_source},
+        debug={
+            **(query_plan.debug or {}),
+            "answer_source": answer_source,
+            "location_outside_city": outside_city,
+        },
         processing_time_ms=round(elapsed_ms, 1),
     )
 

@@ -29,6 +29,11 @@
      answer line. Return
      without touching the planner, retriever or LLM. If there is no cached list,
      return 409 (`no_previous_results`).
+  3a. **Location outside the city:** if `userLocation` is outside
+     `get_city_config().is_within_bounds()`, drop it before planning (no
+     distance filter, sort or `distanceKm`; follow-ups get `has_location=False`).
+     When the question asked for something nearby, prefix the answer with
+     `OUTSIDE_CITY_NOTICE[language]`. `debug.location_outside_city` records it.
   4. **Turns exhausted:** if `turns_used == 4`, return 409 with
      `{"turns_left": 0}`. Otherwise `turns_used += 1` **now**, before the first
      `await`, so two parallel requests on one session cannot answer a 5th.
