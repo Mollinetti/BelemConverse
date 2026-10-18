@@ -2,8 +2,8 @@
 
 ## Tech context
 
-The audit runs against the `mvp-3` branch, which is cut from `mvp-2` after its
-local container builds. By then mvp-1 has removed the agent, `/ingest/csv`,
+The audit runs against the `mvp-3` branch, cut from `main` after mvp-2 merged
+there and went live on 2026-10-18. mvp-1 has removed the agent, `/ingest/csv`,
 `/clear-history`, Chroma, torch and llama-cpp. mvp-2 has added the input gate,
 sessions, the rate limiter, the daily cap and narrowed CORS. Several Known
 findings (spec.md) should already be gone. This phase proves they are gone and

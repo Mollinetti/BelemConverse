@@ -19,8 +19,8 @@
 ## Start
 
 - **T00.** Set up the phase:
-  - Confirm mvp-2 T22 (local container build) passes.
-  - Cut `mvp-3` from `mvp-2` and record `pytest -q` as the baseline.
+  - Cut `mvp-3` from `main` (mvp-2 merged there and is live) and record
+    `pytest -q` as the baseline.
   - Add `specs/mvp/mvp-3-security-audit/out/` to `.gitignore`.
   - Re-check spec.md Step 0 for new advisories (trivy, gitleaks or the skills).
 - **T01 [P] Early secret sweep of `main`.** Run the history and working-tree
@@ -138,11 +138,12 @@ Any other Medium or Low goes to the backlog section of `findings.md`.
 - **T16** Re-run the LLM review on the fix diff: `/security-review` on the
   `mvp-3` branch. Its findings go back to T08. → depends on T15
 
-## Live checks (Render URL, not yet shared)
+## Live checks (a temporary Render service built from `mvp-3`)
 
-- **T17** Deploy `mvp-3` to the Render service, then run the validation.md
-  live checks. If the service does not exist yet, create it from `render.yaml`
-  as in mvp-2 T23, but don't link it anywhere. The checks:
+- **T17** Create a second free Render web service from `render.yaml` on the
+  `mvp-3` branch, with its own name and not linked anywhere, so the live
+  `belemconverse` service keeps serving `mvp-2`. Run the validation.md live
+  checks against it, then delete it. The checks:
   - CORS from a foreign origin.
   - A 500-path request.
   - Removed routes.
@@ -178,7 +179,10 @@ Any other Medium or Low goes to the backlog section of `findings.md`.
 - **T21** Final gate:
   - `pytest -q` is green and `ruff check .` is clean.
   - The scan script exits 0.
-  - Open the PR into `mvp-2`. Its body has the counts only and no secret
+  - Open the PR into `main`. Its body has the counts only and no secret
     fragments.
-  - After it merges, mvp-2 continues with T23–T26 and the link can be shared.
+  - After it merges: switch the Render blueprint and GitHub Pages from
+    `mvp-2` to `main`, wait for both to redeploy, and re-run the T17 live
+    checks against https://belemconverse.onrender.com and
+    https://mollinetti.github.io/BelemConverse/app/.
   - → depends on all
