@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/message.dart';
+import 'button_chip.dart';
 import 'place_card.dart';
 
 /// A chat message bubble widget
@@ -132,14 +133,14 @@ class MessageBubble extends StatelessWidget {
   Widget _buildActions() {
     final chips = [
       if (onSeeMore != null && message.hasMore)
-        ActionChip(
+        ButtonChip(
           avatar: const Icon(Icons.expand_more, size: 18),
-          label: Text(seeMoreLabel),
+          label: seeMoreLabel,
           onPressed: onSeeMore,
         ),
       if (onFollowUp != null)
         for (final followUp in message.followUps)
-          ActionChip(label: Text(followUp), onPressed: () => onFollowUp!(followUp)),
+          ButtonChip(label: followUp, onPressed: () => onFollowUp!(followUp)),
     ];
     if (chips.isEmpty) return const SizedBox.shrink();
     return Padding(

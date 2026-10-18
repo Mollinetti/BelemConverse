@@ -5,6 +5,7 @@ import '../config/constants.dart';
 import '../providers/chat_provider.dart';
 import '../providers/settings_provider.dart';
 import '../utils/input_gate.dart';
+import '../widgets/button_chip.dart';
 import '../widgets/message_bubble.dart';
 
 /// Main chat screen
@@ -290,8 +291,8 @@ class _ChatScreenState extends State<ChatScreen> {
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: suggestions.map((suggestion) {
-        return ActionChip(
-          label: Text(suggestion),
+        return ButtonChip(
+          label: suggestion,
           backgroundColor: ParaColors.surface,
           side: BorderSide(color: ParaColors.divider),
           onPressed: () => _ask(suggestion),
