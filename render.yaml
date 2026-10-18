@@ -24,4 +24,4 @@ services:
       - key: ALLOWED_ORIGINS
         value: https://mollinetti.github.io
       - key: TRUSTED_PROXY_HOPS
-        value: "2"
+        value: "3"  # visitor, Cloudflare edge, Render proxy (measured)
