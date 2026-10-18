@@ -171,6 +171,48 @@ smallest fix, then a re-scan.
 - **Fix commits** prefixed `mvp-3:`. A one-line findings summary goes in the PR
   body.
 
+## Repository cleanup (T18–T19)
+
+The candidates are listed in spec.md → Cleanup candidates. T18 re-runs the
+analysis on `mvp-3`, because the security fixes change the code first:
+
+```bash
+# Modules no entry point can reach (API + the three tools/ CLIs): an AST walk
+# of imports from api.main and belem_converse.tools.{build_catalog,validate_osm,bench_llm}.
+python scripts/reachability.py            # small, written in T18; prints unreachable modules
+
+# Unused functions, methods and classes (routes and Pydantic fields are false positives)
+uvx vulture belem_converse api --min-confidence 60
+
+# Tracked files that .gitignore already ignores (generated output added before the rule)
+git ls-files -ci --exclude-standard
+
+# Flutter packages declared but never imported
+cd frontend && for d in $(sed -n '/^dependencies:/,/^dev_dependencies:/p' pubspec.yaml \
+  | grep -oE '^  [a-z_]+:' | tr -d ' :' | grep -v '^flutter$'); do
+  grep -rqs "package:$d/" lib || echo "unused: $d"; done; cd ..
+
+# Docs nothing links to: for each docs/*.md and .<tool>/ folder
+git grep -l "<file name>" -- . ':!<that file>'   # no hit means unreferenced
+```
+
+Branches that only run behind a flag production never sets count as dead
+(C03). `vulture` cannot see them, so T18 reads every `if self.<x>:` guard on an
+optional dependency.
+
+Rules for T19:
+
+- **Delete, don't disable.** Git history keeps everything; no commented-out
+  code, no feature flags for removed paths.
+- **Tests go with their code.** A test is removed only when everything it
+  exercises is removed. Everything else in `tests/` stays tracked: it is the
+  required gate and `.dockerignore` already keeps it out of the image.
+- **Untrack, don't delete, ignored local files** (`git rm --cached`).
+- **One commit per candidate,** `mvp-3: cleanup Cnn …`, with the gates run after
+  each, so any regression points at a single removal.
+- **The public contract changes on purpose only.** C11 updates the README API
+  table and the archived OpenAPI note in the same commit.
+
 ## Risks and trade-offs
 
 - **History rewrite.** It changes every commit hash. Open PRs, forks, clones

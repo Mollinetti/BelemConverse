@@ -98,6 +98,7 @@ task to this section. The Known ones are listed here.
   3. Mirror backup: `git clone --mirror <origin> ../BelemConverse-backup-YYYYMMDD.git`.
   4. On a fresh mirror, run `git filter-repo --invert-paths --path data/ --path
      LLM/src/classifiers/models/`, plus `--replace-text` for any leaked secret.
+     If the owner chose to purge K13, add `--path notebooks/` to the same run.
   5. Verify: `git log --all -- data/` is empty, and gitleaks on `--all` is
      clean.
   6. 🛑 **Owner go-ahead to force-push.**
@@ -148,14 +149,33 @@ Any other Medium or Low goes to the backlog section of `findings.md`.
   - The rate limit is still enforced.
   - → depends on T16
 
+## Cleanup (code and repo)
+
+- **T18 Re-run the cleanup analysis** on the `mvp-3` branch (plan.md →
+  Repository cleanup): reachability, `vulture`, tracked-but-ignored files,
+  unused Flutter packages and unreferenced docs. Update the "Cleanup
+  candidates" table in spec.md with anything new. 🛑 Owner decision on C12,
+  and on anything new that is not plainly dead. → depends on T17
+- **T19 Apply the cleanup**, one commit per candidate (C02–C11, and C12 if
+  approved):
+  - Delete dead code together with the tests that only exercise it. Keep every
+    other test.
+  - Untrack generated output with `git rm --cached`. Never delete local files
+    that `.gitignore` covers.
+  - After each commit: `pytest -q`, `ruff check .`, and for frontend changes
+    `flutter analyze`, `flutter test` and a web build.
+  - At the end: the container smoke test, the live checks from T17 again, and
+    the README updated (project tree, API table, configuration).
+  - → depends on T18
+
 ## Wiring & docs
 
-- **T18** Fill in the Evidence table and Definition of done in `validation.md`,
+- **T20** Fill in the Evidence table and Definition of done in `validation.md`,
   and finish `findings.md`. Add a short "Security" section to the README: how
   to report a vulnerability and how to run `scripts/security_scan.sh`. Add a
   one-line `SECURITY.md` pointing to GitHub private vulnerability reporting.
-  → depends on T17
-- **T19** Final gate:
+  → depends on T19
+- **T21** Final gate:
   - `pytest -q` is green and `ruff check .` is clean.
   - The scan script exits 0.
   - Open the PR into `mvp-2`. Its body has the counts only and no secret

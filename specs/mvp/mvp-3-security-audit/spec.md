@@ -80,6 +80,11 @@ Supply-chain cautions:
 - **P2 — Repeatable in one command.** As a maintainer, I want one script that
   re-runs the secret, dependency and static scans, so that the audit can be
   repeated before every deploy.
+- **P3 — Lean public repository.** As the repository owner, I want the
+  public repo to hold only what builds, runs, tests or documents the current
+  product, so that a visitor sees the real project and nothing stale (dead
+  code, abandoned experiments, generated output) widens what the audit has to
+  cover.
 - **P3 — Findings on record.** As a reader of the repository, I want a findings
   report with severity, status and fix commit, and a backlog for what was
   deferred, so that the security state is visible.
@@ -143,6 +148,22 @@ Supply-chain cautions:
   `scripts/security_scan.sh` runs, **Then** it runs the secret, dependency and
   static scans with redacted output. It exits non-zero on any new finding.
 
+### Lean public repository (P3)
+
+- **Given** the `mvp-3` branch after the cleanup (T18–T19), **When** the
+  analysis in plan.md is re-run, **Then**:
+  - no module under `belem_converse/` or `api/` is unreachable from the entry
+    points (the API and the three `tools/` CLIs);
+  - `git ls-files -ci --exclude-standard` lists nothing (no tracked file is
+    also ignored);
+  - every Flutter package in `frontend/pubspec.yaml` is imported somewhere.
+- **Given** each candidate in "Cleanup candidates" below, **When** the phase
+  ends, **Then** it is removed, or kept with a one-line reason in
+  `findings.md`.
+- **Given** the cleanup, **When** `pytest -q`, `flutter test` and the container
+  smoke test run, **Then** they pass. Tests are removed only together with the
+  dead code they exercise.
+
 ### Findings on record (P3)
 
 - **Given** the end of the phase, **When** `findings.md` is read, **Then** every
@@ -178,12 +199,39 @@ marked "verify gone" and only need a test proving they stay gone.
 | K10 | Medium | No secret scanning or push protection on the GitHub repo | repo settings | Enable (manual) |
 | K11 | Medium | Python dependencies unpinned (`>=` floors only), no lockfile; `python-multipart>=0.0.9` has known DoS CVEs | `requirements.txt`, `pyproject.toml` | Triage |
 | K12 | Low | `ChatFilters` has no bounds, `placeId` is not validated, an invalid `nowIso` is accepted, and user text is logged at INFO | `api/schemas.py`, `api/routes.py:191,210` | Backlog unless the audit raises it |
-| K13 | Low | Notebooks keep saved outputs with server paths. Since mvp-2 `notebooks/` is gitignored and no longer tracked, but earlier commits still contain it; the stray result logs are gitignored and were never tracked | git history (`notebooks/*.ipynb`) | Accept, or remove from history with a rewrite (owner decision) |
+| K13 | Low | Notebooks keep saved outputs with server paths. Since mvp-2 `notebooks/` is gitignored and no longer tracked, but earlier commits still contain it; the stray result logs are gitignored and were never tracked | git history (`notebooks/*.ipynb`) | Owner decision at T13: purge with K01 (`--path notebooks/`), or accept |
 | K14 | Low | `/docs`, `/redoc` and `/openapi.json` are public | `api/main.py:50-51` | Accept: an open-source demo with a public API, and `/openapi.json` is the contract |
 
 The same scan found no secret ever committed: `.env` was never tracked, and a
 key-pattern search across all history returned one false positive, a Google
 photo URL. gitleaks and trufflehog must confirm this.
+
+## Cleanup candidates (audit of `mvp-2`, 2026-10-18)
+
+Found by the over-engineering audit after mvp-2 merged: reachability from the
+entry points, `vulture`, tracked-but-ignored files and unused Flutter
+packages. Lines are at the time of the audit. T18 re-runs the analysis and
+T19 applies it (plan.md → Repository cleanup).
+
+| ID | What | Where | Size | Action |
+|---|---|---|---|---|
+| C01 | Exploratory LangChain/llama.cpp notebooks | `notebooks/` | 6 files, ~6,200 lines | **Done on mvp-2** (gitignored and untracked, files kept locally). History: K13 |
+| C02 | Generated diagnostic reports, tracked although `.gitignore` ignores them; every diagnostic run rewrites them | `tests/diagnostics/reports/` | 4 files, ~1,900 lines | Untrack (`git rm --cached`); keep the harness |
+| C03 | Vector-search and OSM fallback that production never enables (`vector_store` and `osm_client` are always `None`), and the tests that only exercise it | `belem_converse/core/unified_retriever.py`; `tests/test_semantic_search.py` and the OSM cases in `test_error_handling`, `test_retrieval_strategy_selection`, `test_intent_mapping`, `test_e2e_integration`, `test_distance_calculation` | 484 of 1,112 lines, plus ~320 test lines | Delete code and its tests together |
+| C04 | Unreachable module | `belem_converse/ingest/data_merger.py` | 459 lines | Delete |
+| C05 | Unused utilities: Bayesian ranker, exception classes, old Llama prompt templates and a second Belém bounding box | `belem_converse/utils/bayesian_ranking.py`, `exceptions.py`, most of `config.py` | ~500 lines | Delete; keep `BASE_DIR` and `DATA_DIR` |
+| C06 | Config file nothing reads (Mistral GGUF and Chroma paths) | `config.yaml` | 1 file | Delete |
+| C07 | Superseded intent-detection spec from another tool | `.kiro/` | 4 files | Delete |
+| C08 | One-off reports nothing links to | `docs/frontend-compliance-analysis.md`, `docs/frontend-updates-summary.md`, `docs/README.md` | 3 files | Delete |
+| C09 | Flutter packages declared but never imported (`permission_handler` still registers a web plugin) | `frontend/pubspec.yaml`: `cupertino_icons`, `permission_handler`, `flutter_map`, `latlong2`, `intl`, `flutter_localizations`, and `generate: true` with no translations | 6 deps | Remove |
+| C10 | Unused methods (vulture) | `PlaceCache.get_by_title/invalidate/reload/get_count`, classifier `predict/force_retrain`, `csv_ingestion.ingest_csv/get_places_index`, `osm_fetcher.fetch_by_category_batch/get_all_categories`, `city_loader.register_city/is_city_available`, `CityConfig.get_parent_category/get_description`, `BusinessHours.get_open_hours_for_day` | ~15 methods | Delete, with any tests that only call them |
+| C11 | API surface no client uses: the `coordinates` request field, `GET /api/languages`, `GET /api/places/{id}`, and health's `llm_loaded`/`vector_store_loaded` (always false). Overlaps K12 (`placeId` is not validated) | `api/` | — | Remove; update the README API table. It is the public contract, so it goes in its own commit |
+| C12 | Android and iOS scaffolds; mvp-2 ships only the web client | `frontend/android/`, `frontend/ios/` | ~90 files | Owner decision: the README advertises native builds |
+
+**Kept on purpose:** `tests/` (the required gate, cited by this spec and by
+mvp-2's validation.md; `.dockerignore` already keeps it out of the image),
+`specs/`, `catalog/belem.sqlite` (the image needs it), `docs/app/` (what Pages
+serves) and `.cursor/` (the overview spec uses its `feature-spec` skill).
 
 ## Secret and personal-data runbook
 
@@ -215,6 +263,8 @@ When a live secret or personal data is found in git history:
 | Open High or Critical dependency vulnerabilities without a written reason | 0 |
 | Commands needed to re-run every scan | 1 |
 | Added cost | $0 (free and open-source tools only) |
+| Modules unreachable from the entry points, after cleanup | 0 |
+| Tracked files that `.gitignore` ignores, after cleanup | 0 |
 
 ## Out of scope
 
@@ -238,6 +288,12 @@ None. Decisions made by the owner on 2026-10-13:
 - **Leaked secret:** rotate, then rewrite history. Force-push only after an
   explicit go-ahead.
 - **Personal data in history:** purge from every branch with the same runbook.
+
+Decided by the owner on 2026-10-18:
+
+- **Repository cleanup** joins this phase as its last work (T18–T19), driven
+  by the "Cleanup candidates" table. `notebooks/` was already untracked on
+  mvp-2.
 
 ## Branch, commit and PR convention
 
