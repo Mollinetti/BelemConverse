@@ -180,7 +180,10 @@ No new packages (spec ground rule 2).
   - Delete `frontend/Dockerfile` and the stub `docker/` directory.
 - **Frontend hosting:**
   - `flutter build web --release --base-href /BelemConverse/app/ --dart-define=API_BASE_URL=https://<service>.onrender.com/api`.
-  - `rm -rf docs/app && cp -r frontend/build/web docs/app`.
+  - `rm -rf docs/app && rsync -a --exclude canvaskit frontend/build/web/ docs/app/`.
+    The bootstrap loads CanvasKit from Google's CDN (`gstatic.com`), so the
+    local 26 MB `canvaskit/` folder is never fetched; leaving it out keeps
+    each rebuild at about 4 MB in git.
   - Add `docs/.nojekyll`.
   - GitHub Pages serves `main:/docs`. Verify that in the repo settings.
 - **Docs:**
