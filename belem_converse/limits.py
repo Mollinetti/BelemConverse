@@ -40,6 +40,10 @@ class RateLimiter:
         hits.append(now)
         return True
 
+    def remaining(self, key: str) -> int:
+        """Hits ``key`` has left in the current window (as of its last hit)."""
+        return max(0, self.max_hits - len(self._hits.get(key, ())))
+
 
 def client_ip(forwarded_for: str | None, socket_host: str | None, hops: int = 1) -> str:
     """The visitor's address behind ``hops`` trusted proxies.
