@@ -292,7 +292,10 @@ free tiers ([Google AI Studio](https://aistudio.google.com) primary,
    This writes `catalog/<town>.sqlite` and `catalog/cleaning_report.json`;
    commit both.
 3. **Deploy.** Set `BELEMCONVERSE_CITY=<town>` on the Render service, then
-   follow [Deploy](#deploy-free-tier). The model prompt names Belém in
+   follow [Deploy](#deploy-free-tier). Update the link-preview tags (title,
+   description, `og:url`, `og:image`) in
+   [`frontend/web/index.html`](frontend/web/index.html) and the names in
+   `frontend/web/manifest.json`. The model prompt names Belém in
    [`llm.py`](belem_converse/llm.py); change it too.
 
 ## Configuration
