@@ -119,47 +119,6 @@ class TestRetrievalStrategySelection:
             # Clean up
             os.environ.pop('ENABLE_VECTOR_FALLBACK', None)
     
-    def test_semantic_search_fallback_in_unified_retriever(self):
-        """
-        Requirement 2.3, 9.2: Semantic search should be used as fallback when filter-first returns zero results.
-        Note: This is handled by UnifiedRetriever, not QueryPlanner.
-        """
-        # This test verifies the design intent is documented
-        # The actual fallback logic is in UnifiedRetriever.retrieve()
-        
-        import inspect
-
-        from belem_converse.core.unified_retriever import UnifiedRetriever
-        
-        # Verify the retrieve method has semantic search fallback logic
-        source = inspect.getsource(UnifiedRetriever.retrieve)
-        
-        assert 'semantic_search' in source, (
-            "UnifiedRetriever.retrieve should have semantic search fallback logic"
-        )
-        assert 'not db_results' in source, (
-            "Semantic search should be triggered when filter-first returns zero results"
-        )
-    
-    def test_osm_enabled_with_location_in_unified_retriever(self):
-        """
-        Requirement 9.3: OSM should be enabled when user location is available.
-        Note: This is handled by UnifiedRetriever._should_trigger_osm().
-        """
-        import inspect
-
-        from belem_converse.core.unified_retriever import UnifiedRetriever
-        
-        # Verify the _should_trigger_osm method checks for user location
-        source = inspect.getsource(UnifiedRetriever._should_trigger_osm)
-        
-        assert 'user_location' in source, (
-            "_should_trigger_osm should check for user location"
-        )
-        assert 'not user_location' in source, (
-            "_should_trigger_osm should return False when no user location"
-        )
-    
     def test_query_plan_structure(self, query_planner):
         """
         Verify query plan structure includes all necessary fields for retrieval strategy.

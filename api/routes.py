@@ -116,8 +116,6 @@ def _get_retriever() -> UnifiedRetriever:
             place_cache=_place_cache,
             category_matcher=_category_matcher,
             ranking_engine=_ranking_engine,
-            vector_store=None,  # FUTURE: wire optional Chroma fallback (ADR-0002)
-            osm_client=None,    # FUTURE: wire OSM realtime fallback
         )
     return _retriever
 
