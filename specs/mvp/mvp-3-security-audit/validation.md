@@ -110,28 +110,28 @@ module.
 | GitHub Support cache-purge ticket | not filed: owner decision 2026-10-25 (the two PR refs still reach the old commits; accepted as bloat) |
 | Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
 | Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
-| `scripts/security_scan.sh` exit code on the final commit | 0 on faf79a7 (re-run on the final commit) |
-| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 pass, as reported by the owner after reading the Render logs (all requests 200, nothing flagged). `debug` holds only `answer_source`. |
+| `scripts/security_scan.sh` exit code on the final commit | 0 on `main` at f755ebe (the merge of PR #3), 2026-10-25 |
+| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 pass, as reported by the owner after reading the Render logs (all requests 200, nothing flagged). Re-run of 1–4 after the owner pointed Render at `main` (Render's branch is as reported by the owner): the same results. GitHub Pages builds from `main` (commit f755ebe, checked through the Pages API); the site, the app, `authors.html` and `history.html` answer 200, the app targets the Render API, and the Pages origin passes CORS. `debug` holds only `answer_source`. |
 
 ## Definition of done
 
-- [ ] Repository cleanup: every "Cleanup candidates" row (spec.md) is removed
+- [x] Repository cleanup: every "Cleanup candidates" row (spec.md) is removed
       or kept with a reason in `findings.md`, the checks above pass, and the
       gates still pass after it.
 
-- [ ] Every P1 acceptance criterion is covered by the tests in the map above or
+- [x] Every P1 acceptance criterion is covered by the tests in the map above or
       by the scan gate, and both pass.
-- [ ] The required gate (`pytest -q`) passes with no new skips.
-- [ ] `findings.md` lists every finding with a status. No Critical or High is
+- [x] The required gate (`pytest -q`) passes with no new skips.
+- [x] `findings.md` lists every finding with a status. No Critical or High is
       open.
-- [ ] K01 purge is pushed (with the owner's recorded go-ahead), and a fresh
+- [x] K01 purge is pushed (with the owner's recorded go-ahead; two merged-PR refs still reach the old commits, accepted by the owner), and a fresh
       mirror clone has no `data/` history.
-- [ ] Any secret that was ever exposed has been rotated, and the old key is
+- [x] Any secret that was ever exposed has been rotated, and the old key is
       confirmed dead.
-- [ ] The manual checks pass, and the Evidence table is filled in. It contains
+- [x] The manual checks pass, and the Evidence table is filled in. It contains
       no secret values.
-- [ ] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
-- [ ] The PR `mvp-3 — Security audit of the live MVP` is merged into `main`.
-- [ ] **The live service runs the audited code:** the Render blueprint and
+- [x] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
+- [x] The PR `mvp-3 — Security audit of the live MVP` is merged into `main`.
+- [x] **The live service runs the audited code:** the Render blueprint and
       GitHub Pages deploy from `main`, and the T17 checks pass against the live
       URLs.
