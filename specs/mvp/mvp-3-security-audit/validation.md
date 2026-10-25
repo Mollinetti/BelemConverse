@@ -111,7 +111,7 @@ module.
 | Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
 | Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
 | `scripts/security_scan.sh` exit code on the final commit | 0 on `main` at f755ebe (the merge of PR #3), 2026-10-25 |
-| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 pass, as reported by the owner after reading the Render logs (all requests 200, nothing flagged). Re-run of 1–4 after the owner pointed Render at `main`: the same results; the Pages app answers 200 and targets the Render API. `debug` holds only `answer_source`. |
+| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 pass, as reported by the owner after reading the Render logs (all requests 200, nothing flagged). Re-run of 1–4 after the owner pointed Render at `main` (Render's branch is as reported by the owner): the same results. GitHub Pages builds from `main` (commit f755ebe, checked through the Pages API); the site, the app, `authors.html` and `history.html` answer 200, the app targets the Render API, and the Pages origin passes CORS. `debug` holds only `answer_source`. |
 
 ## Definition of done
 
@@ -132,6 +132,6 @@ module.
       no secret values.
 - [x] `spec.md` has no `[NEEDS CLARIFICATION]` markers.
 - [x] The PR `mvp-3 — Security audit of the live MVP` is merged into `main`.
-- [ ] **The live service runs the audited code:** the Render blueprint and
+- [x] **The live service runs the audited code:** the Render blueprint and
       GitHub Pages deploy from `main`, and the T17 checks pass against the live
       URLs.
