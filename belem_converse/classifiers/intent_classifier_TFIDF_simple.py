@@ -3,6 +3,7 @@ Simplified TF-IDF Intent Classifier for fast performance.
 Optimized for speed while maintaining accuracy.
 """
 
+import hashlib
 import json
 import pickle
 import unicodedata
@@ -17,6 +18,10 @@ from sklearn.pipeline import FeatureUnion
 _IMPLICIT_LEXICON_PATH = (
     Path(__file__).resolve().parent / "data" / "implicit_category_lexicon.json"
 )
+
+
+class ModelIntegrityError(RuntimeError):
+    """The model pickle is missing its checksum, or its bytes do not match it."""
 
 
 class SimpleTFIDFIntentClassifier:
@@ -601,8 +606,12 @@ class SimpleTFIDFIntentClassifier:
         """Get versioned model file path."""
         return self.model_dir / f"simple_tfidf_models_v{self.MODEL_VERSION}.pkl"
     
-    def train(self):
-        """Train both classifiers quickly."""
+    def train(self, save: bool = False):
+        """Load the shipped models, else train in memory.
+
+        Models are written to disk only offline, with ``train(save=True)``
+        after deleting the old pickle; the API never writes into models/.
+        """
         try:
             # Try to load pre-trained models
             if self._load_models():
@@ -646,9 +655,11 @@ class SimpleTFIDFIntentClassifier:
             
             self.is_trained = True
             
-            # Save models for next time
-            self._save_models()
+            if save:
+                self._save_models()
             
+        except ModelIntegrityError:
+            raise
         except Exception as e:
             print(f"Training error: {e}")
             self.is_trained = False
@@ -665,22 +676,37 @@ class SimpleTFIDFIntentClassifier:
             }
             
             model_file = self._get_model_file()
-            with open(model_file, 'wb') as f:
-                pickle.dump(model_data, f)
+            payload = pickle.dumps(model_data)
+            model_file.write_bytes(payload)
+            self._checksum_file(model_file).write_text(hashlib.sha256(payload).hexdigest() + "\n")
                 
         except Exception as e:
             print(f"Model save error: {e}")
     
+    @staticmethod
+    def _checksum_file(model_file: Path) -> Path:
+        return model_file.with_name(model_file.name + ".sha256")
+
     def _load_models(self) -> bool:
-        """Load pre-trained models from disk."""
+        """Load pre-trained models from disk.
+
+        Raises ModelIntegrityError before unpickling anything whose bytes do not
+        match the committed SHA-256.
+        """
         try:
             model_file = self._get_model_file()
             
             if not model_file.exists():
                 return False
-                
-            with open(model_file, 'rb') as f:
-                model_data = pickle.load(f)
+
+            # ponytail: hash check, not a signature. Upgrade to signing only if
+            # models ever come from outside the repo.
+            payload = model_file.read_bytes()
+            checksum = self._checksum_file(model_file)
+            expected = checksum.read_text().strip() if checksum.exists() else None
+            if expected != hashlib.sha256(payload).hexdigest():
+                raise ModelIntegrityError(f"{model_file.name} does not match its .sha256")
+            model_data = pickle.loads(payload)  # noqa: S301 (checked against the committed hash above)
             
             # Check version
             if model_data.get('version') != self.MODEL_VERSION:
@@ -694,6 +720,8 @@ class SimpleTFIDFIntentClassifier:
             self.is_trained = True
             return True
             
+        except ModelIntegrityError:
+            raise
         except Exception as e:
             print(f"Model load error: {e}")
             return False
