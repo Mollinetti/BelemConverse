@@ -13,4 +13,8 @@ paths = [
   '''^models/''',
   '''^graphify-out/''',
   '''^\.claude/worktrees/''',
+  '''^frontend/\.dart_tool/''',  # Flutter caches: untracked, public package strings (F04)
+  '''^frontend/build/''',
+  '''^specs/mvp/mvp-3-security-audit/out/''',  # raw scanner output, git-ignored
+  '''^docs/app/\.dart_tool/''',
 ]
