@@ -1,0 +1,20 @@
+title = "BelemConverse"
+
+[extend]
+useDefault = true
+
+# Local by design, never tracked: directory scans must not report them.
+[allowlist]
+description = "local-only paths"
+paths = [
+  '''(^|/)\.env$''',
+  '''(^|/)\.venv/''',
+  '''^data/''',
+  '''^models/''',
+  '''^graphify-out/''',
+  '''^\.claude/worktrees/''',
+  '''^frontend/\.dart_tool/''',  # Flutter caches: untracked, public package strings (F04)
+  '''^frontend/build/''',
+  '''^specs/mvp/mvp-3-security-audit/out/''',  # raw scanner output, git-ignored
+  '''^docs/app/\.dart_tool/''',
+]

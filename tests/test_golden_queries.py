@@ -160,9 +160,7 @@ class GoldenQueriesTestRunner:
         self.retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
     
     def _load_places_index(self) -> list[dict[str, Any]]:

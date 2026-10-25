@@ -97,10 +97,6 @@ class BusinessHours:
         current_time = now.time()
         return self.is_open_at(day_name, current_time)
     
-    def get_hours_for_day(self, day: str) -> DaySchedule | None:
-        """Get schedule for a specific day."""
-        return self.schedules.get(day)
-    
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -445,29 +441,6 @@ class BusinessHoursParser:
         hours = self.parse(hours_string)
         return hours.is_open_now()
     
-    def get_open_hours_for_day(
-        self, 
-        hours_string: str, 
-        day: str
-    ) -> list[tuple[str, str]] | None:
-        """
-        Get open hours for a specific day.
-        
-        Returns:
-            List of (start_time, end_time) tuples or None if closed
-        """
-        hours = self.parse(hours_string)
-        schedule = hours.get_hours_for_day(day)
-        
-        if schedule is None or schedule.is_closed:
-            return None
-        
-        return [
-            (tr.start.strftime('%H:%M'), tr.end.strftime('%H:%M'))
-            for tr in schedule.time_ranges
-        ]
-
-
 # Global instance for convenience
 business_hours_parser = BusinessHoursParser()
 

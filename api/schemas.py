@@ -2,7 +2,7 @@
 Pydantic schemas for API request/response validation.
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -16,17 +16,13 @@ class LatLng(BaseModel):
     lng: float = Field(..., description="Longitude", ge=-180, le=180)
 
 
-class Coordinates(BaseModel):
-    """User coordinates for location-based queries (legacy alias)."""
-    lat: float = Field(..., description="Latitude", ge=-90, le=90)
-    lng: float = Field(..., description="Longitude", ge=-180, le=180)
-
-
 class ChatFilters(BaseModel):
     """Explicit filters for chat request."""
-    placeType: list[str] | None = Field(default=None, description="Place types to filter")
-    city: str | None = Field(default=None, description="City filter")
-    neighborhood: str | None = Field(default=None, description="Neighborhood filter")
+    placeType: list[Annotated[str, Field(max_length=50)]] | None = Field(
+        default=None, max_length=10, description="Place types to filter"
+    )
+    city: str | None = Field(default=None, max_length=100, description="City filter")
+    neighborhood: str | None = Field(default=None, max_length=100, description="Neighborhood filter")
     openNow: bool | None = Field(default=None, description="Filter for places open now")
     priceMax: float | None = Field(default=None, description="Maximum price")
     minRating: float | None = Field(default=None, description="Minimum rating")
@@ -48,9 +44,6 @@ class ChatRequest(BaseModel):
     userLocation: LatLng | None = Field(default=None, description="User location")
     nowIso: str | None = Field(default=None, description="Client current time in ISO-8601")
     filters: ChatFilters | None = Field(default=None, description="Explicit filters")
-    
-    # Legacy support
-    coordinates: Coordinates | None = Field(default=None, description="User location (legacy)")
     
     @model_validator(mode="after")
     def _gate(self):
@@ -166,17 +159,6 @@ class HealthResponse(BaseModel):
     """Health check response."""
     status: str = "healthy"
     version: str
-    llm_loaded: bool
-    vector_store_loaded: bool
-
-
-class LanguagesResponse(BaseModel):
-    """Available languages response."""
-    languages: list[dict] = [
-        {"code": "pt", "name": "Português"},
-        {"code": "en", "name": "English"}
-    ]
-    default: str = "pt"
 
 
 class ErrorResponse(BaseModel):

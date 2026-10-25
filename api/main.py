@@ -16,8 +16,9 @@ from dotenv import find_dotenv, load_dotenv
 # upward from the working directory; never overrides variables already set.
 load_dotenv(find_dotenv(usecwd=True))
 
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
 
 from . import __version__  # noqa: E402
 from .dependencies import initialize_rag_system  # noqa: E402
@@ -75,6 +76,13 @@ def cors_options() -> dict:
 
 app.add_middleware(CORSMiddleware, **cors_options())
 
+
+@app.exception_handler(Exception)
+async def internal_error(request: Request, exc: Exception) -> JSONResponse:
+    """Whatever goes wrong, the client learns nothing about the server."""
+    logger.error("Unhandled error on %s", request.url.path, exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": "internal_error"})
+
 app.include_router(router, prefix="/api", tags=["chat"])
 
 
@@ -92,4 +100,4 @@ async def root() -> dict:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")  # noqa: S104 (dev entry point; the container runs uvicorn itself)
