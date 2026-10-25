@@ -44,7 +44,7 @@ Audit of `mvp-3` (cut from `main` at 26877da), 2026-10-25. Scanner output stays 
 | K07 | Medium | grep | local `debug.log` writes | verified-gone | `tests/test_no_local_paths.py` (5981e15) |
 | K08 | Medium | Dockerfile | root user | fixed upstream | `useradd` + `USER app`, uid 1000 (mvp-2); `test_deploy_files.py::test_dockerfile_non_root_user` (5981e15) |
 | K09 | Medium | | `.env` readable by agents | fixed | commit "T00/T02"; the new-session check must be run by hand |
-| K10 | Medium | manual | GitHub settings | open (manual, T14d) | |
+| K10 | Medium | manual | GitHub settings | fixed | 2026-10-25, via `gh api`: secret scanning, push protection and private vulnerability reporting enabled; Dependabot alerts were already on. Read back after the change |
 | K11 | Medium | pip-audit | `python-multipart` | fixed | 5981e15: removed from `requirements.txt` and `pyproject.toml`; container smoke test passes without it; `test_python_multipart_is_not_a_dependency` |
 | K12 | Low | read | `ChatFilters` bounds, `placeId`, `nowIso`, INFO logging of user text | backlog | |
 | K13 | Low | git | `notebooks/` in history (3 commits) | accepted | owner decision 2026-10-25: not purged |
@@ -81,5 +81,4 @@ findings, each re-read by hand before it was written down.
 
 ## Open
 
-- **K10** (Medium): the GitHub settings, by hand.
 - **Not run:** the live checks (T17) against Render; the new-session `.env` read check (K09).
