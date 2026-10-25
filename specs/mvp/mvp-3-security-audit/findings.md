@@ -81,6 +81,6 @@ findings, each re-read by hand before it was written down.
 
 ## Open
 
-- **K01** (High): the history purge. Needs the T13 runbook and the owner's go-ahead before any force-push.
+- **K01** (High): the history purge. Prepared, not pushed. Steps 3–5 of the T13 runbook are done and verified (2026-10-25): a mirror backup of `origin`; `git filter-repo --invert-paths --path data/ --path LLM/src/classifiers/models/` on a copy of it; the tip tree of `main` is unchanged; `git log --all -- data/` is empty; gitleaks and trufflehog on the rewritten mirror find nothing. Replaying the same rewrite on a clone of the working repo gives the same `main` (97775ef), so `mvp-3` can be re-synced. Waiting on the owner's go-ahead to force-push (step 6).
 - **K10** (Medium): the GitHub settings, by hand.
 - **Not run:** the live checks (T17) against Render; the new-session `.env` read check (K09).
