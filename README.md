@@ -30,7 +30,6 @@ Ask where to go in Portuguese or English — get answers built only from places 
 [**Try it**](https://mollinetti.github.io/BelemConverse/app/) ·
 [**Project site**](https://mollinetti.github.io/BelemConverse/) ·
 [**Specs**](docs/archive/spec/) ·
-[**API contract**](docs/archive/spec/05-openapi.yaml) ·
 [**Authors**](https://mollinetti.github.io/BelemConverse/authors.html)
 
 <br>
@@ -323,15 +322,14 @@ The model client is [`belem_converse/llm.py`](belem_converse/llm.py); paths live
 
 ## API
 
-All routes are mounted under `/api`. The contract is frozen in
-[`docs/archive/spec/05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) and mirrored by
-[`api/schemas.py`](api/schemas.py).
+All routes are mounted under `/api`. The contract is
+[`api/schemas.py`](api/schemas.py), served live at `/openapi.json`. The archived
+[`docs/archive/spec/05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) predates
+mvp-2 and still lists routes and fields that were removed.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/health` | Liveness; ready once the place catalog is loaded |
-| `GET` | `/api/languages` | Supported response languages |
-| `GET` | `/api/places/{placeId}` | Look up one canonical place |
 | `POST` | `/api/chat` | Plan → retrieve → summarise; returns an answer, up to 5 results, follow-up suggestions, `has_more` and `turns_left` |
 
 `/api/chat` answers `422` for a message outside the input rule (localized),
@@ -388,7 +386,7 @@ reference; where they disagree with `specs/mvp/`, the MVP spec wins.
 | [`00-poc-charter`](docs/archive/spec/00-poc-charter.md) | Scope, success criteria, non-goals |
 | [`01-domain-model`](docs/archive/spec/01-domain-model.md) · [`02-csv-mapping`](docs/archive/spec/02-csv-mapping.md) | The canonical `Place` entity and how CSVs map onto it |
 | [`03-query-planner`](docs/archive/spec/03-query-planner.md) · [`04-ranking-spec`](docs/archive/spec/04-ranking-spec.md) | Retrieval precedence and ranking rules |
-| [`05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) | Frozen API contract consumed by the client |
+| [`05-openapi.yaml`](docs/archive/spec/05-openapi.yaml) | The original API contract (superseded by `/openapi.json`) |
 | [`06-llm-contract`](docs/archive/spec/06-llm-contract.md) | Summarise-only, no-hallucination rules for the model |
 | [`07-ux-flutter`](docs/archive/spec/07-ux-flutter.md) · [`08-i18n`](docs/archive/spec/08-i18n.md) | Client behaviour and localisation |
 | [`09-eval-golden-queries`](docs/archive/spec/09-eval-golden-queries.md) · [`10-runbook`](docs/archive/spec/10-runbook.md) · [`11-demo-script`](docs/archive/spec/11-demo-script.md) | Evaluation, operations, demo |

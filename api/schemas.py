@@ -16,12 +16,6 @@ class LatLng(BaseModel):
     lng: float = Field(..., description="Longitude", ge=-180, le=180)
 
 
-class Coordinates(BaseModel):
-    """User coordinates for location-based queries (legacy alias)."""
-    lat: float = Field(..., description="Latitude", ge=-90, le=90)
-    lng: float = Field(..., description="Longitude", ge=-180, le=180)
-
-
 class ChatFilters(BaseModel):
     """Explicit filters for chat request."""
     placeType: list[str] | None = Field(default=None, description="Place types to filter")
@@ -48,9 +42,6 @@ class ChatRequest(BaseModel):
     userLocation: LatLng | None = Field(default=None, description="User location")
     nowIso: str | None = Field(default=None, description="Client current time in ISO-8601")
     filters: ChatFilters | None = Field(default=None, description="Explicit filters")
-    
-    # Legacy support
-    coordinates: Coordinates | None = Field(default=None, description="User location (legacy)")
     
     @model_validator(mode="after")
     def _gate(self):
@@ -166,17 +157,6 @@ class HealthResponse(BaseModel):
     """Health check response."""
     status: str = "healthy"
     version: str
-    llm_loaded: bool
-    vector_store_loaded: bool
-
-
-class LanguagesResponse(BaseModel):
-    """Available languages response."""
-    languages: list[dict] = [
-        {"code": "pt", "name": "Português"},
-        {"code": "en", "name": "English"}
-    ]
-    default: str = "pt"
 
 
 class ErrorResponse(BaseModel):

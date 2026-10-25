@@ -32,15 +32,13 @@ from belem_converse.limits import DailyCap, RateLimiter, client_ip, trusted_prox
 from belem_converse.sessions import SessionStore
 
 from . import __version__
-from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
+from .dependencies import BUILD_HINT, get_catalog, is_system_ready
 from .schemas import (
     ChatRequest,
     ChatResponse,
     ErrorResponse,
     HealthResponse,
-    LanguagesResponse,
     LatLng,
-    Place,
     PlaceResult,
 )
 
@@ -125,32 +123,10 @@ def _get_retriever() -> UnifiedRetriever:
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
-    status = get_system_status()
     return HealthResponse(
         status="healthy" if is_system_ready() else "initializing",
         version=__version__,
-        llm_loaded=status.get("llm_loaded", False),
-        vector_store_loaded=status.get("vector_store_loaded", False),
     )
-
-
-@router.get("/languages", response_model=LanguagesResponse)
-async def get_languages() -> LanguagesResponse:
-    return LanguagesResponse()
-
-
-@router.get("/places/{placeId}", response_model=Place)
-async def get_place(placeId: str) -> Place:
-    place = next((p for p in _load_places_index() if p.get("placeId") == placeId), None)
-    if place is None:
-        raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
-    place = dict(place)
-    loc = place.get("location")
-    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
-        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
-    else:
-        place["location"] = None
-    return Place(**place)
 
 
 @router.post(
@@ -217,8 +193,6 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     user_location: dict | None = None
     if request.userLocation:
         user_location = {"lat": request.userLocation.lat, "lng": request.userLocation.lng}
-    elif request.coordinates:
-        user_location = {"lat": request.coordinates.lat, "lng": request.coordinates.lng}
     outside_city = user_location is not None and not get_city_config().is_within_bounds(
         user_location["lat"], user_location["lng"]
     )
