@@ -38,7 +38,7 @@ def initialize_rag_system() -> None:
     try:
         _catalog = _load_catalog()
     except (OSError, sqlite3.Error) as exc:
-        logger.error("Place catalog could not be loaded: %s", exc)
+        logger.error("Place catalog could not be loaded: %s. %s", exc, BUILD_HINT)
         return
     logger.info("Place catalog loaded: %d places", len(_catalog))
 

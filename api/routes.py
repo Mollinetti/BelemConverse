@@ -8,11 +8,9 @@ Pipeline per `docs/archive/spec/`:
 
 from __future__ import annotations
 
-import json
 import logging
 import time
 import traceback
-from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
@@ -32,7 +30,7 @@ from belem_converse.limits import DailyCap, RateLimiter, client_ip, trusted_prox
 from belem_converse.sessions import SessionStore
 
 from . import __version__
-from .dependencies import BUILD_HINT, get_catalog, is_system_ready
+from .dependencies import get_catalog, is_system_ready
 from .schemas import (
     ChatRequest,
     ChatResponse,
@@ -98,7 +96,7 @@ def _load_places_index() -> list[dict]:
     """The catalog loaded at startup; 503 until it exists."""
     catalog = get_catalog()
     if catalog is None:
-        raise HTTPException(status_code=503, detail=f"Place catalog not loaded. {BUILD_HINT}")
+        raise HTTPException(status_code=503, detail="catalog_unavailable")
     return catalog
 
 
@@ -168,10 +166,7 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     started_at = time.monotonic()  # the model's time budget counts from here
 
     if not is_system_ready():
-        raise HTTPException(
-            status_code=503,
-            detail=f"Place catalog not loaded. {BUILD_HINT}",
-        )
+        raise HTTPException(status_code=503, detail="catalog_unavailable")
 
     session = sessions.get_or_create(str(request.session_id))
     if request.action == "more":
@@ -182,13 +177,6 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         )
     # Taken before the first await, so parallel requests cannot answer a 5th.
     session.turns_used += 1
-
-    # Optional client-supplied "now" timestamp (used by open-hours filtering).
-    if request.nowIso:
-        try:
-            datetime.fromisoformat(request.nowIso.replace("Z", "+00:00"))
-        except ValueError:
-            logger.warning("Invalid nowIso format: %s", request.nowIso)
 
     user_location: dict | None = None
     if request.userLocation:
@@ -209,16 +197,11 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         explicit_language=request.language,
         filters=filters_dict,
     )
-    logger.info("Query Plan: %s", json.dumps(query_planner.plan_to_dict(query_plan), indent=2))
+    # Intent and slot names only: slots carry the visitor's location and free text.
+    logger.info("Query plan: intent=%s slots=%s", query_plan.intent, sorted(query_plan.slots))
 
     # ----- Regular query flow ----------------------------------------------
-    try:
-        retriever = _get_retriever()
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Retriever build failed")
-        raise HTTPException(status_code=500, detail=f"Retriever error: {exc}") from exc
+    retriever = _get_retriever()
 
     # A follow-up refines the conversation's previous question.
     slots = merge_slots(session.last_plan, query_plan.slots)
@@ -264,9 +247,7 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         has_more=session.cursor < len(session.ranked_ids),
         follow_ups=follow_ups.build(slots, query_plan.language, user_location is not None),
         debug={
-            **(query_plan.debug or {}),
             "answer_source": answer_source,
-            "location_outside_city": outside_city,
         },
         processing_time_ms=round(elapsed_ms, 1),
     )
@@ -315,10 +296,7 @@ def _place_results(places: list[dict]) -> list[PlaceResult]:
                 exc,
             )
             logger.error(traceback.format_exc())
-            raise HTTPException(
-                status_code=400,
-                detail=f"Error converting place result: {exc}",
-            ) from exc
+            raise HTTPException(status_code=500, detail="internal_error") from exc
     return results
 
 
