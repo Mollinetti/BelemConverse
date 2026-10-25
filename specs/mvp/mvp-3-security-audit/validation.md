@@ -111,7 +111,7 @@ module.
 | Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
 | Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
 | `scripts/security_scan.sh` exit code on the final commit | 0 on faf79a7 (re-run on the final commit) |
-| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 _awaiting the owner reading the Render logs_. `debug` holds only `answer_source`. |
+| Live checks 1–5 pass | against https://belemconverse.onrender.com running `mvp-3`, 2026-10-25: 1 pass (foreign origin: 0 grant headers; the Pages origin is allowed); 2 pass (`ingest/csv`, `clear-history`, `languages`, `places/x` all 404); 3 pass (422 with field errors only); 4 pass (200 for the first 20 requests, 429 from the 21st, `X-RateLimit-Remaining: 0`; a forged `X-Forwarded-For` still gets 429); 5 pass, as reported by the owner after reading the Render logs (all requests 200, nothing flagged). `debug` holds only `answer_source`. |
 
 ## Definition of done
 
