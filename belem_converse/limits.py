@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import os
 import time
 from collections import deque
@@ -50,15 +51,20 @@ def client_ip(forwarded_for: str | None, socket_host: str | None, hops: int = 1)
 
     Each trusted proxy appends the address it saw to X-Forwarded-For, so the
     visitor is the ``hops``-th entry from the right; entries further left are
-    whatever the client sent and can be forged. With fewer entries than hops,
-    the left-most one; with no header, the socket peer. Render needs 3: its
-    header reads "visitor, Cloudflare edge, Render proxy", and the last two
-    change on every request.
+    whatever the client sent and can be forged. Anything that does not look
+    like a trusted chain (no header, fewer entries than hops, an entry that is
+    not an address) falls back to the socket peer. Render needs 3: its header
+    reads "visitor, Cloudflare edge, Render proxy", and the last two change on
+    every request.
     """
+    peer = socket_host or "unknown"
     entries = [e.strip() for e in (forwarded_for or "").split(",") if e.strip()]
-    if not entries:
-        return socket_host or "unknown"
-    return entries[-hops] if len(entries) >= hops else entries[0]
+    if len(entries) < hops:
+        return peer
+    try:
+        return str(ipaddress.ip_address(entries[-hops]))
+    except ValueError:
+        return peer
 
 
 def trusted_proxy_hops() -> int:
