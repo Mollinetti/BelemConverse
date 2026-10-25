@@ -65,10 +65,6 @@ def test_two_hops_ignore_a_forged_prefix():
     assert client_ip("6.6.6.6, 5.5.5.5, 8.8.8.8, 10.0.0.7", "s", hops=2) == "8.8.8.8"
 
 
-def test_fewer_entries_than_hops_uses_the_left_most():
-    assert client_ip("8.8.8.8", "s", hops=2) == "8.8.8.8"
-
-
 def test_no_header_uses_the_socket_peer():
     assert client_ip(None, "127.0.0.1", hops=2) == "127.0.0.1"
     assert client_ip(" , ", "127.0.0.1", hops=2) == "127.0.0.1"
@@ -226,3 +222,15 @@ def test_rate_limited_response_says_zero_left(client):
 
     assert response.status_code == 429
     assert response.headers["X-RateLimit-Remaining"] == "0"
+
+
+# --- mvp-3 F07: a short or forged chain fails closed ---------------------------
+
+
+def test_fewer_entries_than_hops_uses_the_socket_peer():
+    # The left-most entry is whatever the client sent; it must not pick the bucket.
+    assert client_ip("8.8.8.8", "9.9.9.9", hops=3) == "9.9.9.9"
+
+
+def test_an_entry_that_is_not_an_address_uses_the_socket_peer():
+    assert client_ip("junk" * 100 + ", 10.0.0.1", "9.9.9.9", hops=2) == "9.9.9.9"

@@ -24,173 +24,6 @@ from belem_converse.core.ranking_engine import RankingEngine
 from belem_converse.core.unified_retriever import RetrievalResult, UnifiedRetriever
 
 
-class TestOSMAPIFailureHandling:
-    """Test OSM API failure handling in UnifiedRetriever."""
-    
-    def test_osm_api_exception_returns_database_results_only(self, caplog):
-        """
-        When OSM API raises exception, should log error and return database results only.
-        
-        Requirement 12.7: Catch all OSM exceptions, log errors with context,
-        return database results only.
-        """
-        # Setup
-        db_places = [
-            {
-                'placeId': 'db1',
-                'title': 'Database Restaurant',
-                'category': ['restaurant'],
-                'location': {'lat': -1.4558, 'lng': -48.4902},
-                'totalScore': 4.5,
-                'reviewsCount': 100,
-            }
-        ]
-        
-        place_cache = PlaceCache(db_places)
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {'restaurant': ['restaurant']}
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        
-        ranking_engine = RankingEngine()
-        
-        # Mock OSM client that raises exception
-        mock_osm_client = Mock()
-        mock_osm_client.search.side_effect = Exception("OSM API unavailable")
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=mock_osm_client
-        )
-        
-        query_plan = {
-            'original_query': 'find restaurants',
-            'intents': {},
-            'slots': {
-                'user_location': {'lat': -1.4558, 'lng': -48.4902},
-                'categories': ['restaurant']
-            },
-            'proximity_intent_detected': False
-        }
-        
-        # Execute - OSM fallback should be triggered but fail gracefully
-        with caplog.at_level(logging.ERROR):
-            # Trigger OSM fallback by passing empty db_results
-            osm_results = retriever._osm_fallback(query_plan, [])
-        
-        # Verify error was logged
-        assert any("OSM fallback failed" in record.message for record in caplog.records)
-        
-        # Verify OSM returns empty list on failure
-        assert osm_results == []
-    
-    def test_osm_api_timeout_logged_with_context(self, caplog):
-        """
-        When OSM API times out, should log error with full context.
-        
-        Requirement 12.7: Log errors with context (query, location, category).
-        """
-        place_cache = PlaceCache([])
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {'restaurant': ['restaurant']}
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        
-        ranking_engine = RankingEngine()
-        
-        # Mock OSM client that times out
-        mock_osm_client = Mock()
-        mock_osm_client.search.side_effect = TimeoutError("Request timeout after 30s")
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=mock_osm_client
-        )
-        
-        query_plan = {
-            'original_query': 'find restaurants near me',
-            'intents': {},
-            'slots': {
-                'user_location': {'lat': -1.4558, 'lng': -48.4902},
-                'categories': ['restaurant']
-            },
-            'proximity_intent_detected': True
-        }
-        
-        with caplog.at_level(logging.ERROR):
-            osm_results = retriever._osm_fallback(query_plan, [])
-        
-        # Verify error was logged with context
-        error_logs = [r for r in caplog.records if r.levelname == 'ERROR']
-        assert len(error_logs) > 0
-        assert any("OSM fallback failed" in r.message for r in error_logs)
-        
-        # Verify returns empty list
-        assert osm_results == []
-    
-    def test_osm_api_unavailable_does_not_fail_entire_request(self):
-        """
-        When OSM API is unavailable, entire retrieval request should still succeed.
-        
-        Requirement 12.7: Do not fail entire request when OSM fails.
-        """
-        db_places = [
-            {
-                'placeId': 'db1',
-                'title': 'Database Restaurant',
-                'category': ['restaurant'],
-                'location': {'lat': -1.4558, 'lng': -48.4902},
-                'totalScore': 4.5,
-                'reviewsCount': 100,
-            }
-        ]
-        
-        place_cache = PlaceCache(db_places)
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {'restaurant': ['restaurant']}
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        
-        ranking_engine = RankingEngine()
-        
-        # Mock OSM client that raises exception
-        mock_osm_client = Mock()
-        mock_osm_client.search.side_effect = ConnectionError("Cannot connect to OSM")
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=mock_osm_client
-        )
-        
-        query_plan = {
-            'original_query': 'find restaurants',
-            'intents': {},
-            'slots': {
-                'user_location': {'lat': -1.4558, 'lng': -48.4902},
-                'categories': ['restaurant']
-            },
-            'proximity_intent_detected': False
-        }
-        
-        # Execute - should not raise exception
-        result = retriever.retrieve(query_plan)
-        
-        # Verify request succeeded with database results
-        assert isinstance(result, RetrievalResult)
-        assert len(result.places) > 0
-        assert result.places[0]['placeId'] == 'db1'
-        assert result.osm_triggered is False
-
-
 class TestDatabaseConnectionFailures:
     """Test database connection failure handling."""
     
@@ -209,7 +42,6 @@ class TestDatabaseConnectionFailures:
         
         # Lookups should return None
         assert place_cache.get_by_id('nonexistent') is None
-        assert place_cache.get_by_title('nonexistent') is None
     
     def test_place_cache_handles_malformed_data(self, caplog):
         """
@@ -265,9 +97,7 @@ class TestDatabaseConnectionFailures:
         retriever = UnifiedRetriever(
             place_cache=mock_place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         query_plan = {
@@ -314,9 +144,7 @@ class TestInvalidQueryPlanHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         # Invalid proximity radius (negative or extremely large)
@@ -364,9 +192,7 @@ class TestInvalidQueryPlanHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         # Invalid price range
@@ -412,9 +238,7 @@ class TestInvalidQueryPlanHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         # Minimal query plan with missing fields
@@ -456,9 +280,7 @@ class TestInvalidQueryPlanHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         # Contradictory: proximity_intent_detected=True but no user_location
@@ -501,9 +323,7 @@ class TestEmptyResultsHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         query_plan = {
@@ -543,9 +363,7 @@ class TestEmptyResultsHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         query_plan = {
@@ -581,9 +399,7 @@ class TestEmptyResultsHandling:
         retriever = UnifiedRetriever(
             place_cache=place_cache,
             category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=None
+            ranking_engine=ranking_engine
         )
         
         query_plan = {
@@ -606,54 +422,84 @@ class TestEmptyResultsHandling:
         assert hasattr(result, 'filters_applied')
 
 
-class TestSemanticSearchErrorHandling:
-    """Test semantic search error handling (already partially covered in test_semantic_search.py)."""
-    
-    def test_semantic_search_handles_vector_store_exception(self, caplog):
-        """
-        Semantic search should handle vector store exceptions gracefully.
-        
-        This test complements test_semantic_search.py::test_semantic_search_error_handling
-        """
-        place_cache = PlaceCache([])
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {'restaurant': ['restaurant']}
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        
-        ranking_engine = RankingEngine()
-        
-        # Mock vector store that raises exception
-        mock_vector_store = Mock()
-        mock_vector_store.similarity_search_with_score.side_effect = RuntimeError("Vector DB crashed")
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=mock_vector_store,
-            osm_client=None
-        )
-        
-        query_plan = {
-            'original_query': 'find restaurants',
-            'intents': {},
-            'slots': {
-                'original_query': 'find restaurants',
-                'categories': ['restaurant']
-            },
-            'proximity_intent_detected': False
-        }
-        
-        with caplog.at_level(logging.ERROR):
-            results = retriever._semantic_search(query_plan)
-        
-        # Should log error
-        assert any("Semantic search failed" in record.message for record in caplog.records)
-        
-        # Should return empty list, not raise exception
-        assert results == []
-
-
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+# --- mvp-3 K04: errors say nothing about the server --------------------------
+
+import uuid  # noqa: E402
+
+import httpx  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+import api.dependencies as deps  # noqa: E402
+import api.routes as routes  # noqa: E402
+from api.main import app  # noqa: E402
+from tests.conftest import fake_model  # noqa: E402
+
+LEAKY = "secret-ish /abs/path"
+
+
+def chat(http, message="lugares bem avaliados"):
+    return http.post(
+        "/api/chat",
+        json={"session_id": str(uuid.uuid4()), "message": message, "language": "pt-BR"},
+    )
+
+
+def explode_building_the_retriever(monkeypatch):
+    def boom():
+        raise RuntimeError(LEAKY)
+
+    monkeypatch.setattr(routes, "_get_retriever", boom)
+
+
+def explode_retrieving(monkeypatch):
+    def boom(self, plan):
+        raise RuntimeError(LEAKY)
+
+    monkeypatch.setattr(UnifiedRetriever, "retrieve", boom)
+
+
+@pytest.mark.parametrize("explode", [explode_building_the_retriever, explode_retrieving])
+def test_500_is_generic(client, monkeypatch, explode):
+    explode(monkeypatch)
+
+    response = chat(TestClient(app, raise_server_exceptions=False))
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "internal_error"}
+    assert "secret-ish" not in response.text
+    assert "/" not in response.text
+
+
+def test_llm_failure_leaks_no_provider_url(client, monkeypatch):
+    fake_model(
+        monkeypatch,
+        side_effect=httpx.ConnectError("could not reach https://provider.example/v1/chat"),
+    )
+
+    response = chat(client)
+
+    assert response.status_code == 200
+    assert response.json()["debug"]["answer_source"] == "template"
+    assert "provider.example" not in response.text
+
+
+def test_debug_only_answer_source(client, monkeypatch):
+    fake_model(monkeypatch, return_value=None)
+
+    body = chat(client).json()
+
+    assert list(body["debug"]) == ["answer_source"]
+
+
+def test_catalog_not_loaded_503_gives_no_build_command(client, monkeypatch):
+    monkeypatch.setattr(deps, "_catalog", None)
+
+    response = chat(client)
+
+    assert response.status_code == 503
+    assert "python" not in response.text
+    assert "build_catalog" not in response.text

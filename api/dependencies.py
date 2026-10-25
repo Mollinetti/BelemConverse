@@ -38,7 +38,7 @@ def initialize_rag_system() -> None:
     try:
         _catalog = _load_catalog()
     except (OSError, sqlite3.Error) as exc:
-        logger.error("Place catalog could not be loaded: %s", exc)
+        logger.error("Place catalog could not be loaded: %s. %s", exc, BUILD_HINT)
         return
     logger.info("Place catalog loaded: %d places", len(_catalog))
 
@@ -49,12 +49,3 @@ def get_catalog() -> list[dict] | None:
 
 def is_system_ready() -> bool:
     return _catalog is not None
-
-
-def get_system_status() -> dict:
-    return {
-        "initialized": _catalog is not None,
-        "catalog_places": len(_catalog) if _catalog is not None else 0,
-        "llm_loaded": False,
-        "vector_store_loaded": False,
-    }

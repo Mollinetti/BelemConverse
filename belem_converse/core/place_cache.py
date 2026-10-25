@@ -3,7 +3,7 @@ PlaceCache - Shared module for unified place data access and caching.
 
 Implements:
 - Unified caching for place data
-- Lookup by placeId, title, and titleFormatted
+- Lookup by placeId
 - Filter method with predicate functions
 - Consistent data access for all retrievers
 
@@ -22,7 +22,7 @@ class PlaceCache:
     Unified place data access and caching module.
     
     Provides consistent place data access patterns for all retrievers,
-    supporting lookup by multiple keys and filtering with predicate functions.
+    supporting lookup by id and filtering with predicate functions.
     """
     
     def __init__(self, places_data: list[dict[str, Any]]):
@@ -34,12 +34,10 @@ class PlaceCache:
         """
         self.places_data = places_data
         self._cache_by_id: dict[str, dict[str, Any]] = {}
-        self._cache_by_title: dict[str, dict[str, Any]] = {}
-        self._cache_by_title_formatted: dict[str, dict[str, Any]] = {}
         self._build_caches()
     
     def _build_caches(self) -> None:
-        """Build lookup caches for fast access by different keys."""
+        """Build the placeId lookup."""
         logger.info(f"Building PlaceCache indexes for {len(self.places_data)} places")
         
         for place in self.places_data:
@@ -47,28 +45,8 @@ class PlaceCache:
             place_id = place.get('placeId') or place.get('cid')
             if place_id:
                 self._cache_by_id[str(place_id)] = place
-            
-            # Index by title (case-insensitive)
-            title = place.get('title', '').strip()
-            if title:
-                title_lower = title.lower()
-                # Store first occurrence only to avoid conflicts
-                if title_lower not in self._cache_by_title:
-                    self._cache_by_title[title_lower] = place
-            
-            # Index by titleFormatted (case-insensitive)
-            title_formatted = place.get('titleFormatted', '').strip()
-            if title_formatted:
-                title_formatted_lower = title_formatted.lower()
-                # Store first occurrence only to avoid conflicts
-                if title_formatted_lower not in self._cache_by_title_formatted:
-                    self._cache_by_title_formatted[title_formatted_lower] = place
         
-        logger.info(
-            f"PlaceCache built: {len(self._cache_by_id)} by ID, "
-            f"{len(self._cache_by_title)} by title, "
-            f"{len(self._cache_by_title_formatted)} by titleFormatted"
-        )
+        logger.info(f"PlaceCache built: {len(self._cache_by_id)} by ID")
     
     def get_by_id(self, place_id: str) -> dict[str, Any] | None:
         """
@@ -81,32 +59,6 @@ class PlaceCache:
             Place dictionary if found, None otherwise
         """
         return self._cache_by_id.get(str(place_id))
-    
-    def get_by_title(self, title: str) -> dict[str, Any] | None:
-        """
-        Get place by title or titleFormatted.
-        
-        Searches both title and titleFormatted fields (case-insensitive).
-        
-        Args:
-            title: Title to lookup
-            
-        Returns:
-            Place dictionary if found, None otherwise
-        """
-        title_lower = title.lower().strip()
-        
-        # Try title first
-        place = self._cache_by_title.get(title_lower)
-        if place:
-            return place
-        
-        # Try titleFormatted
-        place = self._cache_by_title_formatted.get(title_lower)
-        if place:
-            return place
-        
-        return None
     
     def get_all(self) -> list[dict[str, Any]]:
         """
@@ -129,37 +81,3 @@ class PlaceCache:
         """
         return [place for place in self.places_data if predicate(place)]
     
-    def invalidate(self) -> None:
-        """
-        Clear all caches.
-        
-        Call this when place data needs to be reloaded.
-        """
-        logger.info("Invalidating PlaceCache")
-        self._cache_by_id.clear()
-        self._cache_by_title.clear()
-        self._cache_by_title_formatted.clear()
-        self.places_data = []
-    
-    def reload(self, places_data: list[dict[str, Any]]) -> None:
-        """
-        Reload cache with new place data.
-        
-        Args:
-            places_data: New list of place dictionaries
-        """
-        logger.info(f"Reloading PlaceCache with {len(places_data)} places")
-        self.places_data = places_data
-        self._cache_by_id.clear()
-        self._cache_by_title.clear()
-        self._cache_by_title_formatted.clear()
-        self._build_caches()
-    
-    def get_count(self) -> int:
-        """
-        Get total number of places in cache.
-        
-        Returns:
-            Number of places
-        """
-        return len(self.places_data)

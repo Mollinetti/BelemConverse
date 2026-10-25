@@ -11,7 +11,7 @@ Public modules:
     core         - Query planner, retrievers, ranking, tour planner, RAG agent
     ingest       - CSV ingestion + vector store + OSM helpers
     tools        - Operational scripts (data refresh, etc.)
-    utils        - Config, models, exceptions, helpers
+    utils        - Base paths, business-hours parser
 """
 
 __version__ = "1.0.0"

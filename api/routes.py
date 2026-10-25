@@ -8,11 +8,9 @@ Pipeline per `docs/archive/spec/`:
 
 from __future__ import annotations
 
-import json
 import logging
 import time
 import traceback
-from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
@@ -32,15 +30,13 @@ from belem_converse.limits import DailyCap, RateLimiter, client_ip, trusted_prox
 from belem_converse.sessions import SessionStore
 
 from . import __version__
-from .dependencies import BUILD_HINT, get_catalog, get_system_status, is_system_ready
+from .dependencies import get_catalog, is_system_ready
 from .schemas import (
     ChatRequest,
     ChatResponse,
     ErrorResponse,
     HealthResponse,
-    LanguagesResponse,
     LatLng,
-    Place,
     PlaceResult,
 )
 
@@ -100,7 +96,7 @@ def _load_places_index() -> list[dict]:
     """The catalog loaded at startup; 503 until it exists."""
     catalog = get_catalog()
     if catalog is None:
-        raise HTTPException(status_code=503, detail=f"Place catalog not loaded. {BUILD_HINT}")
+        raise HTTPException(status_code=503, detail="catalog_unavailable")
     return catalog
 
 
@@ -116,8 +112,6 @@ def _get_retriever() -> UnifiedRetriever:
             place_cache=_place_cache,
             category_matcher=_category_matcher,
             ranking_engine=_ranking_engine,
-            vector_store=None,  # FUTURE: wire optional Chroma fallback (ADR-0002)
-            osm_client=None,    # FUTURE: wire OSM realtime fallback
         )
     return _retriever
 
@@ -127,32 +121,10 @@ def _get_retriever() -> UnifiedRetriever:
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
-    status = get_system_status()
     return HealthResponse(
         status="healthy" if is_system_ready() else "initializing",
         version=__version__,
-        llm_loaded=status.get("llm_loaded", False),
-        vector_store_loaded=status.get("vector_store_loaded", False),
     )
-
-
-@router.get("/languages", response_model=LanguagesResponse)
-async def get_languages() -> LanguagesResponse:
-    return LanguagesResponse()
-
-
-@router.get("/places/{placeId}", response_model=Place)
-async def get_place(placeId: str) -> Place:
-    place = next((p for p in _load_places_index() if p.get("placeId") == placeId), None)
-    if place is None:
-        raise HTTPException(status_code=404, detail=f"Place {placeId} not found")
-    place = dict(place)
-    loc = place.get("location")
-    if isinstance(loc, dict) and loc.get("lat") is not None and loc.get("lng") is not None:
-        place["location"] = LatLng(lat=loc["lat"], lng=loc["lng"])
-    else:
-        place["location"] = None
-    return Place(**place)
 
 
 @router.post(
@@ -194,10 +166,7 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     started_at = time.monotonic()  # the model's time budget counts from here
 
     if not is_system_ready():
-        raise HTTPException(
-            status_code=503,
-            detail=f"Place catalog not loaded. {BUILD_HINT}",
-        )
+        raise HTTPException(status_code=503, detail="catalog_unavailable")
 
     session = sessions.get_or_create(str(request.session_id))
     if request.action == "more":
@@ -209,18 +178,9 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
     # Taken before the first await, so parallel requests cannot answer a 5th.
     session.turns_used += 1
 
-    # Optional client-supplied "now" timestamp (used by open-hours filtering).
-    if request.nowIso:
-        try:
-            datetime.fromisoformat(request.nowIso.replace("Z", "+00:00"))
-        except ValueError:
-            logger.warning("Invalid nowIso format: %s", request.nowIso)
-
     user_location: dict | None = None
     if request.userLocation:
         user_location = {"lat": request.userLocation.lat, "lng": request.userLocation.lng}
-    elif request.coordinates:
-        user_location = {"lat": request.coordinates.lat, "lng": request.coordinates.lng}
     outside_city = user_location is not None and not get_city_config().is_within_bounds(
         user_location["lat"], user_location["lng"]
     )
@@ -237,16 +197,11 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         explicit_language=request.language,
         filters=filters_dict,
     )
-    logger.info("Query Plan: %s", json.dumps(query_planner.plan_to_dict(query_plan), indent=2))
+    # Intent and slot names only: slots carry the visitor's location and free text.
+    logger.info("Query plan: intent=%s slots=%s", query_plan.intent, sorted(query_plan.slots))
 
     # ----- Regular query flow ----------------------------------------------
-    try:
-        retriever = _get_retriever()
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Retriever build failed")
-        raise HTTPException(status_code=500, detail=f"Retriever error: {exc}") from exc
+    retriever = _get_retriever()
 
     # A follow-up refines the conversation's previous question.
     slots = merge_slots(session.last_plan, query_plan.slots)
@@ -292,9 +247,7 @@ async def _chat(request: ChatRequest) -> ChatResponse | JSONResponse:
         has_more=session.cursor < len(session.ranked_ids),
         follow_ups=follow_ups.build(slots, query_plan.language, user_location is not None),
         debug={
-            **(query_plan.debug or {}),
             "answer_source": answer_source,
-            "location_outside_city": outside_city,
         },
         processing_time_ms=round(elapsed_ms, 1),
     )
@@ -343,10 +296,7 @@ def _place_results(places: list[dict]) -> list[PlaceResult]:
                 exc,
             )
             logger.error(traceback.format_exc())
-            raise HTTPException(
-                status_code=400,
-                detail=f"Error converting place result: {exc}",
-            ) from exc
+            raise HTTPException(status_code=500, detail="internal_error") from exc
     return results
 
 
