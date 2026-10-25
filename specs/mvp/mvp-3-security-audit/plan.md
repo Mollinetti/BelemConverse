@@ -9,6 +9,9 @@ sessions, the rate limiter, the daily cap and narrowed CORS. Several Known
 findings (spec.md) should already be gone. This phase proves they are gone and
 fixes what is left.
 
+The inventory of what to probe (components, versions, external services,
+secrets, trust boundaries) is [`specs/tech-stack.md`](../../tech-stack.md).
+
 ### Toolchain
 
 Every tool is free and runs locally, and none is a runtime dependency (ground
