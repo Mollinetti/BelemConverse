@@ -52,10 +52,12 @@ trivy image --scanners secret,vuln --severity HIGH,CRITICAL --exit-code 1 belemc
    ```bash
    curl -si -X OPTIONS https://<service>.onrender.com/api/chat \
      -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: POST' \
-     | grep -ci 'access-control-allow'
+     | grep -ciE 'access-control-allow-(origin|credentials)'
    ```
 
-   **Expected:** `0`.
+   **Expected:** `0`. (Starlette's 400 for a disallowed origin still carries
+   `allow-methods` and `allow-headers`, so the check looks only for the two
+   headers that grant access.)
 2. Removed routes:
 
    ```bash
