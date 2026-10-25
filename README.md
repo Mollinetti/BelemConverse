@@ -348,12 +348,13 @@ messages from one visitor in 10 minutes (`rate_limited`).
 │   ├── core/             Query planner, retriever, ranking
 │   ├── ingest/           CSV field mapping, OSM fetcher and matcher
 │   ├── tools/            build_catalog, validate_osm, bench_llm
-│   ├── utils/            Config, hours parser, helpers
+│   ├── utils/            Base paths, hours parser
 │   ├── catalog.py        Reads the SQLite place catalog
 │   └── llm.py            Hosted-model client and grounding check
 ├── catalog/              The committed Belém place catalog + build reports
 ├── frontend/             Flutter client
-├── specs/mvp/            Current specs (mvp-1, mvp-2)
+├── scripts/              Repo maintenance scripts (reachability check)
+├── specs/mvp/            Current specs (mvp-1, mvp-2, mvp-3)
 ├── docs/
 │   ├── archive/spec/     Proof-of-concept specs + ADRs (reference)
 │   └── index.html …      Project site (GitHub Pages)

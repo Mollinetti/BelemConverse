@@ -99,7 +99,7 @@ module.
 | Item | Value |
 |---|---|
 | Tool versions: gitleaks / trufflehog / osv-scanner / pip-audit / trivy / semgrep / ruff | _tbd_ |
-| Cleanup: candidates removed / kept with a reason; lines, files and Flutter packages removed | _tbd_ |
+| Cleanup: candidates removed / kept with a reason; lines, files and Flutter packages removed | C02–C11 removed; C12 kept (README advertises native builds); about 23,600 lines across 44 files (C02's ~1,900 untracked, not deleted); 6 Flutter packages |
 | Plugin pins: `claude-security` / ToB skills SHA / `owasp-llm-top10` SHA | _tbd_ |
 | Findings by severity before fixes (C/H/M/L) | _tbd_ |
 | Findings by severity after fixes, open (C/H/M/L) | 0 / 0 / _tbd_ / _tbd_ |
