@@ -49,12 +49,3 @@ def get_catalog() -> list[dict] | None:
 
 def is_system_ready() -> bool:
     return _catalog is not None
-
-
-def get_system_status() -> dict:
-    return {
-        "initialized": _catalog is not None,
-        "catalog_places": len(_catalog) if _catalog is not None else 0,
-        "llm_loaded": False,
-        "vector_store_loaded": False,
-    }
