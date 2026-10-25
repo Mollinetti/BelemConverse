@@ -100,18 +100,18 @@ module.
 
 | Item | Value |
 |---|---|
-| Tool versions: gitleaks / trufflehog / osv-scanner / pip-audit / trivy / semgrep / ruff | _tbd_ |
+| Tool versions: gitleaks / trufflehog / osv-scanner / pip-audit / trivy / semgrep / ruff | 8.30.1 / 3.99.7 / 2.7.0 / 2.10.1 / 0.76.1 / 1.182.1 / 0.17.2 |
 | Cleanup: candidates removed / kept with a reason; lines, files and Flutter packages removed | C02–C11 removed; C12 kept (README advertises native builds); about 23,600 lines across 44 files (C02's ~1,900 untracked, not deleted); 6 Flutter packages |
-| Plugin pins: `claude-security` / ToB skills SHA / `owasp-llm-top10` SHA | _tbd_ |
-| Findings by severity before fixes (C/H/M/L) | _tbd_ |
-| Findings by severity after fixes, open (C/H/M/L) | 0 / 0 / _tbd_ / _tbd_ |
-| False positives dismissed (count) | _tbd_ |
-| History purge: date, paths removed, backup location, force-push approved by | _tbd_ |
-| GitHub Support cache-purge ticket | _tbd_ |
-| Keys rotated (provider + date only, no values) | _none / tbd_ |
-| Dependency vulns High+ open with written reason | _tbd_ |
-| `scripts/security_scan.sh` exit code on the final commit | _tbd_ |
-| Live checks 1–5 pass | _tbd_ |
+| Plugin pins: `claude-security` / ToB skills SHA / `owasp-llm-top10` SHA | none installed: plugin installs can't run from the audit session; a fresh-context review agent and the built-in `/security-review` stood in (findings.md) |
+| Findings by severity before fixes (C/H/M/L) | 0 / 2 / 8 / 9 (live on the `mvp-3` cut; K02, K03, K05, K07, K08 were already gone) |
+| Findings by severity after fixes, open (C/H/M/L) | 0 / 1 / 3 / 9. The High is K01 (history purge, waiting on the owner's go-ahead); the Mediums are K10 (manual), F01 (no fix exists) and F08 (backlog) |
+| False positives dismissed (count) | 278: 255 gitleaks (untracked Flutter caches), 22 trufflehog, 1 ruff S608 |
+| History purge: date, paths removed, backup location, force-push approved by | _pending_ |
+| GitHub Support cache-purge ticket | _pending_ |
+| Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
+| Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
+| `scripts/security_scan.sh` exit code on the final commit | 0 on faf79a7 (re-run on the final commit) |
+| Live checks 1–5 pass | local container: 1, 2, 3, 4, 5 pass; against Render: _pending_ |
 
 ## Definition of done
 

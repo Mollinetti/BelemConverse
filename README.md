@@ -60,6 +60,7 @@ Ask where to go in Portuguese or English — get answers built only from places 
 - [Project structure](#project-structure)
 - [Testing](#testing)
 - [Specifications](#specifications)
+- [Security](#security)
 - [Contributing](#contributing)
 - [Authors](#authors)
 - [Acknowledgements](#acknowledgements)
@@ -394,6 +395,25 @@ reference; where they disagree with `specs/mvp/`, the MVP spec wins.
 | [`12-intent-classifier-improvement-plan`](docs/archive/spec/12-intent-classifier-improvement-plan.md) | TF-IDF classifier roadmap |
 
 Architecture decisions are recorded in [`docs/archive/spec/decisions/`](docs/archive/spec/decisions/).
+
+## Security
+
+To report a vulnerability, use GitHub's private reporting:
+[Security → Report a vulnerability](https://github.com/Mollinetti/BelemConverse/security/advisories/new).
+Please do not open a public issue for it. See [`SECURITY.md`](SECURITY.md).
+
+To re-run the secret, dependency and static scans before a deploy:
+
+```bash
+brew install gitleaks osv-scanner trivy && pipx install pip-audit   # once
+docker build -t belemconverse:audit .                               # optional: adds the image checks
+scripts/security_scan.sh                                            # exits non-zero on any finding
+```
+
+The scans cover git history, the working tree, the web bundle, `ruff --select S`,
+`frontend/pubspec.lock` and, when the image exists, its files, Python packages and
+secrets. Output is redacted. The audit's findings are in
+[`specs/mvp/mvp-3-security-audit/findings.md`](specs/mvp/mvp-3-security-audit/findings.md).
 
 ## Contributing
 
