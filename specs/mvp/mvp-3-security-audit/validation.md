@@ -104,10 +104,10 @@ module.
 | Cleanup: candidates removed / kept with a reason; lines, files and Flutter packages removed | C02–C11 removed; C12 kept (README advertises native builds); about 23,600 lines across 44 files (C02's ~1,900 untracked, not deleted); 6 Flutter packages |
 | Plugin pins: `claude-security` / ToB skills SHA / `owasp-llm-top10` SHA | none installed: plugin installs can't run from the audit session; a fresh-context review agent and the built-in `/security-review` stood in (findings.md) |
 | Findings by severity before fixes (C/H/M/L) | 0 / 2 / 8 / 9 (live on the `mvp-3` cut; K02, K03, K05, K07, K08 were already gone) |
-| Findings by severity after fixes, open (C/H/M/L) | 0 / 0 / 3 / 9. The Mediums are K10 (manual), F01 (no fix exists) and F08 (backlog). K01's only residue is the two PR refs |
+| Findings by severity after fixes, open (C/H/M/L) | 0 / 0 / 3 / 9. The Mediums are K10 (manual), F01 (no fix exists) and F08 (backlog). K01's only residue is the two PR refs, accepted by the owner |
 | False positives dismissed (count) | 278: 255 gitleaks (untracked Flutter caches), 22 trufflehog, 1 ruff S608 |
 | History purge: date, paths removed, backup location, force-push approved by 2026-10-25; paths `data/` and `LLM/src/classifiers/models/`; backup `../BelemConverse-backup-20261025.git`; force-push approved by the owner in the session conversation, 2026-10-25 |
-| GitHub Support cache-purge ticket | request drafted in findings.md; _not yet sent_ (the two PR refs still reach the old commits) |
+| GitHub Support cache-purge ticket | not filed: owner decision 2026-10-25 (the two PR refs still reach the old commits; accepted as bloat) |
 | Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
 | Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
 | `scripts/security_scan.sh` exit code on the final commit | 0 on faf79a7 (re-run on the final commit) |
