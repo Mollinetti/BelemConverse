@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BelemConverse: pergunte onde ir em Belém do Pará</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="../assets/favicon.png" type="image/png">
+<link rel="alternate" hreflang="en" href="https://mollinetti.github.io/BelemConverse/">
+<link rel="alternate" hreflang="pt-BR" href="https://mollinetti.github.io/BelemConverse/pt-br/">
+<link rel="alternate" hreflang="x-default" href="https://mollinetti.github.io/BelemConverse/">
+<meta name="description" content="Um chat sobre Belém do Pará que responde em português ou inglês a partir de um índice curado de lugares. Código comum encontra os lugares; um modelo de linguagem só transforma os cinco primeiros em uma resposta curta.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BelemConverse">
+<meta property="og:title" content="BelemConverse: pergunte onde ir em Belém do Pará">
+<meta property="og:description" content="Pergunte onde comer, beber ou passear em Belém do Pará, em português ou inglês. As respostas citam só lugares que existem.">
+<meta property="og:url" content="https://mollinetti.github.io/BelemConverse/pt-br/">
+<meta property="og:image" content="https://mollinetti.github.io/BelemConverse/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Uma pergunta coloquial em português sobre bares, o plano de busca extraído dela e uma resposta que cita três bares abertos por perto.">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..700;1,8..60,200..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="shell">
+  <div class="flag">
+    <svg class="flag-art" viewBox="0 0 400 300" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <line x1="40" y1="-60" x2="360" y2="360" stroke="#FAF9F6" stroke-width="92"/>
+      <path d="M200,98L210.9,128.7L243.4,129.4L217.6,149.2L227,180.4L200,162L173,180.4L182.4,149.2L156.6,129.4L189.1,128.7Z" fill="#002060" transform="translate(0 -3)"/>
+    </svg>
+    <header class="masthead">
+      <a class="wordmark" href="index.html">BelemConverse</a>
+      <nav>
+        <a href="index.html" aria-current="page">Início</a>
+        <a href="authors.html">Sobre os autores</a>
+        <a href="history.html">Histórico do projeto</a>
+        <a href="https://github.com/Mollinetti/BelemConverse">Repositório</a>
+        <a href="../app/">Experimente</a>
+      </nav>
+    <a class="lang-switch" href="../index.html" hreflang="en" lang="en" aria-label="Read this page in English">EN</a>
+    </header>
+    <p class="asked">"tem um boteco massa por aqui pra tomar uma gelada?"</p>
+    <p class="gloss">Em inglês: any decent bar around here for a cold one?</p>
+  </div>
+
+  <section class="hero">
+
+    <div class="plan">
+      <span class="plan-label">Plano da consulta</span>
+      <span class="chip">intenção: localização</span>
+      <span class="chip">categoria: bar</span>
+      <span class="chip">aberto agora</span>
+      <span class="chip">ordenar por distância</span>
+      <span class="chip">raio de 500 m</span>
+      <span class="chip">pt-BR</span>
+    </div>
+
+    <div class="answer">
+      <p>Três botecos abertos agora num raio de 500 m. O Bar do Parque é o mais perto, a 180 m, na Praça da República, e fica aberto até 1h. O Boteco Ateliê está a 340 m e tem a melhor avaliação dos três. O Bar do Gilson é o mais longe dos três, mas fecha só às 2h se você for sair mais tarde.</p>
+    </div>
+
+    <div class="results">
+      <article class="result">
+        <h4>Bar do Parque</h4>
+        <p class="kind">Bar &middot; Campina</p>
+        <dl>
+          <dt>Distância</dt><dd>180 m</dd>
+          <dt>Agora</dt><dd class="open">Aberto até 01:00</dd>
+          <dt>Nota</dt><dd>4,3 &nbsp;(1.284 avaliações)</dd>
+        </dl>
+      </article>
+      <article class="result">
+        <h4>Boteco Ateliê</h4>
+        <p class="kind">Bar &middot; Cidade Velha</p>
+        <dl>
+          <dt>Distância</dt><dd>340 m</dd>
+          <dt>Agora</dt><dd class="open">Aberto até 00:00</dd>
+          <dt>Nota</dt><dd>4,6 &nbsp;(612 avaliações)</dd>
+        </dl>
+      </article>
+      <article class="result">
+        <h4>Bar do Gilson</h4>
+        <p class="kind">Bar &middot; Umarizal</p>
+        <dl>
+          <dt>Distância</dt><dd>470 m</dd>
+          <dt>Agora</dt><dd class="open">Aberto até 02:00</dd>
+          <dt>Nota</dt><dd>4,4 &nbsp;(2.031 avaliações)</dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>Por que Belém</h2>
+    </div>
+    <div class="measure">
+      <p class="lede">O BelemConverse responde perguntas sobre onde ir em Belém do Pará, em português ou inglês, do jeito que as pessoas realmente perguntam.</p>
+      <p>Em novembro de 2025, Belém sediou a <a href="https://cop30.br/pt-br">COP30</a>, a conferência do clima das Nações Unidas. Dezenas de milhares de delegados, jornalistas e visitantes chegaram a uma cidade que a maioria deles nunca tinha visto e precisavam do que todo visitante precisa: um lugar aberto àquela hora, perto e bom. Buscadores respondem a essa pergunta para São Paulo e Rio bem melhor do que para Belém.</p>
+      <p>O projeto mira nessa lacuna. O BelemConverse lê um índice curado de lugares da cidade (mercados, botecos, pontos de açaí, parques, hotéis) e responde na língua em que você escreveu. Quem digita em inglês recebe inglês. Quem digita <em>"cadê uma barbearia bacana aqui pertinho?"</em> recebe português, e é entendido.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Pergunte alguma coisa</h2>
+      <p class="note">As perguntas vêm da suíte de testes e do conjunto de avaliação do projeto. As respostas e os números são representativos do que o sistema devolve, mas foram escritos para esta página, não capturados de uma instância em execução.</p>
+    </div>
+
+    <div class="picker">
+      <div class="picker-list" role="tablist" aria-label="Exemplos de perguntas">
+        <button role="tab" id="t1" aria-controls="p1" aria-selected="true"><span class="lang">Inglês</span>Closest restaurants open now</button>
+        <button role="tab" id="t2" aria-controls="p2" aria-selected="false"><span class="lang">Inglês</span>Best rated sushi near me open now</button>
+        <button role="tab" id="t3" aria-controls="p3" aria-selected="false"><span class="lang">Inglês</span>Is Mercado Ver-o-Peso still open?</button>
+        <button role="tab" id="t4" aria-controls="p4" aria-selected="false"><span class="lang">Português</span>Onde posso encontrar açaí por aqui?</button>
+        <button role="tab" id="t5" aria-controls="p5" aria-selected="false"><span class="lang">Português</span>Planeje um passeio para mim em Belém. O que devo visitar?</button>
+        <button role="tab" id="t6" aria-controls="p6" aria-selected="false"><span class="lang">Inglês</span>Any vegan sushi open at 3am?</button>
+      </div>
+
+      <div>
+        <div class="panel" role="tabpanel" id="p1" aria-labelledby="t1">
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: localização</span>
+            <span class="chip">categoria: restaurante</span>
+            <span class="chip">aberto agora</span>
+            <span class="chip">ordenar por distância</span>
+            <span class="chip">raio de 500 m</span>
+          </div>
+          <div class="answer">
+            <p>Five restaurants are open right now within 500 metres of you. Lá em Casa is the closest at 210 metres and serves until 23:00. Point do Açaí is a little further but the highest rated of the five. Casa do Saulo is the only one of them with a river view, at 480 metres.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Lá em Casa</h4>
+              <p class="kind">Restaurante &middot; Nazaré</p>
+              <dl><dt>Distância</dt><dd>210 m</dd><dt>Agora</dt><dd class="open">Aberto até 23:00</dd><dt>Nota</dt><dd>4,5 &nbsp;(3.812 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Point do Açaí</h4>
+              <p class="kind">Restaurante &middot; Umarizal</p>
+              <dl><dt>Distância</dt><dd>390 m</dd><dt>Agora</dt><dd class="open">Aberto até 22:00</dd><dt>Nota</dt><dd>4,7 &nbsp;(1.559 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa do Saulo</h4>
+              <p class="kind">Restaurante &middot; Cidade Velha</p>
+              <dl><dt>Distância</dt><dd>480 m</dd><dt>Agora</dt><dd class="open">Aberto até 00:00</dd><dt>Nota</dt><dd>4,6 &nbsp;(2.244 avaliações)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p2" aria-labelledby="t2" hidden>
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: popularidade</span>
+            <span class="chip">categoria: sushi</span>
+            <span class="chip">aberto agora</span>
+            <span class="chip">ordenar por nota</span>
+            <span class="chip">raio de 500 m &rarr; 1 km</span>
+          </div>
+          <div class="answer">
+            <p>Nothing matched inside 500 metres, so the search widened to a kilometre and found three sushi places open now. Ryori is the best rated at 4.8 and is 720 metres away. Sushi Ver-o-Rio is closer at 610 metres and has more reviews, if you would rather not walk as far.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Ryori Sushi Lounge</h4>
+              <p class="kind">Restaurante japonês &middot; Batista Campos</p>
+              <dl><dt>Distância</dt><dd>720 m</dd><dt>Agora</dt><dd class="open">Aberto até 23:30</dd><dt>Nota</dt><dd>4,8 &nbsp;(1.102 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Sushi Ver-o-Rio</h4>
+              <p class="kind">Restaurante japonês &middot; Umarizal</p>
+              <dl><dt>Distância</dt><dd>610 m</dd><dt>Agora</dt><dd class="open">Aberto até 23:00</dd><dt>Nota</dt><dd>4,5 &nbsp;(1.878 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Kaito Sushi</h4>
+              <p class="kind">Restaurante japonês &middot; Marco</p>
+              <dl><dt>Distância</dt><dd>940 m</dd><dt>Agora</dt><dd class="open">Aberto até 22:30</dd><dt>Nota</dt><dd>4,4 &nbsp;(503 avaliações)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p3" aria-labelledby="t3" hidden>
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: verificação</span>
+            <span class="chip">lugar citado: Ver-o-Peso</span>
+            <span class="chip">consultar horário</span>
+          </div>
+          <div class="answer">
+            <p>Mercado Ver-o-Peso is open. It runs from 05:00 to 18:00 daily, and it is 14:20 now, so you have just under four hours. The fish market at the Ver-o-Peso pier winds down earlier than the rest, usually by midday.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Mercado Ver-o-Peso</h4>
+              <p class="kind">Mercado &middot; Campina</p>
+              <dl><dt>Horário</dt><dd>05:00 às 18:00</dd><dt>Agora</dt><dd class="open">Aberto</dd><dt>Nota</dt><dd>4,6 &nbsp;(48.930 avaliações)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p4" aria-labelledby="t4" hidden>
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: localização</span>
+            <span class="chip">categoria: açaí</span>
+            <span class="chip">ordenar por distância</span>
+            <span class="chip">raio de 500 m</span>
+            <span class="chip">pt-BR</span>
+          </div>
+          <div class="answer">
+            <p>Tem três lugares de açaí bem perto. O Açaí do Tuca fica a 150 m e é o mais próximo. A Casa do Açaí, a 320 m, tem a melhor nota e serve com peixe frito e farinha d'água. O ponto do Ver-o-Peso fecha às 18h, então vale ir antes se você quiser o da feira.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Açaí do Tuca</h4>
+              <p class="kind">Açaí &middot; Cremação</p>
+              <dl><dt>Distância</dt><dd>150 m</dd><dt>Agora</dt><dd class="open">Aberto até 20:00</dd><dt>Nota</dt><dd>4,4 &nbsp;(876 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa do Açaí</h4>
+              <p class="kind">Açaí &middot; Batista Campos</p>
+              <dl><dt>Distância</dt><dd>320 m</dd><dt>Agora</dt><dd class="open">Aberto até 19:00</dd><dt>Nota</dt><dd>4,7 &nbsp;(1.340 avaliações)</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Ponto do Açaí Ver-o-Peso</h4>
+              <p class="kind">Açaí &middot; Campina</p>
+              <dl><dt>Distância</dt><dd>460 m</dd><dt>Agora</dt><dd class="open">Aberto até 18:00</dd><dt>Nota</dt><dd>4,5 &nbsp;(2.908 avaliações)</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p5" aria-labelledby="t5" hidden>
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: roteiro</span>
+            <span class="chip">cidade: Belém</span>
+            <span class="chip">roteiro: meio dia</span>
+            <span class="chip">pt-BR</span>
+          </div>
+          <div class="answer">
+            <p>Montei um roteiro de meio dia que dá para fazer a pé, começando cedo:</p>
+            <p><strong>08:00</strong> Mercado Ver-o-Peso, enquanto a feira de peixe ainda está cheia.<br>
+            <strong>10:00</strong> Forte do Presépio e Casa das Onze Janelas, cinco minutos a pé dali.<br>
+            <strong>12:00</strong> Almoço na Estação das Docas, à beira do rio.<br>
+            <strong>14:00</strong> Mangal das Garças, para ver as garças e subir no mirante.</p>
+            <p>Tudo isso fica dentro de 2 km. Se sobrar tempo, o Theatro da Paz faz visita guiada até as 17h.</p>
+          </div>
+          <div class="results">
+            <article class="result">
+              <h4>Mercado Ver-o-Peso</h4>
+              <p class="kind">Parada 1 &middot; Mercado</p>
+              <dl><dt>Chegada</dt><dd>08:00</dd><dt>Permanência</dt><dd>~90 min</dd><dt>A pé até a próxima</dt><dd>650 m</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Casa das Onze Janelas</h4>
+              <p class="kind">Parada 2 &middot; Museu</p>
+              <dl><dt>Chegada</dt><dd>10:00</dd><dt>Permanência</dt><dd>~75 min</dd><dt>A pé até a próxima</dt><dd>900 m</dd></dl>
+            </article>
+            <article class="result">
+              <h4>Mangal das Garças</h4>
+              <p class="kind">Parada 4 &middot; Parque</p>
+              <dl><dt>Chegada</dt><dd>14:00</dd><dt>Permanência</dt><dd>~2 h</dd><dt>Fecha</dt><dd>18:00</dd></dl>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p6" aria-labelledby="t6" hidden>
+          <div class="plan">
+            <span class="plan-label">Plano da consulta</span>
+            <span class="chip">intenção: localização</span>
+            <span class="chip">categoria: sushi</span>
+            <span class="chip">aberto agora</span>
+            <span class="chip">raio de 500 m &rarr; 1 km &rarr; 2 km</span>
+            <span class="chip">0 resultados</span>
+          </div>
+          <div class="answer">
+            <p>I couldn't find any places matching your search. Try widening the search radius, choosing a different type, or disabling the 'open now' filter.</p>
+          </div>
+          <p class="note">Quando a busca volta vazia, o modelo nem é chamado. Uma mensagem fixa diz que nada foi encontrado e o que mudar, então não há o que inventar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="section-head">
+      <h2>Como uma resposta é feita, e onde o modelo não entra</h2>
+      <p class="measure">Quase tudo aqui é código comum rodando em um servidor gratuito. Ler a pergunta, filtrar e ordenar os lugares, sugerir perguntas seguintes, mostrar mais resultados e montar a resposta de reserva funcionam sem modelo de linguagem. Um modelo hospedado é chamado no máximo uma vez por pergunta, só para transformar os cinco primeiros lugares em um parágrafo simpático. Com o modelo desligado, o site continua respondendo a qualquer pergunta.</p>
+    </div>
+
+    <figure class="loop-fig">
+      <div class="loop-scroll">
+      <svg viewBox="0 0 900 1052" role="img" aria-label="Fluxograma de uma pergunta. Verificações baratas, planejamento e busca rodam como código comum. Cinco saídas respondem sem o modelo, e duas o chamam uma vez e recorrem a uma resposta fixa. O modelo é chamado uma vez, e a resposta dele é conferida antes de ser usada. Toda saída termina em uma resposta, e uma pergunta seguinte recomeça o ciclo." xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="fh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="f-head" d="M0 0L10 5L0 10z"/></marker></defs>
+      <line class="f-line" x1="199" y1="88" x2="199" y2="116" marker-end="url(#fh)"/>
+      <rect class="f-node" x="44" y="24" width="310" height="64" rx="8"/>
+      <text class="f-title" x="60" y="47">Visitante faz uma pergunta</text>
+      <text class="f-sub" x="60" y="65">Digitada ou tocada em uma sugestão</text>
+      <text class="f-sub" x="60" y="80">Página Flutter no GitHub Pages</text>
+      <line class="f-line" x1="199" y1="182" x2="199" y2="210" marker-end="url(#fh)"/>
+      <rect class="f-node" x="44" y="118" width="310" height="64" rx="8"/>
+      <text class="f-title" x="60" y="141">Verificações baratas</text>
+      <text class="f-sub" x="60" y="159">Só caracteres simples, até 400</text>
+      <text class="f-sub" x="60" y="174">20 mensagens a cada 10 minutos</text>
+      <line class="f-line" x1="354" y1="150" x2="546" y2="150" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="142" text-anchor="middle">uma verificação falha</text>
+      <rect class="f-exit" x="548" y="124" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="145">Recusada com mensagem fixa</text>
+      <text class="f-sub" x="562" y="163">Nada é buscado</text>
+      <text class="f-tag" x="846" y="163" text-anchor="end">chamadas ao modelo: 0</text>
+      <line class="f-line" x1="199" y1="276" x2="199" y2="304" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="297">não</text>
+      <polygon class="f-ask" points="56,212 342,212 354,224 354,264 342,276 56,276 44,264 44,224"/>
+      <text class="f-title" x="60" y="235">Pediu "ver mais"?</text>
+      <text class="f-sub" x="60" y="253">Toque no botão sob a lista</text>
+      <line class="f-line" x1="354" y1="244" x2="546" y2="244" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="236" text-anchor="middle">sim</text>
+      <rect class="f-exit" x="548" y="218" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="239">Próximos cinco da lista salva de 30</text>
+      <text class="f-sub" x="562" y="257">Não gasta uma pergunta</text>
+      <text class="f-tag" x="846" y="257" text-anchor="end">chamadas ao modelo: 0</text>
+      <line class="f-line" x1="199" y1="370" x2="199" y2="398" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="391">sim</text>
+      <polygon class="f-ask" points="56,306 342,306 354,318 354,358 342,370 56,370 44,358 44,318"/>
+      <text class="f-title" x="60" y="329">Ainda tem perguntas?</text>
+      <text class="f-sub" x="60" y="347">Quatro por conversa</text>
+      <line class="f-line" x1="354" y1="338" x2="546" y2="338" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="330" text-anchor="middle">acabaram</text>
+      <rect class="f-exit" x="548" y="312" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="333">Conversa encerrada</text>
+      <text class="f-sub" x="562" y="351">O visitante começa outra</text>
+      <text class="f-tag" x="846" y="351" text-anchor="end">chamadas ao modelo: 0</text>
+      <line class="f-line" x1="199" y1="464" x2="199" y2="492" marker-end="url(#fh)"/>
+      <rect class="f-node" x="44" y="400" width="310" height="64" rx="8"/>
+      <text class="f-title" x="60" y="423">Planejar a pergunta</text>
+      <text class="f-sub" x="60" y="441">Regras e classificador TF-IDF, ~0,15 ms</text>
+      <text class="f-sub" x="60" y="456">Idioma, tipo de lugar, aberto agora, ordem</text>
+      <line class="f-line" x1="199" y1="558" x2="199" y2="586" marker-end="url(#fh)"/>
+      <rect class="f-node" x="44" y="494" width="310" height="64" rx="8"/>
+      <text class="f-title" x="60" y="517">Buscar no catálogo</text>
+      <text class="f-sub" x="60" y="535">Cerca de 2.900 lugares na memória</text>
+      <text class="f-sub" x="60" y="550">Horário, depois raio, categoria, ranking</text>
+      <line class="f-line" x1="199" y1="652" x2="199" y2="680" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="673">sim</text>
+      <polygon class="f-ask" points="56,588 342,588 354,600 354,640 342,652 56,652 44,640 44,600"/>
+      <text class="f-title" x="60" y="611">Achou algum lugar?</text>
+      <text class="f-sub" x="60" y="629">Com o raio crescendo: 500 m, 1 km, 2 km</text>
+      <line class="f-line" x1="354" y1="620" x2="546" y2="620" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="612" text-anchor="middle">não</text>
+      <rect class="f-exit" x="548" y="594" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="615">Texto fixo: nada achado, ampliar a busca</text>
+      <text class="f-sub" x="562" y="633">Escrito por código</text>
+      <text class="f-tag" x="846" y="633" text-anchor="end">chamadas ao modelo: 0</text>
+      <line class="f-line" x1="199" y1="746" x2="199" y2="774" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="767">sim</text>
+      <polygon class="f-ask" points="56,682 342,682 354,694 354,734 342,746 56,746 44,734 44,694"/>
+      <text class="f-title" x="60" y="705">Modelo liberado?</text>
+      <text class="f-sub" x="60" y="723">Chave definida e menos de 800 chamadas hoje</text>
+      <line class="f-line" x1="354" y1="714" x2="546" y2="714" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="706" text-anchor="middle">não</text>
+      <rect class="f-exit" x="548" y="688" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="709">Resposta fixa com os mesmos lugares</text>
+      <text class="f-sub" x="562" y="727">Escrito por código</text>
+      <text class="f-tag" x="846" y="727" text-anchor="end">chamadas ao modelo: 0</text>
+      <line class="f-line" x1="199" y1="840" x2="199" y2="868" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="861">resposta</text>
+      <rect class="f-model" x="44" y="776" width="310" height="64" rx="8"/>
+      <text class="f-title f-on" x="60" y="799">Uma chamada ao modelo</text>
+      <text class="f-sub f-on" x="60" y="817">A pergunta e os cinco primeiros lugares</text>
+      <text class="f-sub f-on" x="60" y="832">No máximo 250 tokens, 10 s, provedor reserva</text>
+      <line class="f-line" x1="354" y1="808" x2="546" y2="808" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="800" text-anchor="middle">sem resposta a tempo</text>
+      <rect class="f-exit" x="548" y="782" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="803">Resposta fixa com os mesmos lugares</text>
+      <text class="f-sub" x="562" y="821">Provedor fora do ar ou lento</text>
+      <text class="f-tag f-tag-1" x="846" y="821" text-anchor="end">chamadas ao modelo: 1</text>
+      <line class="f-line" x1="199" y1="934" x2="199" y2="962" marker-end="url(#fh)"/>
+      <text class="f-cond" x="207" y="955">confere</text>
+      <polygon class="f-ask" points="56,870 342,870 354,882 354,922 342,934 56,934 44,922 44,882"/>
+      <text class="f-title" x="60" y="893">Checagem de fundamentação</text>
+      <text class="f-sub" x="60" y="911">A resposta cita só esses lugares?</text>
+      <line class="f-line" x1="354" y1="902" x2="546" y2="902" marker-end="url(#fh)"/>
+      <text class="f-cond" x="451" y="894" text-anchor="middle">cita outro lugar</text>
+      <rect class="f-exit" x="548" y="876" width="312" height="52" rx="8"/>
+      <text class="f-title" x="562" y="897">Resposta fixa com os mesmos lugares</text>
+      <text class="f-sub" x="562" y="915">Resposta descartada</text>
+      <text class="f-tag f-tag-1" x="846" y="915" text-anchor="end">chamadas ao modelo: 1</text>
+      <rect class="f-node" x="44" y="964" width="310" height="64" rx="8"/>
+      <text class="f-title" x="60" y="987">Resposta enviada</text>
+      <text class="f-sub" x="60" y="1005">Resposta, até cinco cartões, sugestões</text>
+      <text class="f-sub" x="60" y="1020">As sugestões vêm de regras, não do modelo</text>
+      <path class="f-line f-loop" d="M44 996 H18 V56 H42" marker-end="url(#fh)"/>
+      <text class="f-cond" transform="translate(11 526) rotate(-90)" text-anchor="middle">próxima pergunta</text>
+      </svg>
+      </div>
+      <figcaption>Uma pergunta, do início ao fim. Toda saída à direita termina em uma resposta ao visitante, e uma pergunta seguinte recomeça o ciclo. Cinco das sete saídas nunca chamam o modelo. As outras duas chamam uma vez e depois recorrem ao texto fixo. A resposta do modelo só chega ao visitante se passar pela checagem de fundamentação.</figcaption>
+    </figure>
+
+    <table class="cost">
+      <caption>Quanto custa cada parte</caption>
+      <tr><th scope="row">Verificações, planejamento, busca, sugestões</th><td>Processamento comum na instância gratuita da Render. Um classificador TF-IDF e regras de palavras-chave leem a pergunta; os filtros rodam sobre um catálogo SQLite que já está na memória. Custo zero.</td></tr>
+      <tr><th scope="row">Resposta fixa</th><td>Montada por código a partir dos mesmos cinco lugares. Usada sempre que o modelo não está liberado, falha ou foge dos lugares. Custo zero, sempre disponível.</td></tr>
+      <tr><th scope="row">Chamada ao modelo</th><td>Uma requisição a um plano gratuito (Google AI Studio, com Groq de reserva), com no máximo 250 tokens de volta. Custo zero, mantido pelos limites abaixo.</td></tr>
+      <tr><th scope="row">Hospedagem</th><td>O cliente Flutter no GitHub Pages e a API no serviço web gratuito da Render. Custo zero.</td></tr>
+    </table>
+
+    <div class="split inner">
+      <h3>O que mantém a conta do modelo em zero</h3>
+      <ul class="rules">
+        <li>Mensagens recusadas, "ver mais", buscas vazias e conversas esgotadas nunca chegam ao modelo.</li>
+        <li>Quando ele é chamado, recebe a pergunta e cinco lugares em um prompt curto e responde com no máximo 250 tokens.</li>
+        <li>Os tetos são 20 mensagens por visitante a cada 10 minutos, 4 perguntas por conversa e 800 chamadas ao modelo por dia. Passou disso, toda resposta vem do texto fixo.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>O que ele não faz</h2>
+    </div>
+    <ul class="rules">
+      <li>Ele não inventa lugar. O modelo só vê os candidatos que a busca entrega, e a resposta é conferida contra eles. Se citar qualquer outro, o visitante recebe a resposta fixa.</li>
+      <li>Popularidade não passa por cima da geografia. Horário, distância e categoria decidem o que fica na lista; nota e popularidade só mudam a ordem.</li>
+      <li>Ele não mede distância a partir de outra cidade. A busca perto de você só funciona quando você está em Belém. De qualquer outro lugar, sua localização é ignorada, e quem pergunta "perto de mim" recebe um aviso antes de ver lugares da cidade inteira.</li>
+      <li>Ele não chuta horário de funcionamento. Quando os dados não dizem, o resultado aparece como desconhecido, não como aberto.</li>
+      <li>Ele não enche resultado vazio. Se nada aparece depois de o raio crescer até o limite, o visitante recebe uma mensagem sobre o que mudar, não um raio maior aplicado em silêncio nem um substituto que só parece certo.</li>
+    </ul>
+  </section>
+
+  <section class="split">
+    <div class="section-head">
+      <h2>Rode por conta própria</h2>
+    </div>
+    <div class="measure">
+      <p><a href="../app/">Experimente no navegador.</a> Não precisa instalar nada nem criar conta. Uma conversa tem quatro perguntas, com sugestões de continuação e um "ver mais" gratuito. Se o servidor ficou parado, pode levar até um minuto para acordar.</p>
+      <p>Tudo roda em planos gratuitos. O backend é um serviço FastAPI na Render que busca em um catálogo SQLite, versionado no repositório, com cerca de 2.900 lugares de Belém. Um modelo pequeno hospedado escreve a resposta com os cinco primeiros, e uma resposta fixa assume quando o modelo está indisponível ou a cota diária acabou. O cliente web em Flutter é servido por este site.</p>
+      <p>Instalação, deploy e como montar um catálogo para outra cidade estão no <a href="https://github.com/Mollinetti/BelemConverse">README do repositório</a>.</p>
+    </div>
+  </section>
+
+  <footer class="site">
+    <span>BelemConverse, por Marco Mollinetti e Artur Nakauth Freires</span>
+    <nav>
+      <a href="authors.html">Sobre os autores</a>
+      <a href="history.html">Histórico do projeto</a>
+      <a href="https://github.com/Mollinetti/BelemConverse">GitHub</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('[role="tab"]').forEach(function (tab, _, tabs) {
+  tab.addEventListener('click', function () {
+    tabs.forEach(function (t) {
+      var selected = t === tab;
+      t.setAttribute('aria-selected', selected);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+    });
+  });
+});
+</script>
+
+</body>
+</html>

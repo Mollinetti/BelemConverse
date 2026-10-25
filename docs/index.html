@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BelemConverse — grounded place discovery for Belém do Pará</title>
+<title>BelemConverse: ask where to go in Belém do Pará</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="assets/favicon.png" type="image/png">
-<meta name="description" content="A bilingual chat agent that answers where-to-go questions about Belém do Pará from a curated place index. Deterministic retrieval; the model only summarises what it is given.">
+<link rel="alternate" hreflang="en" href="https://mollinetti.github.io/BelemConverse/">
+<link rel="alternate" hreflang="pt-BR" href="https://mollinetti.github.io/BelemConverse/pt-br/">
+<link rel="alternate" hreflang="x-default" href="https://mollinetti.github.io/BelemConverse/">
+<meta name="description" content="A chat guide for Belém do Pará that answers in Portuguese or English from a curated index of local places. Plain code finds the places; a language model only turns the top five into a short reply.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BelemConverse">
-<meta property="og:title" content="BelemConverse — grounded place discovery for Belém do Pará">
+<meta property="og:title" content="BelemConverse: ask where to go in Belém do Pará">
 <meta property="og:description" content="Ask where to eat, drink or go in Belém do Pará, in Portuguese or English. Answers name only places that exist.">
 <meta property="og:url" content="https://mollinetti.github.io/BelemConverse/">
 <meta property="og:image" content="https://mollinetti.github.io/BelemConverse/assets/og-image.jpg">
@@ -41,8 +44,9 @@
         <a href="https://github.com/Mollinetti/BelemConverse">Repository</a>
         <a href="app/">Try it</a>
       </nav>
+    <a class="lang-switch" href="pt-br/index.html" hreflang="pt-BR" lang="pt-BR" aria-label="Ler esta página em português">PT-BR</a>
     </header>
-    <p class="asked">&ldquo;tem um boteco massa por aqui pra tomar uma gelada?&rdquo;</p>
+    <p class="asked">"tem um boteco massa por aqui pra tomar uma gelada?"</p>
     <p class="gloss">Any decent bar around here for a cold one?</p>
   </div>
 
@@ -95,19 +99,19 @@
 
   <section class="split">
     <div class="section-head">
-      <h2>A city about to receive the world</h2>
+      <h2>Why Belém</h2>
     </div>
     <div class="measure">
-      <p class="lede">BelemConverse answers questions about where to go in Belém do Pará — in Portuguese or English, the way people actually ask them.</p>
-      <p>In November 2025 Belém hosted <a href="https://cop30.br/pt-br">COP30</a>, the United Nations climate conference, and tens of thousands of delegates, journalists and visitors arrived in a city most of them had never seen. They needed the same things everyone needs: somewhere open at this hour, somewhere close by, somewhere good. Search engines answer that question for São Paulo and Rio far better than they answer it for Belém.</p>
-      <p>That gap is what this project is about. BelemConverse reads a curated index of local places — the markets, the botecos, the açaí stands, the parks, the hotels — and answers in whichever language you asked. A visitor typing English gets English. A resident typing <em>&ldquo;cadê uma barbearia bacana aqui pertinho?&rdquo;</em> gets Portuguese, and gets understood.</p>
+      <p class="lede">BelemConverse answers questions about where to go in Belém do Pará, in Portuguese or English, phrased the way people actually ask them.</p>
+      <p>In November 2025 Belém hosted <a href="https://cop30.br/pt-br">COP30</a>, the United Nations climate conference. Tens of thousands of delegates, journalists and visitors arrived in a city most of them had never seen, and they needed what every visitor needs: somewhere open at this hour, somewhere close, somewhere good. Search engines handle that question for São Paulo and Rio much better than they handle it for Belém.</p>
+      <p>This project is aimed at that gap. BelemConverse reads a curated index of local places (markets, botecos, açaí stands, parks, hotels) and replies in the language you wrote in. A visitor typing English gets English. A resident typing <em>"cadê uma barbearia bacana aqui pertinho?"</em> gets Portuguese, and gets understood.</p>
     </div>
   </section>
 
   <section>
     <div class="section-head">
       <h2>Ask it something</h2>
-      <p class="note">These are real queries from the project&rsquo;s test suite and evaluation set. The answers and figures shown are representative of live output, written for this page rather than captured from a running instance.</p>
+      <p class="note">These queries come from the project's test suite and evaluation set. The answers and figures are representative of live output, but we wrote them for this page. They were not captured from a running instance.</p>
     </div>
 
     <div class="picker">
@@ -191,13 +195,13 @@
             <span class="chip">check business hours</span>
           </div>
           <div class="answer">
-            <p>Mercado Ver-o-Peso is open — it runs from 05:00 to 18:00 daily, and right now it is 14:20, so you have just under four hours. The fish market at the Ver-o-Peso pier winds down earlier than the rest of it, usually by midday.</p>
+            <p>Mercado Ver-o-Peso is open. It runs from 05:00 to 18:00 daily, and it is 14:20 now, so you have just under four hours. The fish market at the Ver-o-Peso pier winds down earlier than the rest, usually by midday.</p>
           </div>
           <div class="results">
             <article class="result">
               <h4>Mercado Ver-o-Peso</h4>
               <p class="kind">Market &middot; Campina</p>
-              <dl><dt>Hours</dt><dd>05:00 &ndash; 18:00</dd><dt>Now</dt><dd class="open">Open</dd><dt>Rating</dt><dd>4.6 &nbsp;(48,930 reviews)</dd></dl>
+              <dl><dt>Hours</dt><dd>05:00 to 18:00</dd><dt>Now</dt><dd class="open">Open</dd><dt>Rating</dt><dd>4.6 &nbsp;(48,930 reviews)</dd></dl>
             </article>
           </div>
         </div>
@@ -212,7 +216,7 @@
             <span class="chip">pt-BR</span>
           </div>
           <div class="answer">
-            <p>Tem três lugares de açaí bem perto. O Açaí do Tuca fica a 150 m e é o mais próximo. A Casa do Açaí, a 320 m, tem a melhor nota e serve com peixe frito e farinha d&rsquo;água. O ponto do Ver-o-Peso fecha às 18h, então vale ir antes se você quiser o da feira.</p>
+            <p>Tem três lugares de açaí bem perto. O Açaí do Tuca fica a 150 m e é o mais próximo. A Casa do Açaí, a 320 m, tem a melhor nota e serve com peixe frito e farinha d'água. O ponto do Ver-o-Peso fecha às 18h, então vale ir antes se você quiser o da feira.</p>
           </div>
           <div class="results">
             <article class="result">
@@ -243,10 +247,10 @@
           </div>
           <div class="answer">
             <p>Montei um roteiro de meio dia que dá para fazer a pé, começando cedo:</p>
-            <p><strong>08:00</strong> — Mercado Ver-o-Peso, enquanto a feira de peixe ainda está cheia.<br>
-            <strong>10:00</strong> — Forte do Presépio e Casa das Onze Janelas, cinco minutos a pé dali.<br>
-            <strong>12:00</strong> — Almoço na Estação das Docas, à beira do rio.<br>
-            <strong>14:00</strong> — Mangal das Garças, para ver as garças e subir no mirante.</p>
+            <p><strong>08:00</strong> Mercado Ver-o-Peso, enquanto a feira de peixe ainda está cheia.<br>
+            <strong>10:00</strong> Forte do Presépio e Casa das Onze Janelas, cinco minutos a pé dali.<br>
+            <strong>12:00</strong> Almoço na Estação das Docas, à beira do rio.<br>
+            <strong>14:00</strong> Mangal das Garças, para ver as garças e subir no mirante.</p>
             <p>Tudo isso fica dentro de 2 km. Se sobrar tempo, o Theatro da Paz faz visita guiada até as 17h.</p>
           </div>
           <div class="results">
@@ -278,7 +282,7 @@
             <span class="chip">0 results</span>
           </div>
           <div class="answer">
-            <p>I couldn&rsquo;t find any places matching your search. Try widening the search radius, choosing a different type, or disabling the &lsquo;open now&rsquo; filter.</p>
+            <p>I couldn't find any places matching your search. Try widening the search radius, choosing a different type, or disabling the 'open now' filter.</p>
           </div>
           <p class="note">When retrieval comes back empty the model is not called at all. A fixed message says nothing matched and what to change, so there is nothing to invent.</p>
         </div>
@@ -288,13 +292,13 @@
 
   <section id="how">
     <div class="section-head">
-      <h2>How an answer gets made, and where the model isn&rsquo;t</h2>
+      <h2>How an answer gets made, and where the model isn't</h2>
       <p class="measure">Almost everything here is plain code on a free server. Reading the question, filtering and ranking places, suggesting follow-ups, paging through more results and the fallback answer all run without a language model. A hosted model is called at most once per question, only to put the top five places into a friendly paragraph. With the model switched off, the site still answers every question.</p>
     </div>
 
     <figure class="loop-fig">
       <div class="loop-scroll">
-      <svg viewBox="0 0 900 1052" role="img" aria-label="Flowchart of one question. Cheap checks, planning and search run as plain code. Six exits answer without the model. The model is called once, and its reply is checked before it is used. Every exit ends in a reply, and a follow-up starts the loop again." xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 900 1052" role="img" aria-label="Flowchart of one question. Cheap checks, planning and search run as plain code. Five exits answer without the model, and two call it once and fall back to a template. The model is called once, and its reply is checked before it is used. Every exit ends in a reply, and a follow-up starts the loop again." xmlns="http://www.w3.org/2000/svg">
       <defs><marker id="fh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="f-head" d="M0 0L10 5L0 10z"/></marker></defs>
       <line class="f-line" x1="199" y1="88" x2="199" y2="116" marker-end="url(#fh)"/>
       <rect class="f-node" x="44" y="24" width="310" height="64" rx="8"/>
@@ -315,7 +319,7 @@
       <line class="f-line" x1="199" y1="276" x2="199" y2="304" marker-end="url(#fh)"/>
       <text class="f-cond" x="207" y="297">no</text>
       <polygon class="f-ask" points="56,212 342,212 354,224 354,264 342,276 56,276 44,264 44,224"/>
-      <text class="f-title" x="60" y="235">Asking for “see more”?</text>
+      <text class="f-title" x="60" y="235">Asking for "see more"?</text>
       <text class="f-sub" x="60" y="253">Tap on the button under a list</text>
       <line class="f-line" x1="354" y1="244" x2="546" y2="244" marker-end="url(#fh)"/>
       <text class="f-cond" x="451" y="236" text-anchor="middle">yes</text>
@@ -387,11 +391,11 @@
       <text class="f-cond" x="451" y="894" text-anchor="middle">names another place</text>
       <rect class="f-exit" x="548" y="876" width="312" height="52" rx="8"/>
       <text class="f-title" x="562" y="897">Template answer from the same places</text>
-      <text class="f-sub" x="562" y="915">The model’s reply is thrown away</text>
+      <text class="f-sub" x="562" y="915">The model's reply is thrown away</text>
       <text class="f-tag f-tag-1" x="846" y="915" text-anchor="end">model calls: 1</text>
       <rect class="f-node" x="44" y="964" width="310" height="64" rx="8"/>
       <text class="f-title" x="60" y="987">Reply sent</text>
-      <text class="f-sub" x="60" y="1005">Answer, up to five cards, 2–3 follow-up chips</text>
+      <text class="f-sub" x="60" y="1005">Answer, up to five cards, follow-up chips</text>
       <text class="f-sub" x="60" y="1020">Chips come from rules, not the model</text>
       <path class="f-line f-loop" d="M44 996 H18 V56 H42" marker-end="url(#fh)"/>
       <text class="f-cond" transform="translate(11 526) rotate(-90)" text-anchor="middle">next question</text>
@@ -405,15 +409,15 @@
       <tr><th scope="row">Checks, planning, search, follow-up chips</th><td>Plain CPU work on the free Render instance. A TF-IDF classifier and keyword rules read the question; filters run over a SQLite catalog already in memory. $0.</td></tr>
       <tr><th scope="row">Template answer</th><td>Built by code from the same five places. Used whenever the model is not allowed, fails, or strays. $0, always available.</td></tr>
       <tr><th scope="row">Model call</th><td>One request to a free tier (Google AI Studio, with Groq as backup), at most 250 tokens back. $0, kept there by the limits below.</td></tr>
-      <tr><th scope="row">Hosting</th><td>The Flutter client on GitHub Pages, the API on Render&rsquo;s free web service. $0.</td></tr>
+      <tr><th scope="row">Hosting</th><td>The Flutter client on GitHub Pages, the API on Render's free web service. $0.</td></tr>
     </table>
 
     <div class="split inner">
-      <h3>Three limits keep the model&rsquo;s bill at zero</h3>
+      <h3>What keeps the model's bill at zero</h3>
       <ul class="rules">
-        <li><strong>Call it less.</strong> Refused messages, &ldquo;see more&rdquo;, empty searches and spent conversations never reach the model.</li>
-        <li><strong>Send it less.</strong> Five places and the question, in a short prompt, with at most 250 tokens back.</li>
-        <li><strong>Stop at a ceiling.</strong> 20 messages per visitor every 10 minutes, 4 questions per conversation, 800 model calls a day. Past that, every answer is a template.</li>
+        <li>Refused messages, "see more", empty searches and spent conversations never reach the model.</li>
+        <li>When it is called, it gets the question and five places in a short prompt and answers in 250 tokens at most.</li>
+        <li>The ceilings are 20 messages per visitor every 10 minutes, 4 questions per conversation and 800 model calls a day. Past that, every answer is a template.</li>
       </ul>
     </div>
   </section>
@@ -423,11 +427,11 @@
       <h2>What it will not do</h2>
     </div>
     <ul class="rules">
-      <li><strong>It will not invent a place.</strong> The model only ever sees the candidates retrieval hands it, and its reply is checked against them. If it names anything else, the visitor gets the template answer instead.</li>
-      <li><strong>It will not let popularity override geography.</strong> Opening hours, distance and category decide what survives. Rating and popularity only reorder it.</li>
-      <li><strong>It will not measure distances from another city.</strong> Searching near you works only when you are in Belém. From anywhere else your location is set aside, and a &ldquo;near me&rdquo; question is told so before it gets places from across the city.</li>
-      <li><strong>It will not guess at opening hours.</strong> Where the data does not say, the result is labelled unknown rather than assumed open.</li>
-      <li><strong>It will not pad an empty result.</strong> Zero matches after full radius escalation produces a clarifying question, not a longer radius quietly applied or a plausible-sounding substitute.</li>
+      <li>It will not invent a place. The model only sees the candidates retrieval hands it, and its reply is checked against them. If the reply names anything else, the visitor gets the template answer.</li>
+      <li>Popularity does not override geography. Opening hours, distance and category decide what stays on the list; rating and popularity only reorder it.</li>
+      <li>It will not measure distances from another city. Searching near you works only when you are in Belém. From anywhere else your location is set aside, and a "near me" question gets a notice saying so before it shows places from across the city.</li>
+      <li>It will not guess opening hours. Where the data does not say, the result is labelled unknown instead of assumed open.</li>
+      <li>It will not pad an empty result. If nothing matches once the radius has grown as far as it goes, the visitor gets a message about what to change, not a larger radius applied in silence or a substitute that merely sounds right.</li>
     </ul>
   </section>
 
@@ -436,14 +440,14 @@
       <h2>Running it yourself</h2>
     </div>
     <div class="measure">
-      <p><a href="app/">Try it in your browser</a> — no install or sign-up. A conversation is four questions, with suggested follow-ups and a free &ldquo;see more&rdquo;. If the server has been idle it takes up to a minute to wake up.</p>
-      <p>Everything runs on free tiers. The backend is a FastAPI service on Render that searches a committed SQLite catalog of about 2,900 Belém places; a small hosted model writes the reply from the top five, and a template answer takes over when the model is unavailable or its daily allowance is spent. The Flutter web client is served from this site.</p>
+      <p><a href="app/">Try it in your browser.</a> There is nothing to install and no sign-up. A conversation is four questions, with suggested follow-ups and a free "see more" button. If the server has been idle it can take up to a minute to wake up.</p>
+      <p>Everything runs on free tiers. The backend is a FastAPI service on Render that searches a committed SQLite catalog of about 2,900 Belém places. A small hosted model writes the reply from the top five, and a template answer takes over when the model is unavailable or its daily allowance is spent. The Flutter web client is served from this site.</p>
       <p>Setup, deployment and how to build a catalog for another town are in the <a href="https://github.com/Mollinetti/BelemConverse">repository README</a>.</p>
     </div>
   </section>
 
   <footer class="site">
-    <span>BelemConverse — Marco Mollinetti and Artur Nakauth Freires</span>
+    <span>BelemConverse, by Marco Mollinetti and Artur Nakauth Freires</span>
     <nav>
       <a href="authors.html">About the authors</a>
       <a href="history.html">Project history</a>

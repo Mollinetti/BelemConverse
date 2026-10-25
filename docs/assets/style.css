@@ -95,6 +95,28 @@ a:hover { color: var(--navy); }
 .masthead nav a:hover { color: #fff; border-bottom-color: rgba(255,255,255,.55); }
 .masthead nav a[aria-current="page"] { color: #fff; border-bottom-color: #fff; }
 
+/* language switch: top right of every page, links to the same page in the other language */
+.masthead { justify-content: flex-start; }
+.masthead nav { margin-left: auto; }
+.lang-switch {
+  font-family: var(--display);
+  font-variation-settings: "wdth" 100, "wght" 600;
+  font-size: .8rem;
+  letter-spacing: .06em;
+  color: #fff;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,.75);
+  border-radius: 999px;
+  padding: .28rem .8rem;
+  align-self: center;
+}
+.lang-switch:hover { background: #fff; color: var(--red); }
+.flag a.lang-switch:focus-visible { outline-color: #fff; outline-offset: 3px; }
+@media (max-width: 40rem) {
+  .lang-switch { margin-left: auto; }          /* stays top right, next to the wordmark */
+  .masthead nav { order: 3; margin-left: 0; width: 100%; }   /* links wrap onto their own row */
+}
+
 /* ---------- headings & prose ---------- */
 
 h1, h2, h3 { font-family: var(--display); color: var(--text-hi); line-height: 1.08; margin: 0; }
