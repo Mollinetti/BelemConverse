@@ -106,7 +106,7 @@ module.
 | Findings by severity before fixes (C/H/M/L) | 0 / 2 / 8 / 9 (live on the `mvp-3` cut; K02, K03, K05, K07, K08 were already gone) |
 | Findings by severity after fixes, open (C/H/M/L) | 0 / 1 / 3 / 9. The High is K01 (history purge, waiting on the owner's go-ahead); the Mediums are K10 (manual), F01 (no fix exists) and F08 (backlog) |
 | False positives dismissed (count) | 278: 255 gitleaks (untracked Flutter caches), 22 trufflehog, 1 ruff S608 |
-| History purge: date, paths removed, backup location, force-push approved by | _pending_ |
+| History purge: date, paths removed, backup location, force-push approved by | prepared 2026-10-25 and verified, not pushed; paths `data/` and `LLM/src/classifiers/models/`; backup `../BelemConverse-backup-20261025.git`; force-push: _awaiting the owner_ |
 | GitHub Support cache-purge ticket | _pending_ |
 | Keys rotated (provider + date only, no values) | none: no secret was found in history, image, bundle or working tree |
 | Dependency vulns High+ open with written reason | 44 Debian OS-package CVEs in the base image, none with a fixed version (F01); 0 Python or Dart |
