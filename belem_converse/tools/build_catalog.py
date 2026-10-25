@@ -282,7 +282,7 @@ def build(
     try:
         conn.executescript(SCHEMA)
         conn.executemany(
-            f"INSERT INTO places ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})",
+            f"INSERT INTO places ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})",  # noqa: S608 (fixed column names; values are ? placeholders)
             rows,
         )
         conn.execute("INSERT INTO places_fts(places_fts) VALUES('rebuild')")

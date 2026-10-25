@@ -69,3 +69,29 @@ def test_dockerignore_keeps_secrets_and_raw_data_out():
 
     assert ".env" in ignored
     assert "data/" in ignored
+
+
+def test_dockerignore_excludes_secrets_and_data():
+    ignored = (ROOT / ".dockerignore").read_text().splitlines()
+
+    for line in (".env", ".env.*", "data/", "models/"):
+        assert line in ignored
+
+
+def test_dockerfile_non_root_user():
+    users = [
+        line.split()[1] for line in (ROOT / "Dockerfile").read_text().splitlines()
+        if line.strip().upper().startswith("USER ")
+    ]
+
+    assert users
+    assert users[-1] not in ("root", "0")
+
+
+def test_python_multipart_is_not_a_dependency():
+    # No route takes a form or a file, so FastAPI's multipart parser is dead weight.
+    requirements = (ROOT / "requirements.txt").read_text()
+    pyproject = (ROOT / "pyproject.toml").read_text()
+
+    assert "multipart" not in requirements
+    assert "multipart" not in pyproject
