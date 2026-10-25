@@ -219,17 +219,22 @@ T19 applies it (plan.md → Repository cleanup).
 | ID | What | Where | Size | Action |
 |---|---|---|---|---|
 | C01 | Exploratory LangChain/llama.cpp notebooks | `notebooks/` | 6 files, ~6,200 lines | **Done on mvp-2** (gitignored and untracked, files kept locally). History: K13 |
-| C02 | Generated diagnostic reports, tracked although `.gitignore` ignores them; every diagnostic run rewrites them | `tests/diagnostics/reports/` | 4 files, ~1,900 lines | Untrack (`git rm --cached`); keep the harness |
-| C03 | Vector-search and OSM fallback that production never enables (`vector_store` and `osm_client` are always `None`), and the tests that only exercise it | `belem_converse/core/unified_retriever.py`; `tests/test_semantic_search.py` and the OSM cases in `test_error_handling`, `test_retrieval_strategy_selection`, `test_intent_mapping`, `test_e2e_integration`, `test_distance_calculation` | 484 of 1,112 lines, plus ~320 test lines | Delete code and its tests together |
-| C04 | Unreachable module | `belem_converse/ingest/data_merger.py` | 459 lines | Delete |
-| C05 | Unused utilities: Bayesian ranker, exception classes, old Llama prompt templates and a second Belém bounding box | `belem_converse/utils/bayesian_ranking.py`, `exceptions.py`, most of `config.py` | ~500 lines | Delete; keep `BASE_DIR` and `DATA_DIR` |
-| C06 | Config file nothing reads (Mistral GGUF and Chroma paths) | `config.yaml` | 1 file | Delete |
-| C07 | Superseded intent-detection spec from another tool | `.kiro/` | 4 files | Delete |
-| C08 | One-off reports nothing links to | `docs/frontend-compliance-analysis.md`, `docs/frontend-updates-summary.md`, `docs/README.md` | 3 files | Delete |
-| C09 | Flutter packages declared but never imported (`permission_handler` still registers a web plugin) | `frontend/pubspec.yaml`: `cupertino_icons`, `permission_handler`, `flutter_map`, `latlong2`, `intl`, `flutter_localizations`, and `generate: true` with no translations | 6 deps | Remove |
-| C10 | Unused methods (vulture) | `PlaceCache.get_by_title/invalidate/reload/get_count`, classifier `predict/force_retrain`, `csv_ingestion.ingest_csv/get_places_index`, `osm_fetcher.fetch_by_category_batch/get_all_categories`, `city_loader.register_city/is_city_available`, `CityConfig.get_parent_category/get_description`, `BusinessHours.get_open_hours_for_day` | ~15 methods | Delete, with any tests that only call them |
-| C11 | API surface no client uses: the `coordinates` request field, `GET /api/languages`, `GET /api/places/{id}`, and health's `llm_loaded`/`vector_store_loaded` (always false). Overlaps K12 (`placeId` is not validated) | `api/` | — | Remove; update the README API table. It is the public contract, so it goes in its own commit |
-| C12 | Android and iOS scaffolds; mvp-2 ships only the web client | `frontend/android/`, `frontend/ios/` | ~90 files | Owner decision: the README advertises native builds |
+| C02 | Generated diagnostic reports, tracked although `.gitignore` ignores them; every diagnostic run rewrites them | `tests/diagnostics/reports/` | 4 files, ~1,900 lines | Untrack (`git rm --cached`); keep the harness. **Done** |
+| C03 | Vector-search and OSM fallback that production never enables (`vector_store` and `osm_client` are always `None`), and the tests that only exercise it | `belem_converse/core/unified_retriever.py`; `tests/test_semantic_search.py` and the OSM cases in `test_error_handling`, `test_retrieval_strategy_selection`, `test_intent_mapping`, `test_e2e_integration`, `test_distance_calculation` | 484 of 1,112 lines, plus ~320 test lines | Delete code and its tests together. **Done**: also dropped `osm_triggered` from `RetrievalResult`; `strategy_used` stays (the API logs it) |
+| C04 | Unreachable module | `belem_converse/ingest/data_merger.py` | 459 lines | Delete. **Done** |
+| C05 | Unused utilities: Bayesian ranker, exception classes, old Llama prompt templates and a second Belém bounding box | `belem_converse/utils/bayesian_ranking.py`, `exceptions.py`, most of `config.py` | ~500 lines | Delete; keep `BASE_DIR` and `DATA_DIR`. **Done**: `utils/__init__.py` no longer re-exports |
+| C06 | Config file nothing reads (Mistral GGUF and Chroma paths) | `config.yaml` | 1 file | Delete. **Done** |
+| C07 | Superseded intent-detection spec from another tool | `.kiro/` | 4 files | Delete. **Done** (and the `.dockerignore` line) |
+| C08 | One-off reports nothing links to | `docs/frontend-compliance-analysis.md`, `docs/frontend-updates-summary.md`, `docs/README.md` | 3 files | Delete. **Done** |
+| C09 | Flutter packages declared but never imported (`permission_handler` still registers a web plugin) | `frontend/pubspec.yaml`: `cupertino_icons`, `permission_handler`, `flutter_map`, `latlong2`, `intl`, `flutter_localizations`, and `generate: true` with no translations | 6 deps | Remove. **Done**: `flutter analyze`, `flutter test` and `flutter build web` pass |
+| C10 | Unused methods (vulture) | `PlaceCache.get_by_title/invalidate/reload/get_count`, classifier `predict/force_retrain`, `csv_ingestion.ingest_csv/get_places_index`, `osm_fetcher.fetch_by_category_batch/get_all_categories`, `city_loader.register_city/is_city_available`, `CityConfig.get_parent_category/get_description`, `BusinessHours.get_open_hours_for_day` | ~15 methods | Delete, with any tests that only call them. **Done**, plus 4 found by the T18 re-run with no caller (`CategoryMatcher.get_match_score`, `CityConfig.get_category_terms`, `PlaceMatcher.get_match_summary`, `BusinessHours.get_hours_for_day`) and `PlaceCache`'s title indexes, which only `get_by_title` read |
+| C11 | API surface no client uses: the `coordinates` request field, `GET /api/languages`, `GET /api/places/{id}`, and health's `llm_loaded`/`vector_store_loaded` (always false). Overlaps K12 (`placeId` is not validated) | `api/` | — | Remove; update the README API table. It is the public contract, so it goes in its own commit. **Done**; `get_system_status` went with the health fields |
+| C12 | Android and iOS scaffolds; mvp-2 ships only the web client | `frontend/android/`, `frontend/ios/` | ~90 files | Owner decision (2026-10-25): **keep**. The README advertises native builds |
+
+T18 re-run on `mvp-3` (2026-10-25): `scripts/reachability.py` listed only C04;
+`git ls-files -ci --exclude-standard` listed only C02; the Flutter check found
+the C09 set. `latlong2` was missed by the old check's `[a-z_]+` pattern, which
+skips digits. The check now uses `[a-z_0-9]+`.
 
 **Kept on purpose:** `tests/` (the required gate, cited by this spec and by
 mvp-2's validation.md; `.dockerignore` already keeps it out of the image),
