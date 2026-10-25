@@ -126,9 +126,7 @@ def unified_retriever(sample_places):
     return UnifiedRetriever(
         place_cache=place_cache,
         category_matcher=category_matcher,
-        ranking_engine=ranking_engine,
-        vector_store=None,
-        osm_client=None
+        ranking_engine=ranking_engine
     )
 
 
@@ -360,95 +358,6 @@ class TestVerificationFlow:
         result = unified_retriever.retrieve(query_plan_dict)
         
         # Verify results
-        assert isinstance(result, RetrievalResult)
-
-
-class TestOSMFallbackIntegration:
-    """Test OSM fallback integration in complete flow."""
-    
-    def test_osm_fallback_on_empty_results(self, query_planner, sample_places, user_location):
-        """Test: OSM fallback triggers when database returns empty results."""
-        # Create retriever with OSM client
-        place_cache = PlaceCache(sample_places)
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {
-            'restaurant': ['restaurant'],
-            'museum': ['museum']
-        }
-        
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        ranking_engine = RankingEngine()
-        
-        # Mock OSM client
-        mock_osm_client = Mock()
-        mock_osm_client.search = Mock(return_value=[])
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=mock_osm_client
-        )
-        
-        # Query for category not in database
-        query = "find museums nearby"
-        query_plan = query_planner.create_query_plan(query, user_location=user_location)
-        
-        # Retrieval
-        query_plan_dict = query_planner.plan_to_dict(query_plan)
-        result = retriever.retrieve(query_plan_dict)
-        
-        # Verify OSM was attempted (even if it returned empty)
-        # The important thing is the system doesn't crash
-        assert isinstance(result, RetrievalResult)
-    
-    def test_osm_fallback_with_low_quality_results(self, query_planner, user_location):
-        """Test: OSM fallback triggers on low quality results."""
-        # Create places with low scores
-        low_quality_places = [
-            {
-                'placeId': 'low1',
-                'title': 'Low Quality Place',
-                'titleFormatted': 'Low Quality Place',
-                'category': ['restaurant'],
-                'location': {'lat': -1.4558, 'lng': -48.4902},
-                'totalScore': 0.2,  # Very low score
-                'reviewsCount': 1,
-                'price': 1
-            }
-        ]
-        
-        place_cache = PlaceCache(low_quality_places)
-        
-        mock_intent_classifier = Mock()
-        mock_intent_classifier.category_keywords = {'restaurant': ['restaurant']}
-        
-        category_matcher = CategoryMatcher(mock_intent_classifier)
-        ranking_engine = RankingEngine()
-        
-        # Mock OSM client
-        mock_osm_client = Mock()
-        mock_osm_client.search = Mock(return_value=[])
-        
-        retriever = UnifiedRetriever(
-            place_cache=place_cache,
-            category_matcher=category_matcher,
-            ranking_engine=ranking_engine,
-            vector_store=None,
-            osm_client=mock_osm_client
-        )
-        
-        # Query
-        query = "find restaurants"
-        query_plan = query_planner.create_query_plan(query, user_location=user_location)
-        
-        # Retrieval
-        query_plan_dict = query_planner.plan_to_dict(query_plan)
-        result = retriever.retrieve(query_plan_dict)
-        
-        # Verify system handles low quality results
         assert isinstance(result, RetrievalResult)
 
 

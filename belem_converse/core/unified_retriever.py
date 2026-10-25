@@ -1,14 +1,8 @@
 """
 UnifiedRetriever: Consolidated retriever implementation.
 
-This module consolidates Two_Stage_Retriever and Deterministic_Retriever into a single
-unified retriever that handles all retrieval strategies:
-- Filter-first retrieval (primary strategy)
-- Semantic search (fallback only)
-- OSM fallback (supplement when needed)
-
-The retriever uses shared modules (CategoryMatcher, RankingEngine, PlaceCache) for
-consistent behavior across all retrieval paths.
+Filter-first retrieval over the catalog: deterministic filtering, then ranking.
+It uses shared modules (CategoryMatcher, RankingEngine, PlaceCache).
 
 Validates: Requirements 4.1, 4.2, 4.3, 2.2, 2.3, 2.4
 """
@@ -36,8 +30,7 @@ class RetrievalResult:
     Contains ranked places and metadata about the retrieval process.
     """
     places: list[dict[str, Any]]
-    strategy_used: str  # 'filter_first', 'semantic_search', 'osm_fallback'
-    osm_triggered: bool
+    strategy_used: str  # always 'filter_first'
     filters_applied: list[str]
     ranking_mode: str
     total_candidates: int
@@ -45,13 +38,8 @@ class RetrievalResult:
 
 class UnifiedRetriever:
     """
-    Unified retriever that consolidates all retrieval strategies.
-    
-    This retriever implements a clear hierarchy:
-    1. Filter-First (Primary): Deterministic filtering and ranking
-    2. Semantic Search (Fallback): Vector similarity when filter-first returns zero results
-    3. OSM Fallback (Supplement): Real-time data when database results are insufficient
-    
+    Filter-first retriever: deterministic filtering and ranking.
+
     The retriever delegates to shared modules for consistent behavior:
     - CategoryMatcher: Consistent category matching logic
     - RankingEngine: Consistent ranking across all modes
@@ -63,8 +51,6 @@ class UnifiedRetriever:
         place_cache: PlaceCache,
         category_matcher: CategoryMatcher,
         ranking_engine: RankingEngine,
-        vector_store: Any | None = None,
-        osm_client: Any | None = None
     ):
         """
         Initialize UnifiedRetriever with dependencies.
@@ -73,32 +59,22 @@ class UnifiedRetriever:
             place_cache: Shared place data cache
             category_matcher: Shared category matching logic
             ranking_engine: Shared ranking logic
-            vector_store: Optional vector store for semantic search
-            osm_client: Optional OSM client for real-time fallback
         """
         self.place_cache = place_cache
         self.category_matcher = category_matcher
         self.ranking_engine = ranking_engine
-        self.vector_store = vector_store
-        self.osm_client = osm_client
         # "Open now" is judged on the city's clock, not the server's (UTC).
         self.timezone = ZoneInfo(get_city_config().timezone)
         
-        logger.info(
-            "UnifiedRetriever initialized with "
-            f"vector_store={'enabled' if vector_store else 'disabled'}, "
-            f"osm_client={'enabled' if osm_client else 'disabled'}"
-        )
+        logger.info("UnifiedRetriever initialized")
     
     def retrieve(self, query_plan: dict[str, Any]) -> RetrievalResult:
         """
         Retrieve and rank places based on query plan.
         
         This is the main orchestration method that:
-        1. Attempts filter-first retrieval (primary strategy)
-        2. Falls back to semantic search if filter-first returns zero results
-        3. Supplements with OSM fallback if database results are insufficient
-        4. Ranks results using the appropriate ranking mode
+        1. Runs filter-first retrieval
+        2. Ranks results using the appropriate ranking mode
         
         Args:
             query_plan: Structured query plan from Query_Planner
@@ -110,7 +86,6 @@ class UnifiedRetriever:
         
         # Extract key information from query plan
         slots = query_plan.get('slots', {})
-        retrieval_strategy = query_plan.get('retrieval_strategy', 'structured_only')
         
         # Determine ranking mode based on intents and slots
         ranking_mode = self._determine_ranking_mode(query_plan)
@@ -119,32 +94,11 @@ class UnifiedRetriever:
         # Extract user location if available
         user_location = self._extract_user_location(slots)
         
-        # Step 1: Attempt filter-first retrieval (primary strategy)
-        logger.info("Executing filter-first retrieval (primary strategy)")
         db_results = self._filter_first(query_plan)
-        
         filters_applied = self._get_filters_applied(slots)
         strategy_used = 'filter_first'
-        osm_triggered = False
-        
-        # Step 2: Fall back to semantic search if filter-first returns zero results
-        if not db_results and self.vector_store and 'vector_fallback' in retrieval_strategy:
-            logger.info("Filter-first returned zero results, falling back to semantic search")
-            db_results = self._semantic_search(query_plan)
-            strategy_used = 'semantic_search'
-        
-        # Step 3: Evaluate if OSM fallback should be triggered
-        if self.osm_client and self._should_trigger_osm(db_results, query_plan):
-            logger.info("Triggering OSM fallback to supplement database results")
-            osm_results = self._osm_fallback(query_plan, db_results)
-            
-            if osm_results:
-                # Merge OSM results with database results
-                db_results.extend(osm_results)
-                osm_triggered = True
-                logger.info(f"Added {len(osm_results)} OSM results to database results")
-        
-        # Step 4: Rank results using the appropriate ranking mode
+
+        # Rank results using the appropriate ranking mode
         ranked_results = self.ranking_engine.rank(
             places=db_results,
             mode=ranking_mode,
@@ -168,13 +122,12 @@ class UnifiedRetriever:
 
         logger.info(
             f"Retrieval complete: {len(ranked_results)} results, "
-            f"strategy={strategy_used}, osm_triggered={osm_triggered}"
+            f"strategy={strategy_used}"
         )
         
         return RetrievalResult(
             places=ranked_results,
             strategy_used=strategy_used,
-            osm_triggered=osm_triggered,
             filters_applied=filters_applied,
             ranking_mode=ranking_mode,
             total_candidates=len(db_results)
@@ -526,335 +479,6 @@ class UnifiedRetriever:
         
         return R * c
     
-    def _semantic_search(self, query_plan: dict[str, Any]) -> list[dict[str, Any]]:
-        """
-        Perform vector similarity search (fallback only).
-        
-        This method is only called when filter-first returns zero results.
-        It performs semantic search using vector embeddings and then re-ranks
-        with structured filters.
-        
-        Args:
-            query_plan: Structured query plan
-            
-        Returns:
-            List of semantically similar places
-        """
-        logger.info("Executing semantic search fallback")
-        
-        if not self.vector_store:
-            logger.warning("Semantic search requested but vector_store not available")
-            return []
-        
-        # Extract query text
-        query_text = query_plan.get('slots', {}).get('original_query', '')
-        if not query_text:
-            logger.warning("No query text available for semantic search")
-            return []
-        
-        logger.info(f"Performing vector search for: '{query_text}'")
-        
-        # Stage 1: Perform vector similarity search
-        try:
-            # Get semantic candidates with scores
-            # similarity_search_with_score returns (document, distance) tuples
-            # where lower distance = more similar
-            results = self.vector_store.similarity_search_with_score(
-                query_text,
-                k=50  # Get more candidates for re-ranking
-            )
-            
-            if not results:
-                logger.info("No semantic candidates found")
-                return []
-            
-            logger.info(f"Retrieved {len(results)} semantic candidates")
-            
-            # Convert documents to place data and calculate similarity scores
-            candidates = []
-            for doc, distance in results:
-                # Convert distance to similarity score: 1 / (1 + distance)
-                similarity_score = 1.0 / (1.0 + distance)
-                
-                # Extract place data from document metadata
-                place_data = doc.metadata if hasattr(doc, 'metadata') else {}
-                
-                # Get full place data from cache if we have a placeId
-                place_id = place_data.get('placeId')
-                if place_id:
-                    full_place = self.place_cache.get_by_id(place_id)
-                    if full_place:
-                        place_data = full_place
-                
-                if place_data:
-                    # Add semantic score to place data for re-ranking
-                    place_data['_semantic_score'] = similarity_score
-                    candidates.append(place_data)
-            
-            logger.info(f"Extracted {len(candidates)} place candidates")
-            
-            if not candidates:
-                return []
-            
-            # Stage 2: Re-rank with structured filters
-            logger.info("Re-ranking candidates with structured filters")
-            
-            # Apply category filter if specified
-            slots = query_plan.get('slots', {})
-            categories = slots.get('categories', [])
-            if categories:
-                filtered_candidates = []
-                for place in candidates:
-                    if self.category_matcher.matches(place, categories):
-                        filtered_candidates.append(place)
-                logger.info(f"Category filter: {len(candidates)} → {len(filtered_candidates)} places")
-                candidates = filtered_candidates
-            
-            if not candidates:
-                logger.info("No candidates after category filtering")
-                return []
-            
-            # Apply location scoring if user location available
-            user_location = self._extract_user_location(slots)
-            if user_location:
-                # Calculate distances
-                candidates = self._add_distances(candidates, user_location)
-            
-            # Calculate composite scores for re-ranking
-            # Weights: 40% semantic, 30% rating, 20% popularity, 10% proximity
-            for place in candidates:
-                semantic_score = place.get('_semantic_score', 0.0)
-                
-                # Normalize rating (0-5 scale to 0-1)
-                rating_score = place.get('totalScore', 0.0) / 5.0
-                
-                # Calculate popularity score (Bayesian average)
-                reviews = place.get('reviewsCount', 0)
-                rating = place.get('totalScore', 0.0)
-                # Use global average of 4.0 and minimum 10 reviews
-                popularity_score = (reviews * rating + 10 * 4.0) / (reviews + 10) / 5.0
-                
-                # Normalize proximity (closer = higher score)
-                proximity_score = 0.0
-                if user_location and 'distanceKm' in place:
-                    distance = place['distanceKm']
-                    # Score decreases with distance: 1.0 at 0km, 0.5 at 2km, 0.0 at 5km+
-                    proximity_score = max(0.0, 1.0 - (distance / 5.0))
-                
-                # Calculate composite score
-                composite_score = (
-                    0.40 * semantic_score +
-                    0.30 * rating_score +
-                    0.20 * popularity_score +
-                    0.10 * proximity_score
-                )
-                
-                place['_composite_score'] = composite_score
-            
-            # Sort by composite score
-            candidates.sort(key=lambda p: p.get('_composite_score', 0.0), reverse=True)
-            
-            # Remove temporary scoring fields
-            for place in candidates:
-                place.pop('_semantic_score', None)
-                place.pop('_composite_score', None)
-            
-            logger.info(f"Semantic search returning {len(candidates)} re-ranked places")
-            
-            # Log top results for debugging
-            if candidates:
-                top = candidates[0]
-                logger.info(
-                    f"Top semantic result: {top.get('title', 'Unknown')} "
-                    f"(rating: {top.get('totalScore', 'N/A')}, "
-                    f"reviews: {top.get('reviewsCount', 'N/A')})"
-                )
-            
-            return candidates
-            
-        except Exception as e:
-            logger.error(f"Semantic search failed: {e}", exc_info=True)
-            return []
-    
-    def _osm_fallback(
-        self,
-        query_plan: dict[str, Any],
-        db_results: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        """
-        Supplement with OSM results if needed.
-        
-        This method queries OpenStreetMap for real-time place data when
-        database results are insufficient. OSM results are merged with
-        database results and ranked together.
-        
-        Args:
-            query_plan: Structured query plan
-            db_results: Current database results
-            
-        Returns:
-            List of places from OSM
-        """
-        logger.info("Executing OSM fallback")
-        
-        if not self.osm_client:
-            logger.warning("OSM fallback requested but osm_client not available")
-            return []
-        
-        slots = query_plan.get('slots', {})
-        user_location = self._extract_user_location(slots)
-        
-        if not user_location:
-            logger.warning("OSM fallback requested but no user location available")
-            return []
-        
-        # Extract query and categories
-        original_query = query_plan.get('original_query', '')
-        categories = slots.get('categories', [])
-        if not categories:
-            place_type = slots.get('place_type')
-            if place_type:
-                categories = [place_type]
-        
-        # Determine search radius (default 2km, wider for verification)
-        intents = query_plan.get('intents', {})
-        is_verification = intents.get('verification', 0) > 0.5
-        radius_meters = 10000 if is_verification else 2000
-        
-        logger.info(
-            f"Querying OSM: query='{original_query}', categories={categories}, "
-            f"location=({user_location.latitude}, {user_location.longitude}), "
-            f"radius={radius_meters}m"
-        )
-        
-        try:
-            # Query OSM using the realtime search client
-            osm_documents = self.osm_client.search(
-                query=original_query,
-                user_coordinates=(user_location.latitude, user_location.longitude),
-                radius=radius_meters,
-                categories=categories
-            )
-            
-            if not osm_documents:
-                logger.info("OSM search returned no results")
-                return []
-            
-            logger.info(f"OSM search returned {len(osm_documents)} results")
-            
-            # Convert OSM Documents to place dicts
-            osm_places = []
-            for doc in osm_documents:
-                place_dict = self._document_to_place_dict(doc)
-                if place_dict:
-                    osm_places.append(place_dict)
-            
-            # Deduplicate OSM results against database results
-            unique_osm_places = self._deduplicate_osm_results(db_results, osm_places)
-            
-            logger.info(
-                f"OSM fallback complete: {len(osm_places)} total, "
-                f"{len(unique_osm_places)} unique after deduplication"
-            )
-            
-            return unique_osm_places
-            
-        except Exception as e:
-            logger.error(f"OSM fallback failed: {e}", exc_info=True)
-            return []
-    
-    def _should_trigger_osm(
-        self,
-        db_results: list[dict[str, Any]],
-        query_plan: dict[str, Any]
-    ) -> bool:
-        """
-        Determine if OSM fallback should be triggered.
-        
-        OSM fallback is triggered when:
-        1. Database results are empty
-        2. All database result scores are below 0.3 (low quality)
-        3. Nearest database result is beyond 5km AND proximity intent detected
-        4. Verification intent detected AND specific place name not found
-        
-        Args:
-            db_results: Current database results
-            query_plan: Structured query plan
-            
-        Returns:
-            True if OSM fallback should be triggered
-        """
-        slots = query_plan.get('slots', {})
-        intents = query_plan.get('intents', {})
-        user_location = self._extract_user_location(slots)
-        
-        # OSM requires user location
-        if not user_location:
-            logger.debug("OSM not triggered: no user location available")
-            return False
-        
-        # Condition 1: Empty database results
-        if not db_results:
-            logger.info("OSM trigger condition met: empty database results")
-            return True
-        
-        # Condition 2: All scores below 0.3 (low quality)
-        # Check if places have totalScore field
-        scores = [place.get('totalScore', 0) for place in db_results if place.get('totalScore') is not None]
-        if scores and all(score < 0.3 for score in scores):
-            max_score = max(scores) if scores else 0
-            logger.info(f"OSM trigger condition met: low quality scores (max={max_score:.2f})")
-            return True
-        
-        # Condition 3: Nearest result beyond 5km AND proximity intent detected
-        proximity_intent_detected = query_plan.get('proximity_intent_detected', False)
-        if proximity_intent_detected:
-            # Check if any result has distance_km field
-            distances = [
-                place.get('distance_km', float('inf'))
-                for place in db_results
-                if 'distance_km' in place
-            ]
-            
-            if distances:
-                nearest_distance = min(distances)
-                if nearest_distance > 5.0:
-                    logger.info(
-                        f"OSM trigger condition met: nearest result is {nearest_distance:.1f}km "
-                        f"away with proximity intent"
-                    )
-                    return True
-        
-        # Condition 4: Verification intent AND specific place name not found
-        verification_intent = intents.get('verification', 0)
-        if verification_intent > 0.5:
-            # Extract place name from query
-            original_query = query_plan.get('original_query', '')
-            extracted_name = self._extract_place_name_from_query(original_query)
-            
-            if extracted_name:
-                # Check if the name is found in results
-                name_found = False
-                for place in db_results:
-                    title = place.get('title', '').lower()
-                    title_formatted = place.get('titleFormatted', '').lower()
-                    extracted_lower = extracted_name.lower()
-                    
-                    # Simple substring match
-                    if extracted_lower in title or extracted_lower in title_formatted:
-                        name_found = True
-                        break
-                
-                if not name_found:
-                    logger.info(
-                        f"OSM trigger condition met: verification intent with "
-                        f"place name '{extracted_name}' not found"
-                    )
-                    return True
-        
-        logger.debug("OSM not triggered: database results are satisfactory")
-        return False
-    
     def _determine_ranking_mode(self, query_plan: dict[str, Any]) -> str:
         """
         Determine ranking mode based on query plan intents and slots.
@@ -947,166 +571,5 @@ class UnifiedRetriever:
         
         if slots.get('min_rating'):
             filters.append('rating')
-        
+
         return filters
-    
-    def _document_to_place_dict(self, doc) -> dict[str, Any] | None:
-        """
-        Convert a LangChain Document (from OSM) to a place dictionary.
-        
-        Args:
-            doc: LangChain Document object
-            
-        Returns:
-            Place dictionary or None if conversion fails
-        """
-        try:
-            metadata = doc.metadata if hasattr(doc, 'metadata') else {}
-            
-            # Extract required fields
-            title = metadata.get('title', '')
-            if not title:
-                return None
-            
-            # Build place dict matching the format used by UnifiedRetriever
-            place_dict = {
-                'title': title,
-                'titleFormatted': title,  # OSM doesn't have formatted title
-                'category': [metadata.get('categoryName', 'Unknown')],
-                'location': {
-                    'lat': metadata.get('location/lat'),
-                    'lng': metadata.get('location/lng')
-                },
-                'totalScore': metadata.get('totalScore'),  # Usually None for OSM
-                'reviewsCount': metadata.get('reviewsCount', 0),
-                'priceRange': metadata.get('priceRange'),
-                'address': metadata.get('address', ''),
-                'phone': metadata.get('phone', ''),
-                'website': metadata.get('website', ''),
-                'businessTime': metadata.get('businessTime', ''),
-                'distance_km': metadata.get('distance_km'),
-                'data_source': metadata.get('data_source', 'osm_realtime'),
-                'osm_id': metadata.get('osm_id'),
-                'osm_type': metadata.get('osm_type'),
-            }
-            
-            return place_dict
-            
-        except Exception as e:
-            logger.warning(f"Failed to convert Document to place dict: {e}")
-            return None
-    
-    def _deduplicate_osm_results(
-        self,
-        db_results: list[dict[str, Any]],
-        osm_results: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        """
-        Remove OSM results that are duplicates of database results.
-        
-        Deduplication is based on:
-        1. Exact title match (case-insensitive)
-        2. Similar location (within 50 meters)
-        
-        Args:
-            db_results: Database results
-            osm_results: OSM results
-            
-        Returns:
-            Deduplicated OSM results
-        """
-        if not db_results:
-            return osm_results
-        
-        unique_osm = []
-        
-        for osm_place in osm_results:
-            is_duplicate = False
-            osm_title = osm_place.get('title', '').lower().strip()
-            osm_loc = osm_place.get('location', {})
-            osm_lat = osm_loc.get('lat')
-            osm_lng = osm_loc.get('lng')
-            
-            # Skip OSM results without location data
-            if osm_lat is None or osm_lng is None:
-                logger.debug(f"Skipping OSM result without location: {osm_title}")
-                continue
-            
-            for db_place in db_results:
-                db_title = db_place.get('title', '').lower().strip()
-                db_title_formatted = db_place.get('titleFormatted', '').lower().strip()
-                
-                # Check title match
-                if osm_title and (osm_title == db_title or osm_title == db_title_formatted):
-                    logger.debug(f"Duplicate by title: {osm_title}")
-                    is_duplicate = True
-                    break
-                
-                # Check location proximity (within 50 meters)
-                db_loc = db_place.get('location', {})
-                db_lat = db_loc.get('lat')
-                db_lng = db_loc.get('lng')
-                
-                if db_lat is not None and db_lng is not None:
-                    distance_m = self._haversine_distance(
-                        osm_lat, osm_lng, db_lat, db_lng
-                    ) * 1000  # Convert km to meters
-                    
-                    if distance_m < 50:  # Within 50 meters
-                        logger.debug(
-                            f"Duplicate by proximity: {osm_title} is {distance_m:.1f}m "
-                            f"from {db_title}"
-                        )
-                        is_duplicate = True
-                        break
-            
-            if not is_duplicate:
-                unique_osm.append(osm_place)
-        
-        logger.info(
-            f"Deduplication: {len(osm_results)} OSM results, "
-            f"{len(unique_osm)} unique after removing duplicates"
-        )
-        
-        return unique_osm
-    
-    def _extract_place_name_from_query(self, query: str) -> str | None:
-        """
-        Extract a specific place name from the query if present.
-        
-        This is used for verification queries to check if a specific
-        place name is mentioned.
-        
-        Args:
-            query: User query
-            
-        Returns:
-            Extracted place name or None
-        """
-        import re
-        
-        # Patterns for extracting place names (in order of specificity)
-        patterns = [
-            r'"([^"]+)"',  # Quoted names - highest priority
-            r"'([^']+)'",  # Single-quoted names
-            r'(?:called|named|chamad[ao])\s+([\w\s]+?)(?:\s+(?:is|está|still|ainda|open|aberto|closed|fechado)|$)',
-            # Extract after "where is" - matches Unicode word characters
-            r'(?:where is|onde fica|cadê)\s+(?:the\s+)?([\w\s]+?)(?:\s*\?|$)',
-        ]
-        
-        for i, pattern in enumerate(patterns):
-            # Use IGNORECASE for quoted patterns, otherwise case-sensitive to catch proper nouns
-            flags = re.IGNORECASE | re.UNICODE if i < 2 else re.UNICODE
-            match = re.search(pattern, query, flags)
-            if match:
-                name = match.group(1).strip()
-                # Filter out generic terms and very short names
-                generic_terms = ['a', 'an', 'the', 'um', 'uma', 'o', 'restaurant', 'restaurants', 
-                                'cafe', 'cafes', 'hotel', 'hotels', 'bar', 'bars', 'nearby', 'near']
-                if len(name) > 2 and name.lower() not in generic_terms:
-                    # Additional check: don't extract if it's just generic category words
-                    words = name.lower().split()
-                    if not all(word in generic_terms for word in words):
-                        return name
-        
-        return None

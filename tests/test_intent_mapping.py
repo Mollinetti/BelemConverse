@@ -127,9 +127,7 @@ def unified_retriever(mock_place_cache, mock_category_matcher, mock_ranking_engi
     return UnifiedRetriever(
         place_cache=mock_place_cache,
         category_matcher=mock_category_matcher,
-        ranking_engine=mock_ranking_engine,
-        vector_store=None,
-        osm_client=None
+        ranking_engine=mock_ranking_engine
     )
 
 
@@ -385,38 +383,6 @@ class TestPriceIntentMapping:
 
 class TestVerificationIntentMapping:
     """Test verification intent → exact name matching + OSM fallback."""
-    
-    def test_verification_intent_triggers_osm_fallback(self, unified_retriever):
-        """
-        GIVEN a query with verification intent
-        WHEN specific place name is not found in database
-        THEN OSM fallback should be triggered
-        
-        Validates: Requirement 5.7
-        """
-        # Create a mock OSM client
-        mock_osm = Mock()
-        mock_osm.search.return_value = []
-        unified_retriever.osm_client = mock_osm
-        
-        query_plan = {
-            'intent': 'verification',
-            'intents': {'verification': 0.9},
-            'slots': {
-                'categories': ['restaurant'],
-                'user_location': {'lat': -23.5505, 'lng': -46.6333},
-            },
-            'original_query': 'Is "Nonexistent Restaurant" still open?',
-            'proximity_intent_detected': False,
-            'retrieval_strategy': 'structured_only',
-            'debug': {'detected_intents': ['verification']},
-        }
-        
-        result = unified_retriever.retrieve(query_plan)
-        
-        # OSM should be triggered because the specific place name is not found
-        # (Note: This depends on _should_trigger_osm logic)
-        assert result.osm_triggered or mock_osm.search.called
     
     def test_verification_intent_prioritizes_exact_name_match(self, unified_retriever, mock_place_cache):
         """

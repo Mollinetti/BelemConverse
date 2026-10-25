@@ -95,9 +95,7 @@ def unified_retriever(mock_place_cache, mock_category_matcher, mock_ranking_engi
     return UnifiedRetriever(
         place_cache=mock_place_cache,
         category_matcher=mock_category_matcher,
-        ranking_engine=mock_ranking_engine,
-        vector_store=None,
-        osm_client=None
+        ranking_engine=mock_ranking_engine
     )
 
 
@@ -334,49 +332,6 @@ class TestDistanceCalculationAccuracy:
         for place in result:
             assert place['distanceKm'] is None, \
                 f"Place {place['title']} should have None distance with missing coordinates"
-
-
-class TestDistanceCalculationInSemanticSearch:
-    """Test distance calculation in semantic search fallback."""
-    
-    def test_distance_calculated_in_semantic_search(self, unified_retriever, mock_place_cache):
-        """
-        When semantic search is used as fallback, distances should still be calculated
-        when user location is available.
-        """
-        # Mock vector store to return results
-        mock_vector_store = Mock()
-        mock_doc = Mock()
-        mock_doc.metadata = {'placeId': 'place1'}
-        mock_vector_store.similarity_search_with_score.return_value = [
-            (mock_doc, 0.5)
-        ]
-        unified_retriever.vector_store = mock_vector_store
-        
-        query_plan = {
-            'slots': {
-                'user_location': {
-                    'latitude': -23.5505,
-                    'longitude': -46.6333
-                },
-                'original_query': 'cozy atmosphere'
-            },
-            'proximity_intent_detected': False,
-            'intents': {}
-        }
-        
-        # Call semantic search directly
-        results = unified_retriever._semantic_search(query_plan)
-        
-        # Verify distances were calculated
-        assert len(results) > 0, "Should have semantic search results"
-        
-        for place in results:
-            assert 'distanceKm' in place, \
-                f"Place {place.get('title', 'Unknown')} missing distanceKm in semantic search"
-            # Distance should be calculated (not None) since we have user location
-            assert place['distanceKm'] is not None, \
-                f"Place {place.get('title', 'Unknown')} has None distanceKm in semantic search"
 
 
 if __name__ == '__main__':
