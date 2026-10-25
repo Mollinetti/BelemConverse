@@ -23,21 +23,6 @@ DEFAULT_CITY = "belem"
 CITY_ENV_VAR = "BELEMCONVERSE_CITY"
 
 
-def register_city(slug: str):
-    """
-    Decorator to register a city configuration.
-    
-    Usage:
-        @register_city("manaus")
-        def get_manaus_config() -> CityConfig:
-            return CityConfig(...)
-    """
-    def decorator(func):
-        _CITY_REGISTRY[slug.lower()] = func
-        return func
-    return decorator
-
-
 def _load_builtin_cities():
     """Load built-in city configurations."""
     # Import Belem config
@@ -117,34 +102,3 @@ def list_available_cities() -> list[str]:
         _load_builtin_cities()
     
     return list(_CITY_REGISTRY.keys())
-
-
-def is_city_available(slug: str) -> bool:
-    """Check if a city is available."""
-    if not _CITY_REGISTRY:
-        _load_builtin_cities()
-    
-    return slug.lower() in _CITY_REGISTRY
-
-
-# Example of how to add a new city:
-# 
-# @register_city("manaus")
-# def get_manaus_config() -> CityConfig:
-#     return CityConfig(
-#         name="Manaus",
-#         slug="manaus",
-#         country="Brazil",
-#         country_code="BR",
-#         state="Amazonas",
-#         primary_language="pt",
-#         center_coordinates=(-3.1190, -60.0217),
-#         bounds_min=(-3.2, -60.2),
-#         bounds_max=(-3.0, -59.8),
-#         timezone="America/Manaus",
-#         csv_path="data/csvs/manaus_data.csv",
-#         chroma_db_path="data/chroma_db_manaus",
-#         # ... other settings
-#     )
-
-

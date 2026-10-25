@@ -9,7 +9,6 @@ Implements exact CSV mapping per spec/02-csv-mapping.md:
 - Outputs canonical_places.jsonl and ingestion_report.json
 """
 
-import json
 import logging
 import re
 import unicodedata
@@ -168,80 +167,6 @@ class CSVIngestionPipeline:
         
         return categories
     
-    def ingest_csv(self, csv_path: Path) -> dict[str, Any]:
-        """
-        Ingest CSV file and produce canonical places.
-        
-        Args:
-            csv_path: Path to CSV file
-            
-        Returns:
-            Ingestion report dictionary
-        """
-        logger.info(f"Starting CSV ingestion from {csv_path}")
-        
-        report = {
-            'ingestedCount': 0,
-            'skippedCount': 0,
-            'parseErrors': [],
-            'outputFiles': []
-        }
-        
-        places = []
-        jsonl_path = self.output_dir / "canonical_places.jsonl"
-        
-        try:
-            # Read CSV
-            df = pd.read_csv(csv_path, low_memory=False)
-            logger.info(f"Loaded {len(df)} rows from CSV")
-            
-            # Check for required placeId column
-            if 'placeId' not in df.columns:
-                raise ValueError("CSV must contain 'placeId' column")
-            
-            # Process each row
-            for index, row in df.iterrows():
-                try:
-                    place = self.process_row(row, index)
-                    if place:
-                        places.append(place)
-                        report['ingestedCount'] += 1
-                    else:
-                        report['skippedCount'] += 1
-                except Exception as e:
-                    error_msg = f"Row {index}: {str(e)}"
-                    logger.warning(error_msg)
-                    report['parseErrors'].append(error_msg)
-                    report['skippedCount'] += 1
-            
-            # Write canonical_places.jsonl
-            logger.info(f"Writing {len(places)} places to {jsonl_path}")
-            with open(jsonl_path, 'w', encoding='utf-8') as f:
-                for place in places:
-                    f.write(json.dumps(place, ensure_ascii=False) + '\n')
-            
-            report['outputFiles'].append(str(jsonl_path))
-            
-            # Build in-memory index
-            self.places_index = places
-            logger.info(f"Built searchable index with {len(places)} places")
-            
-            # Write ingestion report
-            report_path = self.output_dir / "ingestion_report.json"
-            with open(report_path, 'w', encoding='utf-8') as f:
-                json.dump(report, f, indent=2, ensure_ascii=False)
-            
-            report['outputFiles'].append(str(report_path))
-            
-            logger.info(f"Ingestion complete: {report['ingestedCount']} ingested, "
-                       f"{report['skippedCount']} skipped, {len(report['parseErrors'])} errors")
-            
-            return report
-            
-        except Exception as e:
-            logger.error(f"CSV ingestion failed: {e}")
-            raise
-    
     def process_row(self, row: pd.Series, row_index: int) -> dict[str, Any] | None:
         """
         Process a single CSV row into canonical Place format.
@@ -320,6 +245,3 @@ class CSVIngestionPipeline:
         
         return place
     
-    def get_places_index(self) -> list[dict[str, Any]]:
-        """Get the in-memory searchable index of places"""
-        return self.places_index

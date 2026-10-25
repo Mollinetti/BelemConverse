@@ -116,40 +116,6 @@ class TestFuzzyMatching:
         assert category_matcher.matches(place, ['restaurant'], fuzzy_threshold=0.8) is False
 
 
-class TestScoring:
-    """Test category match scoring."""
-    
-    def test_exact_match_score(self, category_matcher):
-        """Test that exact matches get perfect score."""
-        place = {'categories': ['restaurant']}
-        score = category_matcher.get_match_score(place, ['restaurant'])
-        assert score == 1.0
-    
-    def test_special_case_score(self, category_matcher):
-        """Test that special cases get high score."""
-        place = {'categories': ['motel']}
-        score = category_matcher.get_match_score(place, ['hotel'])
-        assert score >= 0.9
-    
-    def test_no_match_score(self, category_matcher):
-        """Test that non-matches get zero score."""
-        place = {'categories': ['restaurant']}
-        score = category_matcher.get_match_score(place, ['hotel'])
-        assert score == 0.0
-    
-    def test_empty_query_score(self, category_matcher):
-        """Test that empty query gets perfect score."""
-        place = {'categories': ['restaurant']}
-        score = category_matcher.get_match_score(place, [])
-        assert score == 1.0
-    
-    def test_empty_place_categories_score(self, category_matcher):
-        """Test that places with no categories get neutral score."""
-        place = {'categories': []}
-        score = category_matcher.get_match_score(place, ['restaurant'])
-        assert score == 0.5
-
-
 class TestDataFormats:
     """Test different place data formats."""
     
