@@ -786,27 +786,3 @@ class SimpleTFIDFIntentClassifier:
             'primary_confidence': top_categories[0]['confidence']
         }
     
-    def predict(self, query: str) -> dict[str, Any]:
-        """Fast prediction of both intent and category."""
-        intent_result = self.predict_intent(query)
-        category_result = self.predict_category(query)
-        
-        return {
-            'intents': intent_result['intents'],
-            'primary_intent': intent_result['primary_intent'],
-            'primary_intent_confidence': intent_result['primary_confidence'],
-            'categories': category_result['categories'],
-            'primary_category': category_result['primary_category'],
-            'primary_category_confidence': category_result['primary_confidence'],
-            'original_query': query
-        }
-    
-    def force_retrain(self):
-        """Force retraining of models (useful when keywords are updated)."""
-        # Delete existing model file
-        model_file = self._get_model_file()
-        if model_file.exists():
-            model_file.unlink()
-        
-        self.is_trained = False
-        self.train()

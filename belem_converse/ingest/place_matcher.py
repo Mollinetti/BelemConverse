@@ -346,34 +346,3 @@ class PlaceMatcher:
         
         return results
     
-    def get_match_summary(self, results: list[MatchResult]) -> dict[str, Any]:
-        """
-        Generate a summary of match results.
-        
-        Args:
-            results: List of MatchResult objects
-            
-        Returns:
-            Summary dictionary with statistics
-        """
-        matched = [r for r in results if r.status == MatchStatus.MATCHED]
-        new = [r for r in results if r.status == MatchStatus.NEW]
-        possibly_closed = [r for r in results if r.status == MatchStatus.POSSIBLY_CLOSED]
-        
-        avg_confidence = sum(r.confidence for r in matched) / len(matched) if matched else 0
-        avg_distance = sum(r.distance_meters for r in matched if r.distance_meters) / len(matched) if matched else 0
-        avg_similarity = sum(r.name_similarity for r in matched if r.name_similarity) / len(matched) if matched else 0
-        
-        return {
-            'total_osm_places': len([r for r in results if r.osm_place]),
-            'total_csv_places': len([r for r in results if r.csv_place]) + len(matched),
-            'matched_count': len(matched),
-            'new_count': len(new),
-            'possibly_closed_count': len(possibly_closed),
-            'average_confidence': round(avg_confidence, 3),
-            'average_distance_meters': round(avg_distance, 1),
-            'average_name_similarity': round(avg_similarity, 3),
-        }
-
-
-

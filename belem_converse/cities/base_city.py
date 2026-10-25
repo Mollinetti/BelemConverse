@@ -77,20 +77,6 @@ class CityConfig:
             self.bounds_min[1] <= lng <= self.bounds_max[1]
         )
     
-    def get_category_terms(self, category: str) -> list[str]:
-        """Get all search terms for a category."""
-        return self.category_mappings.get(category, [category])
-    
-    def get_parent_category(self, subcategory: str) -> str | None:
-        """Get parent category for a subcategory."""
-        return self.subcategory_mappings.get(subcategory)
-    
-    def get_description(self, language: str = "en") -> str:
-        """Get city description in specified language."""
-        if language == "pt":
-            return f"{self.name}, {self.state}, {self.country}"
-        return f"{self.name}, {self.state}, {self.country}"
-    
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {

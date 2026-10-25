@@ -71,7 +71,6 @@ class TestPlaceCache:
     
     def test_initialization(self, place_cache, sample_places):
         """Test PlaceCache initialization."""
-        assert place_cache.get_count() == len(sample_places)
         assert len(place_cache.get_all()) == len(sample_places)
     
     def test_get_by_id_with_place_id(self, place_cache):
@@ -91,39 +90,6 @@ class TestPlaceCache:
     def test_get_by_id_not_found(self, place_cache):
         """Test lookup by non-existent ID."""
         place = place_cache.get_by_id('nonexistent')
-        assert place is None
-    
-    def test_get_by_title_exact_match(self, place_cache):
-        """Test lookup by exact title."""
-        place = place_cache.get_by_title('Restaurant A')
-        assert place is not None
-        assert place['placeId'] == 'place1'
-    
-    def test_get_by_title_case_insensitive(self, place_cache):
-        """Test lookup by title is case-insensitive."""
-        place = place_cache.get_by_title('restaurant a')
-        assert place is not None
-        assert place['placeId'] == 'place1'
-        
-        place = place_cache.get_by_title('RESTAURANT A')
-        assert place is not None
-        assert place['placeId'] == 'place1'
-    
-    def test_get_by_title_formatted(self, place_cache):
-        """Test lookup by titleFormatted."""
-        place = place_cache.get_by_title('Restaurant A - Downtown')
-        assert place is not None
-        assert place['placeId'] == 'place1'
-    
-    def test_get_by_title_formatted_case_insensitive(self, place_cache):
-        """Test lookup by titleFormatted is case-insensitive."""
-        place = place_cache.get_by_title('café b')
-        assert place is not None
-        assert place['placeId'] == 'place2'
-    
-    def test_get_by_title_not_found(self, place_cache):
-        """Test lookup by non-existent title."""
-        place = place_cache.get_by_title('Nonexistent Place')
         assert place is None
     
     def test_get_all(self, place_cache, sample_places):
@@ -181,42 +147,11 @@ class TestPlaceCache:
         )
         assert filtered == []
     
-    def test_invalidate(self, place_cache):
-        """Test cache invalidation."""
-        assert place_cache.get_count() == 4
-        
-        place_cache.invalidate()
-        
-        assert place_cache.get_count() == 0
-        assert place_cache.get_all() == []
-        assert place_cache.get_by_id('place1') is None
-        assert place_cache.get_by_title('Restaurant A') is None
-    
-    def test_reload(self, place_cache):
-        """Test cache reload with new data."""
-        new_places = [
-            {
-                'placeId': 'new1',
-                'title': 'New Place',
-                'titleFormatted': 'New Place',
-                'categoryName': 'restaurant'
-            }
-        ]
-        
-        place_cache.reload(new_places)
-        
-        assert place_cache.get_count() == 1
-        assert place_cache.get_by_id('new1') is not None
-        assert place_cache.get_by_id('place1') is None
-        assert place_cache.get_by_title('New Place') is not None
-    
     def test_empty_initialization(self):
         """Test PlaceCache with empty data."""
         cache = PlaceCache([])
-        assert cache.get_count() == 0
         assert cache.get_all() == []
         assert cache.get_by_id('any') is None
-        assert cache.get_by_title('any') is None
     
     def test_places_with_missing_fields(self):
         """Test PlaceCache handles places with missing fields."""
@@ -227,36 +162,11 @@ class TestPlaceCache:
         ]
         
         cache = PlaceCache(places)
-        assert cache.get_count() == 3
+        assert len(cache.get_all()) == 3
         
         # Can lookup by ID
         place = cache.get_by_id('p1')
         assert place is not None
-        
-        # Can lookup by title
-        place = cache.get_by_title('Place 2')
-        assert place is not None
-    
-    def test_duplicate_titles(self):
-        """Test PlaceCache handles duplicate titles (first occurrence wins)."""
-        places = [
-            {'placeId': 'p1', 'title': 'Duplicate'},
-            {'placeId': 'p2', 'title': 'Duplicate'}
-        ]
-        
-        cache = PlaceCache(places)
-        
-        # Should return first occurrence
-        place = cache.get_by_title('Duplicate')
-        assert place is not None
-        assert place['placeId'] == 'p1'
-    
-    def test_whitespace_handling(self, place_cache):
-        """Test PlaceCache handles whitespace in titles."""
-        # Should find place even with extra whitespace
-        place = place_cache.get_by_title('  Restaurant A  ')
-        assert place is not None
-        assert place['placeId'] == 'place1'
     
     def test_filter_with_complex_predicate(self, place_cache):
         """Test filter with complex predicate function."""
@@ -272,12 +182,3 @@ class TestPlaceCache:
         assert 'Restaurant A' in titles
         assert 'Hotel C' in titles
     
-    def test_get_count(self, place_cache):
-        """Test get_count returns correct count."""
-        assert place_cache.get_count() == 4
-        
-        place_cache.invalidate()
-        assert place_cache.get_count() == 0
-        
-        place_cache.reload([{'placeId': 'p1'}])
-        assert place_cache.get_count() == 1

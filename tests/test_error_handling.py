@@ -42,7 +42,6 @@ class TestDatabaseConnectionFailures:
         
         # Lookups should return None
         assert place_cache.get_by_id('nonexistent') is None
-        assert place_cache.get_by_title('nonexistent') is None
     
     def test_place_cache_handles_malformed_data(self, caplog):
         """
