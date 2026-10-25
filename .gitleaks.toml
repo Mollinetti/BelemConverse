@@ -1,0 +1,16 @@
+title = "BelemConverse"
+
+[extend]
+useDefault = true
+
+# Local by design, never tracked: directory scans must not report them.
+[allowlist]
+description = "local-only paths"
+paths = [
+  '''(^|/)\.env$''',
+  '''(^|/)\.venv/''',
+  '''^data/''',
+  '''^models/''',
+  '''^graphify-out/''',
+  '''^\.claude/worktrees/''',
+]
