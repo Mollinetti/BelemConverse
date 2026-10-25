@@ -43,7 +43,7 @@ Audit of `mvp-3` (cut from `main` at 26877da), 2026-10-25. Scanner output stays 
 | K06 | Medium | ruff S301 | `intent_classifier_TFIDF_simple.py:683` load without a hash, `:669` save, and `api/routes.py:85` calls `train()` at runtime | fixed | 419c956: SHA-256 sidecar checked before `pickle.loads`; `train()` writes nothing unless `save=True`; `tests/test_model_integrity.py` |
 | K07 | Medium | grep | local `debug.log` writes | verified-gone | `tests/test_no_local_paths.py` (5981e15) |
 | K08 | Medium | Dockerfile | root user | fixed upstream | `useradd` + `USER app`, uid 1000 (mvp-2); `test_deploy_files.py::test_dockerfile_non_root_user` (5981e15) |
-| K09 | Medium | | `.env` readable by agents | fixed | commit "T00/T02"; the new-session check must be run by hand |
+| K09 | Medium | | `.env` readable by agents | fixed | `.claude/settings.json` deny rules (the owner confirmed a new session refuses `.env`), plus `.cursorignore`. Since 2026-10-25 `.claude/` is git-ignored by the owner's decision, so the deny rules live on this machine only, not in the repo |
 | K10 | Medium | manual | GitHub settings | fixed | 2026-10-25, via `gh api`: secret scanning, push protection and private vulnerability reporting enabled; Dependabot alerts were already on. Read back after the change |
 | K11 | Medium | pip-audit | `python-multipart` | fixed | 5981e15: removed from `requirements.txt` and `pyproject.toml`; container smoke test passes without it; `test_python_multipart_is_not_a_dependency` |
 | K12 | Low | read | `ChatFilters` bounds, `placeId`, `nowIso`, INFO logging of user text | backlog | |

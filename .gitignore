@@ -76,3 +76,7 @@ notebooks/
 
 # mvp-3 raw scanner output (may echo secrets; never commit)
 specs/mvp/mvp-3-security-audit/out/
+
+# AI-tool settings and rules: local to each machine (untracked since 2026-10-25)
+.claude/
+.cursor/

@@ -239,7 +239,8 @@ skips digits. The check now uses `[a-z_0-9]+`.
 **Kept on purpose:** `tests/` (the required gate, cited by this spec and by
 mvp-2's validation.md; `.dockerignore` already keeps it out of the image),
 `specs/`, `catalog/belem.sqlite` (the image needs it), `docs/app/` (what Pages
-serves) and `.cursor/` (the overview spec uses its `feature-spec` skill).
+serves). `.cursor/` and `.claude/` were untracked on 2026-10-25 (owner decision):
+they stay on disk, git-ignored; the overview spec still names the `feature-spec` skill.
 
 ## Secret and personal-data runbook
 

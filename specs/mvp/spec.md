@@ -7,7 +7,7 @@
 Supersedes the PoC specs archived in [`specs/archive/`](../archive/) and
 [`docs/archive/spec/`](../../docs/archive/spec/). Where they disagree, this
 document wins. The phase documents follow the Cursor `feature-spec` skill
-(`.cursor/skills/feature-spec/`), with two adaptations:
+(kept locally in `.cursor/skills/feature-spec/`, no longer tracked), with two adaptations:
 - The skill's prerequisite files (constitution, mission, roadmap) are
   archived. This file stands in for them, and its **Ground rules** section
   plays the constitution's role. The current stack is in
