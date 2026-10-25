@@ -35,7 +35,7 @@ Audit of `mvp-3` (cut from `main` at 26877da), 2026-10-25. Scanner output stays 
 
 | ID | Sev. | Tool | Location | Status | Fix commit or reason |
 |---|---|---|---|---|---|
-| K01 | High | git, trufflehog | `data/` in commits bfc971c, 89e6e82 (3 commits) on `origin/main`, `mvp-2`, `old`, `phase-1` | fix (purge, owner go-ahead needed) | confirmed live; also 3 commits touch `notebooks/` and 3 touch the old model dir |
+| K01 | High | git, trufflehog | `data/` in commits bfc971c, 89e6e82 (3 commits) on `origin/main`, `mvp-2`, `old`, `phase-1` | fixed (branches) | purged 2026-10-25 with the owner's go-ahead: `git filter-repo --invert-paths --path data/ --path LLM/src/classifiers/models/`, force-pushed to all four branches. A fresh mirror clone has 0 `data/` commits on `refs/heads/*`; the two PR refs remain (below). `main`'s tree is unchanged (3752275). `notebooks/` stays in history (K13, accepted) |
 | K02 | High | route table | `/api/ingest/csv`, `/api/clear-history` | verified-gone | `tests/test_removed_routes.py` (5981e15); live: both 404 |
 | K03 | High | `api/main.py:63-76` | CORS | verified-gone | `tests/test_cors.py::test_foreign_origin_rejected`, `::test_credentials_disabled` already pin it |
 | K04 | High | read | `api/routes.py` 221 (`Retriever error: {exc}`), 320 (`Error converting place result: {exc}`), 101/173 (build hint in the detail), 266 (`debug` carries planner signals) | fixed | 4ce2892: one `internal_error` handler, fixed codes, `debug` = `answer_source` only; `test_error_handling.py::test_500_is_generic`, `::test_llm_failure_leaks_no_provider_url`, `::test_debug_only_answer_source`, `::test_catalog_not_loaded_503_gives_no_build_command` |
@@ -81,6 +81,12 @@ findings, each re-read by hand before it was written down.
 
 ## Open
 
-- **K01** (High): the history purge. Prepared, not pushed. Steps 3–5 of the T13 runbook are done and verified (2026-10-25): a mirror backup of `origin`; `git filter-repo --invert-paths --path data/ --path LLM/src/classifiers/models/` on a copy of it; the tip tree of `main` is unchanged; `git log --all -- data/` is empty; gitleaks and trufflehog on the rewritten mirror find nothing. Replaying the same rewrite on a clone of the working repo gives the same `main` (97775ef), so `mvp-3` can be re-synced. Waiting on the owner's go-ahead to force-push (step 6).
+- **K01 residual:** `refs/pull/1/head` and `refs/pull/2/head` (merged PRs #1 and #2, heads 27b652b and bbeaea2) still reach the old `data/` commits. GitHub keeps these refs read-only, so only GitHub Support can clear them. Forks and clones made before 2026-10-25 also keep the data and cannot be recalled.
 - **K10** (Medium): the GitHub settings, by hand.
 - **Not run:** the live checks (T17) against Render; the new-session `.env` read check (K09).
+
+## GitHub Support request (to send)
+
+> Subject: Remove cached views and pull-request refs after a history rewrite
+>
+> Repository: Mollinetti/BelemConverse (public). On 2026-10-25 I rewrote history with git filter-repo to remove the paths `data/` and `LLM/src/classifiers/models/` (third-party personal data from scraped Google Places exports) and force-pushed the branches main, mvp-2, old and phase-1. The read-only pull-request refs refs/pull/1/head (27b652b) and refs/pull/2/head (bbeaea2) still point at commits that contain those paths, so the old blobs are reachable by SHA. Please run garbage collection on the repository, remove the cached views of the old commits, and re-point or drop those two refs. Merged pull requests #1 and #2 can keep their titles and discussion.
