@@ -42,7 +42,6 @@ def test_inside_belem_nearby_search_works(client, monkeypatch):
 
     assert any(r["distanceKm"] is not None for r in body["results"])
     assert not body["answer"].startswith(OUTSIDE_CITY_NOTICE["pt-BR"])
-    assert body["debug"]["location_outside_city"] is False
 
 
 @pytest.mark.parametrize(
@@ -58,7 +57,6 @@ def test_outside_belem_nearby_search_is_refused_with_a_notice(client, monkeypatc
     assert body["results"], "the visitor still gets places from the whole city"
     assert all(r["distanceKm"] is None for r in body["results"])
     assert follow_ups.CHIPS["closest"][language] not in body["follow_ups"]
-    assert body["debug"]["location_outside_city"] is True
     sent_places = model.await_args.args[1]
     assert all(p.get("distanceKm") is None for p in sent_places)
 

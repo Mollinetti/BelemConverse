@@ -424,3 +424,82 @@ class TestEmptyResultsHandling:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+# --- mvp-3 K04: errors say nothing about the server --------------------------
+
+import uuid  # noqa: E402
+
+import httpx  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+import api.dependencies as deps  # noqa: E402
+import api.routes as routes  # noqa: E402
+from api.main import app  # noqa: E402
+from tests.conftest import fake_model  # noqa: E402
+
+LEAKY = "secret-ish /abs/path"
+
+
+def chat(http, message="lugares bem avaliados"):
+    return http.post(
+        "/api/chat",
+        json={"session_id": str(uuid.uuid4()), "message": message, "language": "pt-BR"},
+    )
+
+
+def explode_building_the_retriever(monkeypatch):
+    def boom():
+        raise RuntimeError(LEAKY)
+
+    monkeypatch.setattr(routes, "_get_retriever", boom)
+
+
+def explode_retrieving(monkeypatch):
+    def boom(self, plan):
+        raise RuntimeError(LEAKY)
+
+    monkeypatch.setattr(UnifiedRetriever, "retrieve", boom)
+
+
+@pytest.mark.parametrize("explode", [explode_building_the_retriever, explode_retrieving])
+def test_500_is_generic(client, monkeypatch, explode):
+    explode(monkeypatch)
+
+    response = chat(TestClient(app, raise_server_exceptions=False))
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "internal_error"}
+    assert "secret-ish" not in response.text
+    assert "/" not in response.text
+
+
+def test_llm_failure_leaks_no_provider_url(client, monkeypatch):
+    fake_model(
+        monkeypatch,
+        side_effect=httpx.ConnectError("could not reach https://provider.example/v1/chat"),
+    )
+
+    response = chat(client)
+
+    assert response.status_code == 200
+    assert response.json()["debug"]["answer_source"] == "template"
+    assert "provider.example" not in response.text
+
+
+def test_debug_only_answer_source(client, monkeypatch):
+    fake_model(monkeypatch, return_value=None)
+
+    body = chat(client).json()
+
+    assert list(body["debug"]) == ["answer_source"]
+
+
+def test_catalog_not_loaded_503_gives_no_build_command(client, monkeypatch):
+    monkeypatch.setattr(deps, "_catalog", None)
+
+    response = chat(client)
+
+    assert response.status_code == 503
+    assert "python" not in response.text
+    assert "build_catalog" not in response.text

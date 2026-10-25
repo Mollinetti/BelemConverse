@@ -2,7 +2,7 @@
 Pydantic schemas for API request/response validation.
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -18,9 +18,11 @@ class LatLng(BaseModel):
 
 class ChatFilters(BaseModel):
     """Explicit filters for chat request."""
-    placeType: list[str] | None = Field(default=None, description="Place types to filter")
-    city: str | None = Field(default=None, description="City filter")
-    neighborhood: str | None = Field(default=None, description="Neighborhood filter")
+    placeType: list[Annotated[str, Field(max_length=50)]] | None = Field(
+        default=None, max_length=10, description="Place types to filter"
+    )
+    city: str | None = Field(default=None, max_length=100, description="City filter")
+    neighborhood: str | None = Field(default=None, max_length=100, description="Neighborhood filter")
     openNow: bool | None = Field(default=None, description="Filter for places open now")
     priceMax: float | None = Field(default=None, description="Maximum price")
     minRating: float | None = Field(default=None, description="Minimum rating")
